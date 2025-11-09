@@ -60,7 +60,7 @@ services:
     networks: [iot]
     restart: unless-stopped
     ports:
-      - "9010:9010" 
-
+      - "9010:9010"
+ 
 networks:
   iot: {}

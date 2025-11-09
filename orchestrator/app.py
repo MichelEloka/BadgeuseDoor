@@ -1,6 +1,6 @@
 import os, logging, time, json, pathlib
 from typing import Literal, Optional, Dict, Tuple
-from fastapi import FastAPI, HTTPException, Body
+from fastapi import FastAPI, HTTPException, Body, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import docker, requests
@@ -183,6 +183,7 @@ def get_plan(floor_id: str):
             return p
     raise HTTPException(status_code=404, detail="Plan not found")
 
+
 @app.post("/plans/{floor_id}")
 def save_plan(floor_id: str, plan: dict = Body(...)):
     plans = _load_plans()
@@ -196,6 +197,15 @@ def save_plan(floor_id: str, plan: dict = Body(...)):
         plans.append(plan)
     _save_plans(plans)
     return {"ok": True}
+
+@app.get("/devices/{device_id}/health")
+def dev_health(device_id: str):
+    try:
+        url = _service_url_by_id(device_id)
+    except docker.errors.NotFound:
+        raise HTTPException(status_code=404, detail="Device inconnu")
+    r = requests.get(f"{url}/health", timeout=2)
+    return r.json()
 
 @app.post("/devices")
 def create_device(req: CreateDevice):
@@ -234,13 +244,34 @@ def list_devices(kind: Optional[str] = None):
     return out
 
 @app.delete("/devices/{device_id}")
-def delete_device(device_id: str):
+def delete_device(device_id: str, remove_image: bool = Query(default=False)):
     try:
         c = client.containers.get(device_id)
+        # Mémoriser l'image avant suppression du conteneur
+        image_id = c.image.id
+        image_tags = c.image.tags
         c.remove(force=True)
-        return {"ok": True}
+
+        result = {"ok": True, "image_removed": False, "image_id": image_id, "image_tags": image_tags}
+
+        if remove_image:
+            # Vérifier si d'autres conteneurs utilisent cette image
+            others = client.containers.list(all=True, filters={"ancestor": image_id})
+            if not others:
+                try:
+                    client.images.remove(image=image_id, force=True, noprune=False)
+                    result["image_removed"] = True
+                except docker.errors.APIError as e:
+                    # Image encore référencée (layers, etc.) ou autre souci
+                    result["image_remove_error"] = str(e)
+
+        return result
+
     except docker.errors.NotFound:
         raise HTTPException(status_code=404, detail="Device not found")
+    except Exception as e:
+        log.exception("delete_device failed")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # -------- Proxies d'actions (internal URL + readiness) --------
 @app.post("/badge/{device_id}")

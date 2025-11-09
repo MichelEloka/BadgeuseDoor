@@ -6,26 +6,10 @@
     "height": 900,
     "walls": [
       {
-        "id": "jwou8f1",
-        "x1": 80,
-        "y1": 80,
-        "x2": 1320,
-        "y2": 80,
-        "thick": 8
-      },
-      {
         "id": "373plkt",
         "x1": 1320,
         "y1": 80,
         "x2": 1320,
-        "y2": 820,
-        "thick": 8
-      },
-      {
-        "id": "wtf8lxs",
-        "x1": 1320,
-        "y1": 820,
-        "x2": 80,
         "y2": 820,
         "thick": 8
       },
@@ -44,79 +28,122 @@
         "x2": 400,
         "y2": 300,
         "thick": 8
+      },
+      {
+        "id": "xz6yq6j",
+        "x1": 80,
+        "y1": 80,
+        "x2": 1320,
+        "y2": 80,
+        "thick": 8
+      },
+      {
+        "id": "h65pyw9",
+        "x1": 80,
+        "y1": 820,
+        "x2": 1320,
+        "y2": 820,
+        "thick": 8
+      },
+      {
+        "id": "5zo9h6i",
+        "x1": 80,
+        "y1": 310,
+        "x2": 400,
+        "y2": 310,
+        "thick": 8
+      },
+      {
+        "id": "06vvp5f",
+        "x1": 400,
+        "y1": 300,
+        "x2": 400,
+        "y2": 310,
+        "thick": 8
       }
     ],
     "boxes": [],
     "nodes": [
       {
-        "id": "14tmpiv",
+        "id": "v8kubm3",
         "kind": "porte",
         "x": 80,
-        "y": 300,
+        "y": 450,
         "rot": -1.5707963267948966,
-        "hinge": "right",
-        "deviceId": "port13"
-      },
-      {
-        "id": "p7chd0t",
-        "kind": "porte",
-        "x": 234,
-        "y": 72,
-        "rot": 0,
-        "hinge": "left"
-      },
-      {
-        "id": "e7n5g09",
-        "kind": "porte",
-        "x": 234,
-        "y": 72,
-        "rot": 0,
         "hinge": "left",
-        "deviceId": "pt56"
+        "deviceId": "KKKKKK"
       },
       {
-        "id": "eqmoqzh",
+        "id": "8uc603j",
         "kind": "porte",
-        "x": 288,
-        "y": 72,
-        "rot": 0,
-        "hinge": "left"
-      },
-      {
-        "id": "6br66cl",
-        "kind": "badgeuse",
-        "x": 620,
+        "x": 540,
         "y": 80,
         "rot": 0,
-        "hinge": "left",
-        "targetDoorId": "pt56",
-        "deviceId": "bd56"
+        "hinge": "right",
+        "deviceId": "porte12"
       },
       {
-        "id": "rq6nkb7",
+        "id": "5vgpgxo",
         "kind": "badgeuse",
         "x": 80,
-        "y": 280,
+        "y": 420,
         "rot": 0,
         "hinge": "left",
-        "targetDoorId": "port13",
-        "deviceId": "bdd13"
+        "targetDoorId": "KKKKKK",
+        "deviceId": "der"
       },
       {
-        "id": "y59qo5p",
+        "id": "35rnfnm",
         "kind": "badgeuse",
-        "x": 690,
+        "x": 580,
         "y": 80,
         "rot": 0,
+        "hinge": "left",
+        "targetDoorId": "porte12",
+        "deviceId": "bd2"
+      },
+      {
+        "id": "659y0le",
+        "kind": "badgeuse",
+        "x": -3390,
+        "y": -8750,
+        "rot": 0,
         "hinge": "left"
       },
       {
-        "id": "gdrnizy",
-        "kind": "badgeuse",
-        "x": 530,
-        "y": 290,
+        "id": "4kpwrvn",
+        "kind": "porte",
+        "x": 220,
+        "y": 310,
         "rot": 0,
-        "hinge": "left"
+        "hinge": "right",
+        "deviceId": "port2"
+      },
+      {
+        "id": "8vwgixz",
+        "kind": "badgeuse",
+        "x": 260,
+        "y": 310,
+        "rot": 0,
+        "hinge": "left",
+        "targetDoorId": "port2",
+        "deviceId": "bd3"
+      }
+    ],
+    "simPersons": [
+      {
+        "id": "lqywgmm",
+        "firstName": "eloka",
+        "lastName": "michel",
+        "badgeId": "eee",
+        "badgeFrequencySec": 11
+      },
+      {
+        "id": "9zzd9zf",
+        "firstName": "testeur",
+        "lastName": "deux",
+        "badgeId": "aaa",
+        "badgeFrequencySec": 20
       }
     ]
   }

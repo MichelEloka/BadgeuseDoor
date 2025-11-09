@@ -49,7 +49,7 @@ def on_disconnect(client, userdata, reason_code, properties=None):
     connected = False
     log.warning(f"[MQTT] Disconnected: {reason_code}")
 
-def publish_door(client: mqtt.Client, door_id: str, action: str, badge_device_id: str, tag_id: Optional[str], success: bool):
+def publish_door(client: mqtt.Client, door_id: str, action: str, badge_device_id: str, badge_id: Optional[str], success: bool):
     topic = DOOR_CMDS_FMT.format(door_id=door_id)
     payload = {
         "action": action,
@@ -57,7 +57,7 @@ def publish_door(client: mqtt.Client, door_id: str, action: str, badge_device_id
         "ts": now_iso(),
         "data": {
             "badge_device_id": badge_device_id,
-            "tag_id": tag_id,
+            "badge_id": badge_id,
             "success": success
         }
     }
@@ -90,12 +90,12 @@ def on_message(client, userdata, msg):
         log.warning(f"[MQTT] Non-JSON payload on {msg.topic}")
         return
 
-    # Format attendu (cf. ta badgeuse):
+    # Format attendu (cf. badgeuse):
     # {
     #   "device_id": "badgeuse-XXX",
     #   "type": "badge_event",
     #   "ts": "...",
-    #   "data": { "tag_id": "...", "success": true, "door_id": "porte-YYY" }
+    #   "data": { "badge_id": "...", "success": true, "door_id": "porte-YYY" }
     # }
     if not isinstance(data, dict) or data.get("type") != "badge_event":
         return
@@ -104,14 +104,14 @@ def on_message(client, userdata, msg):
     d = data.get("data") or {}
     success = bool(d.get("success", True))
     door_id = d.get("door_id")
-    tag_id = d.get("tag_id")
+    badge_id = d.get("badge_id") or d.get("tag_id")
 
     if not success:
-        log.info(f"[BRIDGE] Badge KO ignoré ({badge_device_id}, tag={tag_id})")
+        log.info(f"[BRIDGE] Badge KO ignoré ({badge_device_id}, badge={badge_id})")
         return
 
     if not door_id:
-        log.warning(f"[BRIDGE] Pas de door_id dans l'event (badge={badge_device_id}, tag={tag_id})")
+        log.warning(f"[BRIDGE] Pas de door_id dans l'event (badge={badge_device_id}, badge={badge_id})")
         return
 
     # Debounce par porte
@@ -124,7 +124,7 @@ def on_message(client, userdata, msg):
     last_trigger_ts[door_id] = now
 
     action = OPEN_ACTION
-    publish_door(client, door_id, action, badge_device_id, tag_id, success)
+    publish_door(client, door_id, action, badge_device_id, badge_id, success)
     schedule_autoclose(client, door_id)
 
 # ---------- MQTT client ----------

@@ -39,8 +39,11 @@ def on_disconnect(client, userdata, reason_code, properties=None):
     connected = False
     log.warning(f"[MQTT] Disconnected (reason_code={reason_code})")
 
-def on_publish(client, userdata, mid):
-    log.info(f"[MQTT] Published mid={mid}")
+def on_publish(client, userdata, mid, reason_code=mqtt.MQTT_ERR_SUCCESS, properties=None):
+    if reason_code == mqtt.MQTT_ERR_SUCCESS:
+        log.info(f"[MQTT] Published mid={mid}")
+    else:
+        log.warning(f"[MQTT] Publish mid={mid} failed (reason={reason_code})")
 
 client = mqtt.Client(
     callback_api_version=CallbackAPIVersion.VERSION2,
@@ -72,15 +75,15 @@ app.add_middleware(
 )
 
 @app.post("/badge")
-def simulate_badge(payload: dict = Body(default={"tag_id": "TEST1234", "success": True})):
+def simulate_badge(payload: dict = Body(default={"badge_id": "BADGE-TEST", "success": True})):
     """
     Déclenche un événement de badge.
     Champs acceptés dans payload :
-      - tag_id (str)
+      - badge_id (str)
       - success (bool)
       - door_id (str, optionnel) : si non fourni, on prend DOOR_ID de l'env (si dispo)
     """
-    tag_id = str(payload.get("tag_id", "TEST1234"))
+    badge_id = str(payload.get("badge_id") or payload.get("tag_id") or "BADGE-TEST")
     success = bool(payload.get("success", True))
     # priorité au door_id fourni par l'appelant (front/orchestrateur) sinon fallback env
     door_id = str(payload.get("door_id")) if payload.get("door_id") is not None else (DOOR_ID or None)
@@ -92,7 +95,7 @@ def simulate_badge(payload: dict = Body(default={"tag_id": "TEST1234", "success"
         "type": "badge_event",
         "ts": now,
         "data": {
-            "tag_id": tag_id,
+            "badge_id": badge_id,
             "success": success,
             # on inclut door_id seulement s'il est connu
             **({"door_id": door_id} if door_id else {})

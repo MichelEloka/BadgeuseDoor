@@ -39,7 +39,7 @@ export type Floor = { id: string; name: string; width: number; height: number; w
 
 // MQTT payloads
 interface DoorStatePayload { device_id: string; type: "door_state"; ts: string; data: { is_open: boolean } }
-interface BadgeEventPayload { device_id: string; type: "badge_event"; ts: string; data: { tag_id: string; success: boolean } }
+interface BadgeEventPayload { device_id: string; type: "badge_event"; ts: string; data: { badge_id: string; success: boolean } }
 
 // ====== Utils ======
 const uid = () => Math.random().toString(36).slice(2, 9);

@@ -77,7 +77,8 @@ function useDebouncedEffect(effect: () => void, deps: any[], delay = 700) {
   useEffect(() => {
     const t = setTimeout(effect, delay);
     return () => clearTimeout(t);
-  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
 }
 
 // ====== Utils géométrie ======
@@ -88,16 +89,13 @@ const dist = (ax: number, ay: number, bx: number, by: number) => Math.hypot(ax -
 
 /** Projection d'un point P sur un segment AB. */
 function projectPointOnSegment(px: number, py: number, ax: number, ay: number, bx: number, by: number) {
-  const abx = bx - ax,
-    aby = by - ay;
-  const apx = px - ax,
-    apy = py - ay;
+  const abx = bx - ax, aby = by - ay;
+  const apx = px - ax, apy = py - ay;
   const ab2 = abx * abx + aby * aby;
   if (ab2 === 0) return { x: ax, y: ay, t: 0, angle: 0, d: Math.hypot(px - ax, py - ay) };
   let t = (apx * abx + apy * aby) / ab2;
   t = Math.max(0, Math.min(1, t));
-  const x = ax + t * abx,
-    y = ay + t * aby;
+  const x = ax + t * abx, y = ay + t * aby;
   const angle = Math.atan2(aby, abx);
   const d = Math.hypot(px - x, py - y);
   return { x, y, t, angle, d };
@@ -115,6 +113,20 @@ function nearestWallSnap(
     if (!best || proj.d < best.d) best = { ...proj, wallId: w.id };
   }
   return best ? { x: best.x, y: best.y, angle: best.angle, wallId: best.wallId } : null;
+}
+
+// ====== Orchestrateur: helpers ======
+async function deleteDeviceOnOrch(deviceId: string, removeImage = false) {
+  const url = `${ORCH_URL}/devices/${encodeURIComponent(deviceId)}?remove_image=${removeImage ? "1" : "0"}`;
+  const r = await fetch(url, { method: "DELETE" });
+  if (!r.ok) {
+    // 404 => déjà supprimé côté Docker: on considère OK
+    if (r.status !== 404) {
+      const txt = await r.text().catch(() => "");
+      throw new Error(`Suppression orchestrateur KO (${r.status}) ${txt}`);
+    }
+  }
+  return true;
 }
 
 // ====== Spinner simple ======
@@ -165,7 +177,6 @@ export default function App() {
     (async () => {
       try {
         const p = await fetchPlan(selFloorId);
-        // protège le schéma en cas de diff de version
         setFloors((fs) => fs.map((f) => (f.id === selFloorId ? { ...f, ...p } : f)));
       } catch {
         // pas de plan — on garde le défaut
@@ -188,15 +199,13 @@ export default function App() {
   // --- Canvas transforms
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [view, setView] = useState({ x: 0, y: 0, z: 1 });
-  const panRef = useRef<{ drag: boolean; sx: number; sy: number; ox: number; oy: number }>(
-    {
-      drag: false,
-      sx: 0,
-      sy: 0,
-      ox: 0,
-      oy: 0,
-    }
-  );
+  const panRef = useRef<{ drag: boolean; sx: number; sy: number; ox: number; oy: number }>({
+    drag: false,
+    sx: 0,
+    sy: 0,
+    ox: 0,
+    oy: 0,
+  });
   const [hover, setHover] = useState<{ x: number; y: number } | null>(null);
 
   // --- Drawing states
@@ -252,7 +261,7 @@ export default function App() {
   }, [mqttUrl]);
 
   // --- Loading par device + poll readiness
-  const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
+  const [loadingMap, setLoadingMap] = useState<Record<string, "creating" | "deleting" | undefined>>({});
 
   async function pollUntilReady(kind: "badgeuse" | "porte", deviceId: string, timeoutMs = 15000, intervalMs = 800) {
     const deadline = Date.now() + timeoutMs;
@@ -285,13 +294,48 @@ export default function App() {
     return bestD <= BADGEUSE_LINK_RADIUS ? bestId : undefined;
   }
 
+  // --- Suppression nœud + conteneur orchestrateur
+  async function handleDeleteNodeAndContainer(nodeId: string, deviceId?: string, removeImage = false) {
+    if (!nodeId) return;
+
+    if (deviceId) {
+      setLoadingMap((m) => ({ ...m, [deviceId]: "deleting" }));
+      try {
+        await deleteDeviceOnOrch(deviceId, removeImage);
+
+        // Poll jusqu’à disparition dans /devices (UX robuste si Docker prend du temps)
+        const deadline = Date.now() + 10_000;
+        while (Date.now() < deadline) {
+          try {
+            const r = await fetch(`${ORCH_URL}/devices`);
+            if (r.ok) {
+              const arr: Array<{ id: string }> = await r.json();
+              const still = arr.some((d) => d.id === deviceId);
+              if (!still) break;
+            }
+          } catch {}
+          await new Promise((res) => setTimeout(res, 500));
+        }
+      } finally {
+        setLoadingMap((m) => {
+          const copy = { ...m };
+          delete copy[deviceId];
+          return copy;
+        });
+      }
+    }
+
+    setFloors((fs) => fs.map((f) => (f.id === floor.id ? { ...f, nodes: f.nodes.filter((n) => n.id !== nodeId) } : f)));
+    setSelNodeId(null);
+  }
+
   // --- Orchestrateur: création service avec spinner + poll
   async function ensureService(kind: "badgeuse" | "porte", deviceId: string, badgeuseDoorId?: string) {
     if (!deviceId) {
       alert("Renseigne un deviceId");
       return;
     }
-    setLoadingMap((m) => ({ ...m, [deviceId]: true }));
+    setLoadingMap((m) => ({ ...m, [deviceId]: "creating" }));
     try {
       const body: any = { kind, device_id: deviceId };
       if (kind === "badgeuse" && badgeuseDoorId) {
@@ -320,8 +364,8 @@ export default function App() {
   const clientToWorld = (evt: React.MouseEvent) => {
     const svg = svgRef.current!;
     const pt = svg.createSVGPoint();
-    pt.x = evt.clientX;
-    pt.y = evt.clientY;
+    pt.x = (evt as any).clientX;
+    pt.y = (evt as any).clientY;
     const ctm = svg.getScreenCTM();
     if (!ctm) return { x: 0, y: 0 };
     const inv = ctm.inverse();
@@ -339,7 +383,7 @@ export default function App() {
   const onMouseDown = (e: React.MouseEvent) => {
     const w = clientToWorld(e);
     if (tool === "pan") {
-      panRef.current = { drag: true, sx: e.clientX, sy: e.clientY, ox: view.x, oy: view.y };
+      panRef.current = { drag: true, sx: (e as any).clientX, sy: (e as any).clientY, ox: view.x, oy: view.y };
     } else if (tool === "wall-line") {
       setDrawLineStart({ x1: snap(w.x, grid), y1: snap(w.y, grid) });
     } else if (tool === "wall-rect") {
@@ -351,8 +395,8 @@ export default function App() {
     const w = clientToWorld(e);
     setHover({ x: snap(w.x, grid), y: snap(w.y, grid) });
     if (panRef.current.drag) {
-      const dx = (e.clientX - panRef.current.sx) / view.z;
-      const dy = (e.clientY - panRef.current.sy) / view.z;
+      const dx = ((e as any).clientX - panRef.current.sx) / view.z;
+      const dy = ((e as any).clientY - panRef.current.sy) / view.z;
       setView((v) => ({ ...v, x: panRef.current.ox + dx, y: panRef.current.oy + dy }));
     }
   };
@@ -364,10 +408,8 @@ export default function App() {
       return;
     }
     if (tool === "wall-line" && drawLineStart) {
-      const x1 = drawLineStart.x1,
-        y1 = drawLineStart.y1;
-      const x2 = snap(w.x, grid),
-        y2 = snap(w.y, grid);
+      const x1 = drawLineStart.x1, y1 = drawLineStart.y1;
+      const x2 = snap(w.x, grid), y2 = snap(w.y, grid);
       if (Math.hypot(x2 - x1, y2 - y1) > 5) {
         const nw: Wall = { id: uid(), x1, y1, x2, y2, thick };
         setFloors((fs) => fs.map((f) => (f.id === floor.id ? { ...f, walls: [...f.walls, nw] } : f)));
@@ -376,14 +418,10 @@ export default function App() {
       return;
     }
     if (tool === "wall-rect" && drawRectStart) {
-      const x0 = drawRectStart.x,
-        y0 = drawRectStart.y;
-      const x1 = snap(w.x, grid),
-        y1 = snap(w.y, grid);
-      const x = Math.min(x0, x1),
-        y = Math.min(y0, y1);
-      const wdt = Math.abs(x1 - x0),
-        hgt = Math.abs(y1 - y0);
+      const x0 = drawRectStart.x, y0 = drawRectStart.y;
+      const x1 = snap(w.x, grid), y1 = snap(w.y, grid);
+      const x = Math.min(x0, x1), y = Math.min(y0, y1);
+      const wdt = Math.abs(x1 - x0), hgt = Math.abs(y1 - y0);
       if (wdt > 4 && hgt > 4) {
         const nb: Box = { id: uid(), x, y, w: wdt, h: hgt, thick };
         setFloors((fs) => fs.map((f) => (f.id === floor.id ? { ...f, boxes: [...f.boxes, nb] } : f)));
@@ -396,10 +434,7 @@ export default function App() {
   // ----- Placement & drag des devices
   const placeNode = (kind: "porte" | "badgeuse") => (e: React.MouseEvent) => {
     const w = clientToWorld(e);
-    let x = snap(w.x, grid),
-      y = snap(w.y, grid),
-      rot = 0,
-      hinge: Hinge = "left";
+    let x = snap(w.x, grid), y = snap(w.y, grid), rot = 0, hinge: Hinge = "left";
     let targetDoorId: string | undefined;
     if (kind === "porte") {
       const snapInfo = nearestWallSnap(floor.walls, x, y);
@@ -409,7 +444,6 @@ export default function App() {
         rot = snapInfo.angle;
       }
     } else if (kind === "badgeuse") {
-      // 🔗 lier automatiquement à la porte la plus proche si dans le rayon
       targetDoorId = findNearestDoorDeviceId(x, y);
     }
     const nn: DeviceNode = { id: uid(), kind, x, y, rot, hinge, targetDoorId };
@@ -435,10 +469,7 @@ export default function App() {
           ...f,
           nodes: f.nodes.map((n) => {
             if (n.id !== dragId) return n;
-            let x = snap(w.x, grid),
-              y = snap(w.y, grid),
-              rot = n.rot || 0,
-              targetDoorId = n.targetDoorId;
+            let x = snap(w.x, grid), y = snap(w.y, grid), rot = n.rot || 0, targetDoorId = n.targetDoorId;
             if (n.kind === "porte") {
               const snapInfo = nearestWallSnap(f.walls, x, y);
               if (snapInfo) {
@@ -447,7 +478,6 @@ export default function App() {
                 rot = snapInfo.angle;
               }
             } else if (n.kind === "badgeuse") {
-              // 🔗 re-snap linkage si on s’approche d’une porte
               const nearest = findNearestDoorDeviceId(x, y);
               targetDoorId = nearest ?? n.targetDoorId;
             }
@@ -468,13 +498,14 @@ export default function App() {
         panRef.current.drag = false;
       }
       if ((e.key === "Delete" || e.key === "Backspace") && selNodeId) {
-        setFloors((fs) =>
-          fs.map((f) => (f.id === floor.id ? { ...f, nodes: f.nodes.filter((n) => n.id !== selNodeId) } : f))
-        );
-        setSelNodeId(null);
+        const node = floor.nodes.find((n) => n.id === selNodeId);
+        if (node) {
+          handleDeleteNodeAndContainer(node.id, node.deviceId, true);
+        } else {
+          setSelNodeId(null);
+        }
       }
       if ((e.key === "r" || e.key === "R") && selNodeId) {
-        // flip hinge
         setFloors((fs) =>
           fs.map((f) =>
             f.id === floor.id
@@ -489,7 +520,7 @@ export default function App() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selNodeId, floor.id]);
+  }, [selNodeId, floor.id, floor.nodes]);
 
   // --- Statut Docker des devices
   const [dockerActive, setDockerActive] = useState<Record<string, { ready: boolean; status: string }>>({});
@@ -820,8 +851,10 @@ export default function App() {
                       <Button
                         variant="outline"
                         onClick={() =>
-                          setFloors((fs) =>
-                            fs.map((f) => (f.id === floor.id ? { ...f, nodes: f.nodes.filter((n) => n.id !== selNode.id) } : f))
+                          handleDeleteNodeAndContainer(
+                            selNode.id,
+                            selNode.deviceId,          // peut être undefined => supprime juste du plan
+                            /* removeImage: */ true     // passe à false si tu préfères
                           )
                         }
                         disabled={!!(selNode.deviceId && loadingMap[selNode.deviceId])}
@@ -838,7 +871,7 @@ export default function App() {
                           onClick={() => badge(selNode.deviceId!, /*selNode.targetDoorId*/ undefined)}
                           disabled={!selNode.deviceId || !!loadingMap[selNode.deviceId!]}
                         >
-                          {loadingMap[selNode.deviceId || ""] ? (
+                          {selNode.deviceId && loadingMap[selNode.deviceId] ? (
                             <span className="inline-flex items-center gap-2">
                               <Spinner size={16} /> Attends…
                             </span>
@@ -980,6 +1013,8 @@ export default function App() {
                   {floor.nodes.map((n) => {
                     const isLoading = !!(n.deviceId && loadingMap[n.deviceId]);
                     const dockerOk = n.deviceId ? dockerActive[n.deviceId]?.ready : false;
+                    const loadingKind = n.deviceId ? loadingMap[n.deviceId] : undefined;
+
                     return (
                       <g
                         key={n.id}
@@ -994,7 +1029,7 @@ export default function App() {
                         {n.kind === "porte" ? (
                           <DoorGlyph
                             angle={n.rot || 0}
-                            open={n.deviceId ? !!porteState[n.deviceId] : false}
+                            open={doorIsOpen(n.deviceId)}
                             hinge={n.hinge || "left"}
                             label={n.deviceId || "porte"}
                           />
@@ -1025,22 +1060,26 @@ export default function App() {
 
                         {/* Sélection */}
                         {selNodeId === n.id && <circle r={16} fill="none" stroke="#38bdf8" strokeDasharray="4 4" />}
+
                         {/* Overlay loading */}
                         {isLoading && (
                           <g>
                             <circle r={14} fill="rgba(15,23,42,0.35)" />
-                            <foreignObject x={-8} y={-8} width={16} height={16}>
+                            <foreignObject x={-20} y={-10} width={40} height={20}>
                               <div
                                 style={{
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
-                                  width: "16px",
-                                  height: "16px",
+                                  width: "40px",
+                                  height: "20px",
                                   color: "white",
+                                  fontSize: "9px",
+                                  gap: "4px",
                                 }}
                               >
-                                <Spinner size={14} />
+                                <Spinner size={12} />
+                                <span>{loadingKind === "deleting" ? "Supp..." : "Créa..."}</span>
                               </div>
                             </foreignObject>
                           </g>
@@ -1081,7 +1120,6 @@ export default function App() {
 // ====== Glyphes ======
 type HingeProp = Hinge;
 function DoorGlyph({ angle, open, hinge, label }: { angle: number; open: boolean; hinge: HingeProp; label: string }) {
-  // largeur de l'embrasure et longueur du battant
   const jamb = 36; // embrasure
   const leaf = 34; // battant
   const leafThickness = 4;
@@ -1089,10 +1127,7 @@ function DoorGlyph({ angle, open, hinge, label }: { angle: number; open: boolean
 
   return (
     <g transform={`rotate(${(angle * 180) / Math.PI})`}>
-      {/* chambranle (barre sur le mur) */}
       <rect x={-jamb / 2} y={-leafThickness / 2} width={jamb} height={leafThickness} fill="#0f172a" rx={2} />
-
-      {/* battant animé autour du pivot (0,0) */}
       <motion.rect
         initial={false}
         animate={{ rotate: open ? openAngle : 0 }}
@@ -1105,8 +1140,6 @@ function DoorGlyph({ angle, open, hinge, label }: { angle: number; open: boolean
         rx={2}
         style={{ transformOrigin: "0px 0px" }}
       />
-
-      {/* arc d'ouverture (indicatif) */}
       <path
         d={`M0 0 A ${leaf} ${leaf} 0 0 ${hinge === "left" ? 1 : 0} ${
           Math.cos(((open ? openAngle : 0) * Math.PI) / 180) * leaf
@@ -1116,8 +1149,6 @@ function DoorGlyph({ angle, open, hinge, label }: { angle: number; open: boolean
         fill="none"
         opacity={0.3}
       />
-
-      {/* label */}
       <text
         x={0}
         y={-10}
@@ -1133,11 +1164,9 @@ function DoorGlyph({ angle, open, hinge, label }: { angle: number; open: boolean
 }
 
 // ===== Helpers actions rapides =====
-async function badge(id: string, doorId?: string) {
+async function badge(id: string, _doorId?: string) {
   if (!id) return;
   const body: any = { tag_id: "TEST1234", success: true };
-  // Option : si tu veux pousser aussi au service HTTP (en plus de DOOR_ID env)
-  // if (doorId) body.door_id = doorId;
   const r = await fetch(`${ORCH_URL}/badge/${id}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

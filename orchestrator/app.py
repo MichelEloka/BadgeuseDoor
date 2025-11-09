@@ -1,10 +1,9 @@
-import os, logging, time
-from typing import Literal, Optional
+import os, logging, time, json, pathlib
+from typing import Literal, Optional, Dict, Tuple
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import docker, requests
-import json, pathlib
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("orchestrator")
@@ -20,7 +19,7 @@ DOCKER_NETWORK = os.getenv("DOCKER_NETWORK")  # ex: "badgeusedoor_iot"
 client = docker.from_env()
 client.ping()
 
-app = FastAPI(title="IoT Orchestrator v3")
+app = FastAPI(title="IoT Orchestrator v4")
 
 PLANS_FILE = pathlib.Path("/data/plans.json")
 PLANS_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -33,21 +32,22 @@ def _load_plans():
 def _save_plans(plans):
     PLANS_FILE.write_text(json.dumps(plans, ensure_ascii=False, indent=2), encoding="utf-8")
 
-
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # restreins en prod
+    allow_origins=["*"],  # restreindre en prod
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# --------- Models ----------
 class CreateDevice(BaseModel):
     kind: Literal["badgeuse", "porte"]
     device_id: str
+    door_id: Optional[str] = None  # <— seulement pertinent pour badgeuse
 
-# ----------------- helpers -----------------
+# --------- Helpers Docker ----------
 def _internal_port(kind: str) -> int:
     return 8000 if kind == "badgeuse" else 8001
 
@@ -55,7 +55,6 @@ def _image_for(kind: str) -> str:
     return IMAGE_BADGEUSE if kind == "badgeuse" else IMAGE_PORTE
 
 def _service_url_for(device_id: str, kind: str) -> str:
-    """URL interne via le réseau Docker (pas de localhost)."""
     return f"http://{device_id}:{_internal_port(kind)}"
 
 def _wait_ready(url: str, timeout_s: float = 10.0) -> bool:
@@ -70,33 +69,83 @@ def _wait_ready(url: str, timeout_s: float = 10.0) -> bool:
         time.sleep(0.4)
     return False
 
-def _ensure_running(kind: str, device_id: str):
-    """Start container if missing/stopped. Return (container, internal_url)."""
+def _env_of(container) -> Dict[str, str]:
+    """Retourne l'env du container sous forme de dict."""
+    env_list = container.attrs.get("Config", {}).get("Env", []) or []
+    out: Dict[str, str] = {}
+    for item in env_list:
+        if "=" in item:
+            k, v = item.split("=", 1)
+            out[k] = v
+    return out
+
+def _labels_of(container) -> Dict[str, str]:
+    return container.labels or {}
+
+def _compose_env(kind: str, device_id: str, door_id: Optional[str]) -> Dict[str, str]:
+    env = {
+        "DEVICE_ID": device_id,
+        "MQTT_HOST": MQTT_HOST,
+        "MQTT_PORT": str(MQTT_PORT),
+        "MQTT_USER": os.getenv("MQTT_USER", ""),
+        "MQTT_PASS": os.getenv("MQTT_PASS", ""),
+    }
+    if kind == "badgeuse" and door_id:
+        env["DOOR_ID"] = door_id
+    return env
+
+def _compose_labels(kind: str, device_id: str, door_id: Optional[str]) -> Dict[str, str]:
+    labels = {"iot": "true", "iot.kind": kind, "iot.device_id": device_id}
+    if kind == "badgeuse" and door_id:
+        labels["iot.door_id"] = door_id
+    return labels
+
+def _run_container(kind: str, device_id: str, door_id: Optional[str]):
+    kwargs = {
+        "image": _image_for(kind),
+        "name": device_id,
+        "environment": _compose_env(kind, device_id, door_id),
+        "labels": _compose_labels(kind, device_id, door_id),
+        "detach": True,
+        "restart_policy": {"Name": "unless-stopped"},
+    }
+    # L'orchestrateur parle en interne (pas d'exposition de ports)
+    if DOCKER_NETWORK:
+        kwargs["network"] = DOCKER_NETWORK
+    c = client.containers.run(**kwargs)
+    c.reload()
+    return c
+
+def _ensure_running(kind: str, device_id: str, door_id: Optional[str]) -> Tuple[object, str]:
+    """
+    Démarre (ou recrée si nécessaire) le container.
+    - Pour 'badgeuse': si DOOR_ID ne correspond pas, on recrée avec le bon env.
+    Retourne (container, internal_url).
+    """
     try:
         c = client.containers.get(device_id)
-        if c.status != "running":
-            c.start()
         c.reload()
+        existing_kind = c.labels.get("iot.kind", kind)
+        if existing_kind != kind:
+            log.info(f"[ensure] kind mismatch: have={existing_kind} want={kind} -> recreate")
+            c.remove(force=True)
+            c = _run_container(kind, device_id, door_id)
+        else:
+            # Si badgeuse, vérifier DOOR_ID
+            if kind == "badgeuse":
+                env = _env_of(c)
+                cur = env.get("DOOR_ID") or c.labels.get("iot.door_id")
+                if door_id and cur != door_id:
+                    log.info(f"[ensure] badgeuse DOOR_ID change {cur!r} -> {door_id!r}, recreating container")
+                    # préserver le réseau cible
+                    c.remove(force=True)
+                    c = _run_container(kind, device_id, door_id)
+            if c.status != "running":
+                c.start()
+                c.reload()
     except docker.errors.NotFound:
-        kwargs = {
-            "image": _image_for(kind),
-            "name": device_id,
-            "environment": {
-                "DEVICE_ID": device_id,
-                "MQTT_HOST": MQTT_HOST,
-                "MQTT_PORT": str(MQTT_PORT),
-                "MQTT_USER": os.getenv("MQTT_USER", ""),
-                "MQTT_PASS": os.getenv("MQTT_PASS", ""),
-            },
-            "detach": True,
-            "labels": {"iot": "true", "iot.kind": kind, "iot.device_id": device_id},
-            "restart_policy": {"Name": "unless-stopped"},
-        }
-        # ⚠️ on N'EXPOSE PAS de port ici: l'orchestrateur parle en interne
-        if DOCKER_NETWORK:
-            kwargs["network"] = DOCKER_NETWORK
-        c = client.containers.run(**kwargs)
-        c.reload()
+        c = _run_container(kind, device_id, door_id)
+
     k = c.labels.get("iot.kind", kind)
     return c, _service_url_for(device_id, k)
 
@@ -104,6 +153,14 @@ def _service_url_by_id(device_id: str) -> str:
     c = client.containers.get(device_id)
     k = c.labels.get("iot.kind")
     return _service_url_for(device_id, k)
+
+def _door_id_of(container) -> Optional[str]:
+    # priorité au label (source de vérité posée par l'orchestrateur), fallback env
+    lbl = container.labels.get("iot.door_id")
+    if lbl:
+        return lbl
+    env = _env_of(container)
+    return env.get("DOOR_ID")
 
 # ----------------- routes -----------------
 @app.get("/health")
@@ -113,7 +170,7 @@ def health():
         return {"ok": True, "docker": "up", "mqtt": {"host": MQTT_HOST, "port": MQTT_PORT}, "network": DOCKER_NETWORK}
     except Exception as e:
         return {"ok": False, "error": str(e)}
-    
+
 @app.get("/plans")
 def get_plans():
     return _load_plans()
@@ -143,24 +200,20 @@ def save_plan(floor_id: str, plan: dict = Body(...)):
 @app.post("/devices")
 def create_device(req: CreateDevice):
     try:
-        log.info(f"[orchestrator] ensure device kind={req.kind} id={req.device_id}")
-        try:
-            c = client.containers.get(req.device_id)
-            c.reload()
-            kind = c.labels.get("iot.kind", req.kind)
-        except docker.errors.NotFound:
-            c, _ = _ensure_running(req.kind, req.device_id)
-            kind = req.kind
+        log.info(f"[orchestrator] ensure device kind={req.kind} id={req.device_id} door_id={req.door_id!r}")
+        # si badgeuse et door_id manquant, on l'autorise (le front peut valider avant)
+        c, _ = _ensure_running(req.kind, req.device_id, req.door_id)
+        kind = c.labels.get("iot.kind", req.kind)
         url = _service_url_for(req.device_id, kind)
         ready = _wait_ready(url, 12.0)
-        log.info(f"[orchestrator] device={req.device_id} kind={kind} status={c.status} ready={ready} url={url}")
-        return {"ok": True, "device": {"id": req.device_id, "kind": kind, "status": c.status, "ready": ready}}
+        door_id = _door_id_of(c) if kind == "badgeuse" else None
+        log.info(f"[orchestrator] device={req.device_id} kind={kind} status={c.status} ready={ready} url={url} door_id={door_id!r}")
+        return {"ok": True, "device": {"id": req.device_id, "kind": kind, "status": c.status, "ready": ready, "door_id": door_id}}
     except docker.errors.ImageNotFound:
         raise HTTPException(status_code=404, detail=f"Image not found. Build {_image_for(req.kind)} first.")
     except Exception as e:
         log.exception("create_device failed")
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.get("/devices")
 def list_devices(kind: Optional[str] = None):
@@ -174,7 +227,10 @@ def list_devices(kind: Optional[str] = None):
         k = c.labels.get("iot.kind", "unknown")
         url = _service_url_for(id_, k)
         ready = _wait_ready(url, 0.01)  # ping non-bloquant
-        out.append({"id": id_, "kind": k, "status": c.status, "ready": ready})
+        item = {"id": id_, "kind": k, "status": c.status, "ready": ready}
+        if k == "badgeuse":
+            item["door_id"] = _door_id_of(c)
+        out.append(item)
     return out
 
 @app.delete("/devices/{device_id}")
@@ -188,15 +244,26 @@ def delete_device(device_id: str):
 
 # -------- Proxies d'actions (internal URL + readiness) --------
 @app.post("/badge/{device_id}")
-def proxy_badge(device_id: str, body: dict):
+def proxy_badge(device_id: str, body: dict = Body(...)):
+    # Injecter door_id si absent mais connu via DOOR_ID
+    try:
+        c = client.containers.get(device_id)
+    except docker.errors.NotFound:
+        raise HTTPException(status_code=404, detail="Badgeuse inconnue")
     try:
         url = _service_url_by_id(device_id)  # ex: http://badgeuse-007:8000
     except docker.errors.NotFound:
         raise HTTPException(status_code=404, detail="Badgeuse inconnue")
     if not _wait_ready(url, 6.0):
         raise HTTPException(status_code=503, detail="Badgeuse non prête")
+
+    door_id = _door_id_of(c)
+    payload = dict(body or {})
+    if door_id and "door_id" not in payload:
+        payload["door_id"] = door_id
+
     try:
-        r = requests.post(f"{url}/badge", json=body, timeout=5)
+        r = requests.post(f"{url}/badge", json=payload, timeout=5)
         data = r.json() if r.content else {}
         return {"status": r.status_code, "data": data}
     except Exception as e:

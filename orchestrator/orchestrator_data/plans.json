@@ -1,0 +1,123 @@
+[
+  {
+    "id": "etage-1",
+    "name": "Étage 1",
+    "width": 1400,
+    "height": 900,
+    "walls": [
+      {
+        "id": "jwou8f1",
+        "x1": 80,
+        "y1": 80,
+        "x2": 1320,
+        "y2": 80,
+        "thick": 8
+      },
+      {
+        "id": "373plkt",
+        "x1": 1320,
+        "y1": 80,
+        "x2": 1320,
+        "y2": 820,
+        "thick": 8
+      },
+      {
+        "id": "wtf8lxs",
+        "x1": 1320,
+        "y1": 820,
+        "x2": 80,
+        "y2": 820,
+        "thick": 8
+      },
+      {
+        "id": "324ay4c",
+        "x1": 80,
+        "y1": 820,
+        "x2": 80,
+        "y2": 80,
+        "thick": 8
+      },
+      {
+        "id": "sy0f6cw",
+        "x1": 400,
+        "y1": 80,
+        "x2": 400,
+        "y2": 300,
+        "thick": 8
+      }
+    ],
+    "boxes": [],
+    "nodes": [
+      {
+        "id": "14tmpiv",
+        "kind": "porte",
+        "x": 80,
+        "y": 300,
+        "rot": -1.5707963267948966,
+        "hinge": "right",
+        "deviceId": "port13"
+      },
+      {
+        "id": "p7chd0t",
+        "kind": "porte",
+        "x": 234,
+        "y": 72,
+        "rot": 0,
+        "hinge": "left"
+      },
+      {
+        "id": "e7n5g09",
+        "kind": "porte",
+        "x": 234,
+        "y": 72,
+        "rot": 0,
+        "hinge": "left",
+        "deviceId": "pt56"
+      },
+      {
+        "id": "eqmoqzh",
+        "kind": "porte",
+        "x": 288,
+        "y": 72,
+        "rot": 0,
+        "hinge": "left"
+      },
+      {
+        "id": "6br66cl",
+        "kind": "badgeuse",
+        "x": 620,
+        "y": 80,
+        "rot": 0,
+        "hinge": "left",
+        "targetDoorId": "pt56",
+        "deviceId": "bd56"
+      },
+      {
+        "id": "rq6nkb7",
+        "kind": "badgeuse",
+        "x": 80,
+        "y": 280,
+        "rot": 0,
+        "hinge": "left",
+        "targetDoorId": "port13",
+        "deviceId": "bdd13"
+      },
+      {
+        "id": "y59qo5p",
+        "kind": "badgeuse",
+        "x": 690,
+        "y": 80,
+        "rot": 0,
+        "hinge": "left"
+      },
+      {
+        "id": "gdrnizy",
+        "kind": "badgeuse",
+        "x": 530,
+        "y": 290,
+        "rot": 0,
+        "hinge": "left"
+      }
+    ]
+  }
+]

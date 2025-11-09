@@ -41,7 +41,26 @@ services:
     networks: [iot]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./orchestrator/orchestrator_data:/data
     restart: unless-stopped
+  bridge:
+    build: ./bridge
+    container_name: bridge
+    environment:
+      # Si ton broker est le conteneur mosquitto du compose :
+      MQTT_HOST: "host.docker.internal"
+      MQTT_PORT: "1883"
+      # MQTT_USER: ""
+      # MQTT_PASS: ""
+      BADGE_EVENTS_TOPIC: "iot/badgeuse/+/events"
+      DOOR_CMDS_FMT: "iot/porte/{door_id}/commands"
+      OPEN_ACTION: "open"
+      AUTO_CLOSE_SEC: "5"   # 0 pour désactiver la fermeture auto
+      DEBOUNCE_SEC: "2"
+    networks: [iot]
+    restart: unless-stopped
+    ports:
+      - "9010:9010" 
 
 networks:
   iot: {}

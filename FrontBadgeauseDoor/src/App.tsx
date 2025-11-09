@@ -24,12 +24,15 @@ import {
  * - Création via orchestrateur + spinner + polling readiness
  * - Portes alignées au mur le plus proche (projection sur segment)
  * - Animation d’ouverture autour du gond (hinge)
- * - Mur (ligne) / Pièce (rectangle), pas de persistance
+ * - ✅ Persistance du plan (walls/boxes/nodes) côté orchestrateur
+ * - ✅ Affichage du statut Docker (running/ready) pour chaque device
+ * - ✅ Badgeuse capte automatiquement l’ID de la porte “touchée”
  */
 
 // ====== CONFIG ======
 const ORCH_URL = import.meta.env.VITE_ORCH_URL || "http://localhost:9002";
 const MQTT_WS_URL_DEFAULT = "ws://localhost:9001";
+const BADGEUSE_LINK_RADIUS = 60; // px (dans le repère du plan) pour “toucher” une porte
 
 // ====== Types ======
 export type Wall = { id: string; x1: number; y1: number; x2: number; y2: number; thick?: number };
@@ -43,6 +46,8 @@ export type DeviceNode = {
   y: number;
   rot?: number;
   hinge?: Hinge;
+  /** Porte liée pour badgeuse (deviceId de la porte) */
+  targetDoorId?: string;
 };
 export type Floor = { id: string; name: string; width: number; height: number; walls: Wall[]; boxes: Box[]; nodes: DeviceNode[] };
 
@@ -50,17 +55,36 @@ interface BadgeEventPayload {
   device_id: string;
   type: "badge_event";
   ts: string;
-  data: { tag_id: string; success: boolean };
+  data: { tag_id: string; success: boolean; door_id?: string };
+}
+
+// ====== Utils réseau (plan) ======
+async function fetchPlan(floorId: string) {
+  const r = await fetch(`${ORCH_URL}/plans/${floorId}`);
+  if (!r.ok) throw new Error("plan not found");
+  return (await r.json()) as Floor;
+}
+
+async function savePlan(floor: Floor) {
+  await fetch(`${ORCH_URL}/plans/${floor.id}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(floor),
+  });
+}
+
+function useDebouncedEffect(effect: () => void, deps: any[], delay = 700) {
+  useEffect(() => {
+    const t = setTimeout(effect, delay);
+    return () => clearTimeout(t);
+  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
 // ====== Utils géométrie ======
 const uid = () => Math.random().toString(36).slice(2, 9);
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 const snap = (v: number, grid = 10) => Math.round(v / grid) * grid;
-
-function dot(ax: number, ay: number, bx: number, by: number) {
-  return ax * bx + ay * by;
-}
+const dist = (ax: number, ay: number, bx: number, by: number) => Math.hypot(ax - bx, ay - by);
 
 /** Projection d'un point P sur un segment AB. */
 function projectPointOnSegment(px: number, py: number, ax: number, ay: number, bx: number, by: number) {
@@ -70,7 +94,7 @@ function projectPointOnSegment(px: number, py: number, ax: number, ay: number, b
     apy = py - ay;
   const ab2 = abx * abx + aby * aby;
   if (ab2 === 0) return { x: ax, y: ay, t: 0, angle: 0, d: Math.hypot(px - ax, py - ay) };
-  let t = dot(apx, apy, abx, aby) / ab2;
+  let t = (apx * abx + apy * aby) / ab2;
   t = Math.max(0, Math.min(1, t));
   const x = ax + t * abx,
     y = ay + t * aby;
@@ -114,7 +138,7 @@ export default function App() {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
-  // --- Plan de base
+  // --- Plan initial (sera remplacé par le plan persistant s'il existe)
   const [floors, setFloors] = useState<Floor[]>([
     {
       id: "etage-1",
@@ -136,6 +160,25 @@ export default function App() {
   const [selFloorId, setSelFloorId] = useState("etage-1");
   const floor = useMemo(() => floors.find((f) => f.id === selFloorId)!, [floors, selFloorId]);
 
+  // === Chargement du plan persistant au mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const p = await fetchPlan(selFloorId);
+        // protège le schéma en cas de diff de version
+        setFloors((fs) => fs.map((f) => (f.id === selFloorId ? { ...f, ...p } : f)));
+      } catch {
+        // pas de plan — on garde le défaut
+      }
+    })();
+  }, [selFloorId]);
+
+  // === Autosave (debounced) du floor courant à chaque modif
+  useDebouncedEffect(() => {
+    const f = floors.find((x) => x.id === selFloorId);
+    if (f) savePlan(f).catch(() => {});
+  }, [floors, selFloorId], 700);
+
   // --- Tools
   type Tool = "pan" | "wall-line" | "wall-rect" | "place-porte" | "place-badgeuse" | "select";
   const [tool, setTool] = useState<Tool>("pan");
@@ -145,13 +188,15 @@ export default function App() {
   // --- Canvas transforms
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [view, setView] = useState({ x: 0, y: 0, z: 1 });
-  const panRef = useRef<{ drag: boolean; sx: number; sy: number; ox: number; oy: number }>({
-    drag: false,
-    sx: 0,
-    sy: 0,
-    ox: 0,
-    oy: 0,
-  });
+  const panRef = useRef<{ drag: boolean; sx: number; sy: number; ox: number; oy: number }>(
+    {
+      drag: false,
+      sx: 0,
+      sy: 0,
+      ox: 0,
+      oy: 0,
+    }
+  );
   const [hover, setHover] = useState<{ x: number; y: number } | null>(null);
 
   // --- Drawing states
@@ -225,24 +270,43 @@ export default function App() {
     return false;
   }
 
+  // 🔎 Trouver la porte la plus proche (pour lier une badgeuse)
+  function findNearestDoorDeviceId(x: number, y: number): string | undefined {
+    let bestId: string | undefined;
+    let bestD = Infinity;
+    for (const n of floor.nodes) {
+      if (n.kind !== "porte" || !n.deviceId) continue;
+      const d = dist(x, y, n.x, n.y);
+      if (d < bestD) {
+        bestD = d;
+        bestId = n.deviceId;
+      }
+    }
+    return bestD <= BADGEUSE_LINK_RADIUS ? bestId : undefined;
+  }
+
   // --- Orchestrateur: création service avec spinner + poll
-  async function ensureService(kind: "badgeuse" | "porte", deviceId: string) {
+  async function ensureService(kind: "badgeuse" | "porte", deviceId: string, badgeuseDoorId?: string) {
     if (!deviceId) {
       alert("Renseigne un deviceId");
       return;
     }
     setLoadingMap((m) => ({ ...m, [deviceId]: true }));
     try {
+      const body: any = { kind, device_id: deviceId };
+      if (kind === "badgeuse" && badgeuseDoorId) {
+        body.door_id = badgeuseDoorId; // ✅ on envoie l’ID de la porte “touchée”
+      }
       const r = await fetch(`${ORCH_URL}/devices`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind, device_id: deviceId }),
+        body: JSON.stringify(body),
       });
       if (!r.ok) {
         alert(`Création ${kind} KO (${r.status})`);
         return;
       }
-      await pollUntilReady(kind, deviceId); // si ça finit à false, pas grave: MQTT finira par arriver
+      await pollUntilReady(kind, deviceId); // si ça finit à false, pas grave
     } finally {
       setLoadingMap((m) => {
         const copy = { ...m };
@@ -336,6 +400,7 @@ export default function App() {
       y = snap(w.y, grid),
       rot = 0,
       hinge: Hinge = "left";
+    let targetDoorId: string | undefined;
     if (kind === "porte") {
       const snapInfo = nearestWallSnap(floor.walls, x, y);
       if (snapInfo) {
@@ -343,8 +408,11 @@ export default function App() {
         y = snap(snapInfo.y, grid);
         rot = snapInfo.angle;
       }
+    } else if (kind === "badgeuse") {
+      // 🔗 lier automatiquement à la porte la plus proche si dans le rayon
+      targetDoorId = findNearestDoorDeviceId(x, y);
     }
-    const nn: DeviceNode = { id: uid(), kind, x, y, rot, hinge };
+    const nn: DeviceNode = { id: uid(), kind, x, y, rot, hinge, targetDoorId };
     setFloors((fs) => fs.map((f) => (f.id === floor.id ? { ...f, nodes: [...f.nodes, nn] } : f)));
     setSelNodeId(nn.id);
   };
@@ -369,7 +437,8 @@ export default function App() {
             if (n.id !== dragId) return n;
             let x = snap(w.x, grid),
               y = snap(w.y, grid),
-              rot = n.rot || 0;
+              rot = n.rot || 0,
+              targetDoorId = n.targetDoorId;
             if (n.kind === "porte") {
               const snapInfo = nearestWallSnap(f.walls, x, y);
               if (snapInfo) {
@@ -377,8 +446,12 @@ export default function App() {
                 y = snap(snapInfo.y, grid);
                 rot = snapInfo.angle;
               }
+            } else if (n.kind === "badgeuse") {
+              // 🔗 re-snap linkage si on s’approche d’une porte
+              const nearest = findNearestDoorDeviceId(x, y);
+              targetDoorId = nearest ?? n.targetDoorId;
             }
-            return { ...n, x, y, rot };
+            return { ...n, x, y, rot, targetDoorId };
           }),
         };
       })
@@ -405,7 +478,10 @@ export default function App() {
         setFloors((fs) =>
           fs.map((f) =>
             f.id === floor.id
-              ? { ...f, nodes: f.nodes.map((n) => (n.id === selNodeId ? { ...n, hinge: (n.hinge === "left" ? "right" : "left") as Hinge } : n)) }
+              ? {
+                  ...f,
+                  nodes: f.nodes.map((n) => (n.id === selNodeId ? { ...n, hinge: (n.hinge === "left" ? "right" : "left") as Hinge } : n)),
+                }
               : f
           )
         );
@@ -414,6 +490,30 @@ export default function App() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [selNodeId, floor.id]);
+
+  // --- Statut Docker des devices
+  const [dockerActive, setDockerActive] = useState<Record<string, { ready: boolean; status: string }>>({});
+  useEffect(() => {
+    let stop = false;
+    async function tick() {
+      try {
+        const r = await fetch(`${ORCH_URL}/devices`);
+        if (r.ok) {
+          const arr: Array<{ id: string; kind: string; status: string; ready: boolean }> = await r.json();
+          if (!stop) {
+            const map: Record<string, { ready: boolean; status: string }> = {};
+            for (const d of arr) map[d.id] = { ready: d.ready, status: d.status };
+            setDockerActive(map);
+          }
+        }
+      } catch {}
+      if (!stop) setTimeout(tick, 2000);
+    }
+    tick();
+    return () => {
+      stop = true;
+    };
+  }, []);
 
   const doorIsOpen = (deviceId?: string) => (deviceId ? !!porteState[deviceId] : false);
 
@@ -606,9 +706,7 @@ export default function App() {
                         onClick={() =>
                           setFloors((fs) =>
                             fs.map((f) =>
-                              f.id === floor.id
-                                ? { ...f, nodes: f.nodes.map((n) => (n.id === selNode.id ? { ...n, rot: 0 } : n)) }
-                                : f
+                              f.id === floor.id ? { ...f, nodes: f.nodes.map((n) => (n.id === selNode.id ? { ...n, rot: 0 } : n)) } : f
                             )
                           )
                         }
@@ -629,6 +727,7 @@ export default function App() {
                   <div className="space-y-2">
                     <div className="text-xs opacity-70">Type</div>
                     <div className="text-sm">{selNode.kind.toUpperCase()}</div>
+
                     <div className="text-xs opacity-70 mt-2">deviceId</div>
                     <Input
                       value={selNode.deviceId || ""}
@@ -644,14 +743,73 @@ export default function App() {
                       }}
                       placeholder={selNode.kind === "porte" ? "porte-XYZ" : "badgeuse-ABC"}
                     />
+
+                    {selNode.kind === "badgeuse" && (
+                      <>
+                        <div className="text-xs opacity-70 mt-2">Porte liée (deviceId)</div>
+                        <Input
+                          value={selNode.targetDoorId || ""}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            setFloors((fs) =>
+                              fs.map((f) =>
+                                f.id === floor.id
+                                  ? { ...f, nodes: f.nodes.map((n) => (n.id === selNode.id ? { ...n, targetDoorId: v || undefined } : n)) }
+                                  : f
+                              )
+                            );
+                          }}
+                          placeholder="porte-001"
+                        />
+                        {/* Liste rapide des portes détectées */}
+                        <div className="flex flex-wrap gap-2">
+                          {floor.nodes
+                            .filter((n) => n.kind === "porte" && n.deviceId)
+                            .map((p) => (
+                              <Button
+                                key={p.id}
+                                size="sm"
+                                variant={p.deviceId === selNode.targetDoorId ? "default" : "outline"}
+                                onClick={() =>
+                                  setFloors((fs) =>
+                                    fs.map((f) =>
+                                      f.id === floor.id
+                                        ? { ...f, nodes: f.nodes.map((n) => (n.id === selNode.id ? { ...n, targetDoorId: p.deviceId } : n)) }
+                                        : f
+                                    )
+                                  )
+                                }
+                              >
+                                Lier {p.deviceId}
+                              </Button>
+                            ))}
+                        </div>
+                      </>
+                    )}
+
                     <div className="flex gap-2 items-center">
                       <Button
                         onClick={() =>
-                          selNode.deviceId ? ensureService(selNode.kind, selNode.deviceId) : alert("Renseigne un deviceId")
+                          selNode.deviceId
+                            ? ensureService(
+                                selNode.kind,
+                                selNode.deviceId,
+                                selNode.kind === "badgeuse" ? selNode.targetDoorId : undefined
+                              )
+                            : alert("Renseigne un deviceId")
                         }
-                        disabled={!selNode.deviceId || !!loadingMap[selNode.deviceId!]}
+                        disabled={
+                          !selNode.deviceId ||
+                          !!loadingMap[selNode.deviceId!] ||
+                          (selNode.kind === "badgeuse" && !selNode.targetDoorId)
+                        }
+                        title={
+                          selNode.kind === "badgeuse" && !selNode.targetDoorId
+                            ? "Lie d'abord une porte (targetDoorId)"
+                            : undefined
+                        }
                       >
-                        {loadingMap[selNode.deviceId || ""] ? (
+                        {selNode.deviceId && loadingMap[selNode.deviceId] ? (
                           <span className="inline-flex items-center gap-2">
                             <Spinner size={16} /> Création…
                           </span>
@@ -663,9 +821,7 @@ export default function App() {
                         variant="outline"
                         onClick={() =>
                           setFloors((fs) =>
-                            fs.map((f) =>
-                              f.id === floor.id ? { ...f, nodes: f.nodes.filter((n) => n.id !== selNode.id) } : f
-                            )
+                            fs.map((f) => (f.id === floor.id ? { ...f, nodes: f.nodes.filter((n) => n.id !== selNode.id) } : f))
                           )
                         }
                         disabled={!!(selNode.deviceId && loadingMap[selNode.deviceId])}
@@ -675,11 +831,11 @@ export default function App() {
                       </Button>
                     </div>
 
-                    {/* Actions rapides (désactivées si loading) */}
+                    {/* Actions rapides */}
                     {selNode.kind === "badgeuse" && (
                       <div>
                         <Button
-                          onClick={() => badge(selNode.deviceId!)}
+                          onClick={() => badge(selNode.deviceId!, /*selNode.targetDoorId*/ undefined)}
                           disabled={!selNode.deviceId || !!loadingMap[selNode.deviceId!]}
                         >
                           {loadingMap[selNode.deviceId || ""] ? (
@@ -774,6 +930,27 @@ export default function App() {
                     <line key={w.id} x1={w.x1} y1={w.y1} x2={w.x2} y2={w.y2} stroke="#0f172a" strokeWidth={w.thick || thick} strokeLinecap="round" />
                   ))}
 
+                  {/* Lignes de liaison badgeuse → porte */}
+                  {floor.nodes
+                    .filter((n) => n.kind === "badgeuse" && n.targetDoorId)
+                    .map((b) => {
+                      const door = floor.nodes.find((d) => d.kind === "porte" && d.deviceId === b.targetDoorId);
+                      if (!door) return null;
+                      return (
+                        <line
+                          key={`link-${b.id}-${door.id}`}
+                          x1={b.x}
+                          y1={b.y}
+                          x2={door.x}
+                          y2={door.y}
+                          stroke="#38bdf8"
+                          strokeDasharray="4 4"
+                          strokeWidth={2}
+                          opacity={0.7}
+                        />
+                      );
+                    })}
+
                   {/* Previews */}
                   {drawLineStart && hover && (
                     <line
@@ -802,6 +979,7 @@ export default function App() {
                   {/* Nodes */}
                   {floor.nodes.map((n) => {
                     const isLoading = !!(n.deviceId && loadingMap[n.deviceId]);
+                    const dockerOk = n.deviceId ? dockerActive[n.deviceId]?.ready : false;
                     return (
                       <g
                         key={n.id}
@@ -826,8 +1004,26 @@ export default function App() {
                             <text x={0} y={-14} fontSize={10} textAnchor="middle" fill="#334155">
                               {n.deviceId || "badgeuse"}
                             </text>
+                            {n.targetDoorId && (
+                              <text x={0} y={14} fontSize={9} textAnchor="middle" fill="#64748b">
+                                → {n.targetDoorId}
+                              </text>
+                            )}
                           </g>
                         )}
+
+                        {/* Anneau état docker */}
+                        {n.deviceId && (
+                          <circle
+                            r={18}
+                            fill="none"
+                            stroke={dockerOk ? "#10b981" : "#ef4444"}
+                            strokeWidth={2}
+                            opacity={0.9}
+                          />
+                        )}
+
+                        {/* Sélection */}
                         {selNodeId === n.id && <circle r={16} fill="none" stroke="#38bdf8" strokeDasharray="4 4" />}
                         {/* Overlay loading */}
                         {isLoading && (
@@ -883,7 +1079,8 @@ export default function App() {
 }
 
 // ====== Glyphes ======
-function DoorGlyph({ angle, open, hinge, label }: { angle: number; open: boolean; hinge: Hinge; label: string }) {
+type HingeProp = Hinge;
+function DoorGlyph({ angle, open, hinge, label }: { angle: number; open: boolean; hinge: HingeProp; label: string }) {
   // largeur de l'embrasure et longueur du battant
   const jamb = 36; // embrasure
   const leaf = 34; // battant
@@ -936,12 +1133,15 @@ function DoorGlyph({ angle, open, hinge, label }: { angle: number; open: boolean
 }
 
 // ===== Helpers actions rapides =====
-async function badge(id: string) {
+async function badge(id: string, doorId?: string) {
   if (!id) return;
+  const body: any = { tag_id: "TEST1234", success: true };
+  // Option : si tu veux pousser aussi au service HTTP (en plus de DOOR_ID env)
+  // if (doorId) body.door_id = doorId;
   const r = await fetch(`${ORCH_URL}/badge/${id}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ tag_id: "TEST1234", success: true }),
+    body: JSON.stringify(body),
   });
   if (!r.ok) alert(`Badge KO (${r.status})`);
 }

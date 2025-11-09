@@ -10,11 +10,14 @@ import logging
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("badgeuse")
 
-MQTT_HOST = os.getenv("MQTT_HOST", "mosquitto")      # mets bien host.docker.internal si broker hors-compose
+# --- Config MQTT / Device ------------------------------------------------
+MQTT_HOST = os.getenv("MQTT_HOST", "mosquitto")   # mets host.docker.internal si broker hors-compose
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
 MQTT_USER = os.getenv("MQTT_USER", "")
 MQTT_PASS = os.getenv("MQTT_PASS", "")
 DEVICE_ID = os.getenv("DEVICE_ID", "badgeuse-001")
+DOOR_ID   = os.getenv("DOOR_ID", "")              # <— injecté par l’orchestrateur (optionnel)
+
 TOPIC_EVENTS = f"iot/badgeuse/{DEVICE_ID}/events"
 TOPIC_CMDS   = f"iot/badgeuse/{DEVICE_ID}/commands"
 
@@ -26,6 +29,8 @@ def on_connect(client, userdata, flags, reason_code, properties=None):
     connected = (reason_code == 0)
     if connected:
         log.info(f"[MQTT] Connected to {MQTT_HOST}:{MQTT_PORT} (reason_code={reason_code})")
+        # (optionnel) s'abonner aux commandes si tu en as
+        client.subscribe(TOPIC_CMDS, qos=1)
     else:
         log.error(f"[MQTT] Connect failed (reason_code={reason_code})")
 
@@ -57,37 +62,50 @@ client.loop_start()
 # --- FastAPI --------------------------------------------------------------
 app = FastAPI(title=f"Badgeuse {DEVICE_ID}")
 
-# CORS: évite les 405 sur PRE-FLIGHT depuis ton front
+# CORS pour le front
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # adapte si besoin
+    allow_origins=["*"],  # adapte en prod
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 @app.post("/badge")
-def simulate_badge(payload: dict = Body(default={"tag_id": "TEST1234"})):
+def simulate_badge(payload: dict = Body(default={"tag_id": "TEST1234", "success": True})):
+    """
+    Déclenche un événement de badge.
+    Champs acceptés dans payload :
+      - tag_id (str)
+      - success (bool)
+      - door_id (str, optionnel) : si non fourni, on prend DOOR_ID de l'env (si dispo)
+    """
     tag_id = str(payload.get("tag_id", "TEST1234"))
     success = bool(payload.get("success", True))
+    # priorité au door_id fourni par l'appelant (front/orchestrateur) sinon fallback env
+    door_id = str(payload.get("door_id")) if payload.get("door_id") is not None else (DOOR_ID or None)
+
     now = datetime.now(timezone.utc).isoformat()
 
     message = {
         "device_id": DEVICE_ID,
         "type": "badge_event",
         "ts": now,
-        "data": {"tag_id": tag_id, "success": success}
+        "data": {
+            "tag_id": tag_id,
+            "success": success,
+            # on inclut door_id seulement s'il est connu
+            **({"door_id": door_id} if door_id else {})
+        }
     }
 
+    # Publie même si pas connecté (queue interne Paho), mais renvoie 503 pour informer le caller
+    info = client.publish(TOPIC_EVENTS, json.dumps(message), qos=1, retain=False)
     if not connected:
-        # on publie quand même : Paho mettra en file d'attente si pas connecté,
-        # mais on informe le client HTTP que le broker n'est pas joignable
-        info = client.publish(TOPIC_EVENTS, json.dumps(message), qos=1, retain=False)
         log.warning("[MQTT] Not connected yet, message queued")
         raise HTTPException(status_code=503, detail={"queued": True, "message": message})
 
-    info = client.publish(TOPIC_EVENTS, json.dumps(message), qos=1, retain=False)
-    # attendre l'envoi (2s max) pour détecter un échec
+    # attendre l'envoi (2s max) pour détecter un échec réel
     ok = info.wait_for_publish(timeout=2.0)
     if not ok:
         log.error("[MQTT] Publish timeout")
@@ -97,7 +115,12 @@ def simulate_badge(payload: dict = Body(default={"tag_id": "TEST1234"})):
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "device_id": DEVICE_ID, "mqtt_connected": connected}
+    return {
+        "status": "ok",
+        "device_id": DEVICE_ID,
+        "door_id": DOOR_ID or None,
+        "mqtt_connected": connected
+    }
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT","8000")))

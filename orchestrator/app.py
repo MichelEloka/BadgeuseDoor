@@ -1,6 +1,6 @@
 import os, logging, time
 from typing import Literal, Optional
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import docker, requests
@@ -143,6 +143,7 @@ def save_plan(floor_id: str, plan: dict = Body(...)):
 @app.post("/devices")
 def create_device(req: CreateDevice):
     try:
+        log.info(f"[orchestrator] ensure device kind={req.kind} id={req.device_id}")
         try:
             c = client.containers.get(req.device_id)
             c.reload()
@@ -152,12 +153,14 @@ def create_device(req: CreateDevice):
             kind = req.kind
         url = _service_url_for(req.device_id, kind)
         ready = _wait_ready(url, 12.0)
+        log.info(f"[orchestrator] device={req.device_id} kind={kind} status={c.status} ready={ready} url={url}")
         return {"ok": True, "device": {"id": req.device_id, "kind": kind, "status": c.status, "ready": ready}}
     except docker.errors.ImageNotFound:
         raise HTTPException(status_code=404, detail=f"Image not found. Build {_image_for(req.kind)} first.")
     except Exception as e:
         log.exception("create_device failed")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/devices")
 def list_devices(kind: Optional[str] = None):

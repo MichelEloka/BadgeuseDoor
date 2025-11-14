@@ -50,8 +50,9 @@ export type Floor = {
 };
 
 export interface BadgeEventPayload {
-  device_id: string;
-  type: "badge_event";
-  ts: string;
-  data: { badge_id: string; success: boolean; door_id?: string };
+  badgeID: string;
+  doorID?: string;
+  timestamp: string;
+  /** Injecté côté client pour aider au debug */
+  deviceId?: string;
 }

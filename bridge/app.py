@@ -49,17 +49,13 @@ def on_disconnect(client, userdata, reason_code, properties=None):
     connected = False
     log.warning(f"[MQTT] Disconnected: {reason_code}")
 
-def publish_door(client: mqtt.Client, door_id: str, action: str, badge_device_id: str, badge_id: Optional[str], success: bool):
+def publish_door(client: mqtt.Client, door_id: str, action: str, badge_id: Optional[str]):
     topic = DOOR_CMDS_FMT.format(door_id=door_id)
     payload = {
-        "action": action,
-        "source": "bridge",
-        "ts": now_iso(),
-        "data": {
-            "badge_device_id": badge_device_id,
-            "badge_id": badge_id,
-            "success": success
-        }
+        "doorID": door_id,
+        "badgeID": badge_id or "",
+        "action": action.upper(),
+        "timestamp": now_iso(),
     }
     client.publish(topic, json.dumps(payload), qos=1, retain=False)
     log.info(f"[BRIDGE] -> {topic} {payload}")
@@ -73,10 +69,8 @@ def schedule_autoclose(client: mqtt.Client, door_id: str):
         t.cancel()
 
     def _close():
-        topic = DOOR_CMDS_FMT.format(door_id=door_id)
-        payload = {"action": "close", "source": "bridge", "ts": now_iso()}
-        client.publish(topic, json.dumps(payload), qos=1, retain=False)
-        log.info(f"[BRIDGE] (auto-close) -> {topic} {payload}")
+        publish_door(client, door_id, "close", badge_id=None)
+        log.info(f"[BRIDGE] (auto-close) door={door_id}")
 
     timer = threading.Timer(AUTO_CLOSE_SEC, _close)
     close_timers[door_id] = timer
@@ -90,28 +84,32 @@ def on_message(client, userdata, msg):
         log.warning(f"[MQTT] Non-JSON payload on {msg.topic}")
         return
 
-    # Format attendu (cf. badgeuse):
-    # {
-    #   "device_id": "badgeuse-XXX",
-    #   "type": "badge_event",
-    #   "ts": "...",
-    #   "data": { "badge_id": "...", "success": true, "door_id": "porte-YYY" }
-    # }
-    if not isinstance(data, dict) or data.get("type") != "badge_event":
+    if not isinstance(data, dict):
         return
+    topic_parts = msg.topic.split("/")
+    badge_device_id = topic_parts[2] if len(topic_parts) >= 3 else str(data.get("device_id", ""))
 
-    badge_device_id = str(data.get("device_id", ""))
-    d = data.get("data") or {}
-    success = bool(d.get("success", True))
-    door_id = d.get("door_id")
-    badge_id = d.get("badge_id") or d.get("tag_id")
+    door_id: Optional[str] = None
+    badge_id: Optional[str] = None
+    success = True
+
+    if "badgeID" in data or "doorID" in data:
+        badge_id = data.get("badgeID") or ""
+        door_id = data.get("doorID") or ""
+    elif data.get("type") == "badge_event":
+        inner = data.get("data") or {}
+        success = bool(inner.get("success", True))
+        badge_id = inner.get("badge_id") or inner.get("tag_id")
+        door_id = inner.get("door_id") or inner.get("doorID")
+    else:
+        return
 
     if not success:
         log.info(f"[BRIDGE] Badge KO ignoré ({badge_device_id}, badge={badge_id})")
         return
 
     if not door_id:
-        log.warning(f"[BRIDGE] Pas de door_id dans l'event (badge={badge_device_id}, badge={badge_id})")
+        log.warning(f"[BRIDGE] Pas de doorID dans l'event (badgeuse={badge_device_id}, badge={badge_id})")
         return
 
     # Debounce par porte
@@ -124,7 +122,8 @@ def on_message(client, userdata, msg):
     last_trigger_ts[door_id] = now
 
     action = OPEN_ACTION
-    publish_door(client, door_id, action, badge_device_id, badge_id, success)
+    log.info(f"[BRIDGE] <- {msg.topic} badge_device={badge_device_id} badge={badge_id} door={door_id} action={action}")
+    publish_door(client, door_id, action, badge_id)
     schedule_autoclose(client, door_id)
 
 # ---------- MQTT client ----------

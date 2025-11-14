@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { badge, deleteDeviceOnOrch, doorCmd, fetchPlan, pollUntilReady, savePlan } from "@/api/orchestrator";
+import { deleteDeviceOnOrch, doorCmd, fetchPlan, pollUntilReady, savePlan } from "@/api/orchestrator";
 import { ORCH_URL, MQTT_WS_URL_DEFAULT } from "@/config";
 import { useDockerStatus } from "@/hooks/useDockerStatus";
 import { useDebouncedEffect } from "@/hooks/useDebouncedEffect";
@@ -70,7 +70,7 @@ export default function WorkspacePage() {
   const [showSimulationPanel, setShowSimulationPanel] = useState(true);
   const [showPropertiesPanel, setShowPropertiesPanel] = useState(true);
 
-  const { mqttUrl, setMqttUrl, connected, isConnecting, connect, disconnect, porteState, logs } = useMqttBridge(MQTT_WS_URL_DEFAULT);
+  const { mqttUrl, setMqttUrl, connected, isConnecting, connect, disconnect, porteState, logs, publishBadgeCommand } = useMqttBridge(MQTT_WS_URL_DEFAULT);
   const dockerActive = useDockerStatus();
 
   const [selNodeId, setSelNodeId] = useState<string | null>(null);
@@ -114,6 +114,19 @@ export default function WorkspacePage() {
   };
 
   const badgeNodes = useMemo(() => floor.nodes.filter((n) => n.kind === "badgeuse" && n.deviceId), [floor]);
+  const sendBadgeCommand = useCallback(
+    (deviceId: string, badgeId: string, doorId?: string) => {
+      const cleanId = (deviceId || "").trim();
+      if (!cleanId) {
+        console.warn("[MQTT] badge command skipped (deviceId vide)");
+        return;
+      }
+      const cleanDoor = doorId?.trim();
+      publishBadgeCommand(cleanId, { badgeId, doorId: cleanDoor || undefined })
+        .catch((err) => console.error("[MQTT] badge command failed", err));
+    },
+    [publishBadgeCommand]
+  );
   const canRunSimulation = simPersons.length > 0 && badgeNodes.length > 0;
 
   const handleAddPerson = (payload: Omit<SimPerson, "id">) => {
@@ -131,7 +144,12 @@ export default function WorkspacePage() {
   };
 
   const toggleSimulation = () => {
-    if (!canRunSimulation && !simRunning) return;
+    if (!simRunning && !canRunSimulation) return;
+    if (!simRunning && !connected) {
+      connect();
+      alert("Connexion MQTT en cours... relance la simulation dans quelques secondes.");
+      return;
+    }
     setSimRunning((val) => !val);
   };
 
@@ -140,7 +158,11 @@ export default function WorkspacePage() {
   }, [canRunSimulation, simRunning]);
 
   useEffect(() => {
-    if (!simRunning || !canRunSimulation) return;
+    if (!connected && simRunning) setSimRunning(false);
+  }, [connected, simRunning]);
+
+  useEffect(() => {
+    if (!simRunning || !canRunSimulation || !connected) return;
     const lastBadgeMap: Record<string, number> = {};
     const interval = setInterval(() => {
       const now = Date.now();
@@ -150,14 +172,14 @@ export default function WorkspacePage() {
         if (now - last >= freq) {
           const badgeuse = badgeNodes[Math.floor(Math.random() * badgeNodes.length)];
           if (badgeuse?.deviceId) {
-            badge(badgeuse.deviceId, person.badgeId).catch(() => {});
+            sendBadgeCommand(badgeuse.deviceId, person.badgeId, badgeuse.targetDoorId);
             lastBadgeMap[person.id] = now;
           }
         }
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [simRunning, canRunSimulation, simPersons, badgeNodes]);
+  }, [simRunning, canRunSimulation, simPersons, badgeNodes, connected, sendBadgeCommand]);
 
   async function ensureService(node: DeviceNode) {
     if (!node.deviceId) {
@@ -222,7 +244,12 @@ export default function WorkspacePage() {
 
   const handleBadge = (node: DeviceNode) => {
     if (!node.deviceId) return;
-    badge(node.deviceId).catch(() => {});
+    if (!connected) {
+      connect();
+      alert("Connexion MQTT en cours... reessaie dans un instant.");
+      return;
+    }
+    sendBadgeCommand(node.deviceId, "BADGE-TEST", node.targetDoorId);
   };
 
   const handleDoorAction = (node: DeviceNode, action: "open" | "close" | "toggle") => {

@@ -1,47 +1,18 @@
 # docker-compose.yml (Compose V2 : le champ "version" est inutile, on l'omet)
 services:
-  badgeuse-001:
-    build: ./badgeuse
-    image: iot-badgeuse:latest
-    container_name: badgeuse-001
-    environment:
-      DEVICE_ID: "badgeuse-001"
-      MQTT_HOST: "host.docker.internal"
-      MQTT_PORT: "1883"
-    ports:
-      - "8000:8000"
-    networks: [iot]
-    restart: unless-stopped
-
-  porte-001:
-    build: ./porte
-    image: iot-porte:latest
-    container_name: porte-001
-    environment:
-      DEVICE_ID: "porte-001"
-      MQTT_HOST: "host.docker.internal"
-      MQTT_PORT: "1883"
-    ports:
-      - "8001:8001"
-    networks: [iot]
-    restart: unless-stopped
-
-  orchestrator:
-    build: ./orchestrator
-    container_name: orchestrator
+  iotBadgeDoorSimulateor:
+    build: ./iotsimulator
+    container_name: iotBadgeDoorSimulateor
+    image: badgeusedoor/iotbadgedoorsimulator
     environment:
       MQTT_HOST: "host.docker.internal"
       MQTT_PORT: "1883"
-      IMAGE_BADGEUSE: "iot-badgeuse:latest"
-      IMAGE_PORTE: "iot-porte:latest"
-      # IMPORTANT: le vrai nom du réseau créé sera <projet>_iot (projet = nom du dossier en minuscules)
-      DOCKER_NETWORK: "badgeusedoor_iot"
+      SIMULATOR_DATA_DIR: "/data"
     ports:
       - "9002:9002"
     networks: [iot]
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./orchestrator/orchestrator_data:/data
+      - ./iotsimulator/simulator_data:/data
     restart: unless-stopped
   bridge:
     build: ./bridge
@@ -61,6 +32,16 @@ services:
     restart: unless-stopped
     ports:
       - "9010:9010"
+
+  entrance-cockpit-front:
+    build: ./EntranceCockpitFront
+    container_name: entrance-cockpit-front
+    ports:
+      - "4201:80"
+    networks: [iot]
+    restart: unless-stopped
  
 networks:
   iot: {}
+
+

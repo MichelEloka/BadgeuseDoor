@@ -45,17 +45,6 @@ export async function pollUntilReady(kind: "badgeuse" | "porte", deviceId: strin
   return false;
 }
 
-export async function badge(id: string, badgeId = "BADGE-TEST") {
-  if (!id) return;
-  const body: any = { badge_id: badgeId, success: true };
-  const r = await fetch(`${ORCH_URL}/badge/${id}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!r.ok) alert(`Badge KO (${r.status})`);
-}
-
 export async function doorCmd(id: string, action: "open" | "close" | "toggle") {
   if (!id) return;
   const r = await fetch(`${ORCH_URL}/door/${id}/${action}`, { method: "POST" });

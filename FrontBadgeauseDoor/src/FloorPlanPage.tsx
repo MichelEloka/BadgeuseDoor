@@ -39,7 +39,30 @@ export type Floor = { id: string; name: string; width: number; height: number; w
 
 // MQTT payloads
 interface DoorStatePayload { device_id: string; type: "door_state"; ts: string; data: { is_open: boolean } }
-interface BadgeEventPayload { device_id: string; type: "badge_event"; ts: string; data: { badge_id: string; success: boolean } }
+interface BadgeEventPayload { badgeID: string; doorID?: string; timestamp: string; deviceId?: string }
+
+const parseBadgeEvent = (raw: unknown, deviceId: string): BadgeEventPayload | null => {
+  if (!raw || typeof raw !== "object") return null;
+  const data = raw as Record<string, any>;
+  if ("badgeID" in data || "doorID" in data) {
+    return {
+      badgeID: String(data.badgeID ?? ""),
+      doorID: data.doorID ? String(data.doorID) : undefined,
+      timestamp: String(data.timestamp ?? new Date().toISOString()),
+      deviceId,
+    };
+  }
+  if (data.type === "badge_event") {
+    const inner = (data.data as Record<string, any>) || {};
+    return {
+      badgeID: String(inner.badge_id ?? inner.tag_id ?? ""),
+      doorID: inner.door_id ? String(inner.door_id) : undefined,
+      timestamp: String(data.ts ?? data.timestamp ?? new Date().toISOString()),
+      deviceId,
+    };
+  }
+  return null;
+};
 
 // ====== Utils ======
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -88,7 +111,9 @@ export default function FloorPlanPage() {
         if (topic.startsWith("iot/porte/")) {
           const id = msg.device_id as string; setPorteState(p => ({ ...p, [id]: !!msg.data?.is_open }));
         } else if (topic.startsWith("iot/badgeuse/")) {
-          const id = msg.device_id as string; setLastBadge(p => ({ ...p, [id]: msg as BadgeEventPayload }));
+          const deviceId = topic.split("/")[2] ?? "";
+          const event = parseBadgeEvent(msg, deviceId);
+          if (event && deviceId) setLastBadge(p => ({ ...p, [deviceId]: event }));
         }
       } catch {}
     });

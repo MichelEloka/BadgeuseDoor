@@ -1,4 +1,4 @@
-import os, json, threading
+import os, json, threading, logging
 from datetime import datetime, timezone
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -36,14 +36,23 @@ def on_message(client, userdata, msg):
         data = json.loads(msg.payload.decode("utf-8"))
     except Exception:
         return
-    action = (data.get("action") or "").lower()
-    if action in ("open","close","toggle"):
-        if action == "toggle":
-            state["is_open"] = not state["is_open"]
-        else:
-            state["is_open"] = (action == "open")
-        state["last_change"] = now_iso()
-        publish_state(client)
+
+    action = str(data.get("action") or "").lower()
+    if action not in {"open", "close", "toggle"}:
+        return
+
+    target = str(data.get("doorID") or data.get("door_id") or "").strip()
+    if target and target not in {DEVICE_ID}:
+        log.debug(f"[MQTT] Ignored command for {target} on {DEVICE_ID}")
+        return
+
+    log.info(f"[MQTT] cmd topic={msg.topic} action={action} door={target or DEVICE_ID}")
+    if action == "toggle":
+        state["is_open"] = not state["is_open"]
+    else:
+        state["is_open"] = (action == "open")
+    state["last_change"] = now_iso()
+    publish_state(client)
 
 client = mqtt.Client(client_id=f"porte-{DEVICE_ID}", protocol=mqtt.MQTTv311)
 if MQTT_USER:
@@ -86,3 +95,5 @@ def health():
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT","8001")))
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger("porte")

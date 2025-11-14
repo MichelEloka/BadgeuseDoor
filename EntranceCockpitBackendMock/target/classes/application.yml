@@ -1,0 +1,12 @@
+server:
+  port: 9500
+
+mock:
+  events:
+    auto: true
+    interval: PT4S
+
+logging:
+  level:
+    root: info
+    com.example.entrance: debug

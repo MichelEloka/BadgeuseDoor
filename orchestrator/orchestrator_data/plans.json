@@ -62,46 +62,17 @@
         "thick": 8
       }
     ],
-    "boxes": [],
-    "nodes": [
+    "boxes": [
       {
-        "id": "v8kubm3",
-        "kind": "porte",
-        "x": 80,
+        "id": "ucsjeco",
+        "x": 630,
         "y": 450,
-        "rot": -1.5707963267948966,
-        "hinge": "left",
-        "deviceId": "KKKKKK"
-      },
-      {
-        "id": "8uc603j",
-        "kind": "porte",
-        "x": 540,
-        "y": 80,
-        "rot": 0,
-        "hinge": "right",
-        "deviceId": "porte12"
-      },
-      {
-        "id": "5vgpgxo",
-        "kind": "badgeuse",
-        "x": 80,
-        "y": 420,
-        "rot": 0,
-        "hinge": "left",
-        "targetDoorId": "KKKKKK",
-        "deviceId": "der"
-      },
-      {
-        "id": "35rnfnm",
-        "kind": "badgeuse",
-        "x": 580,
-        "y": 80,
-        "rot": 0,
-        "hinge": "left",
-        "targetDoorId": "porte12",
-        "deviceId": "bd2"
-      },
+        "w": 290,
+        "h": 260,
+        "thick": 8
+      }
+    ],
+    "nodes": [
       {
         "id": "659y0le",
         "kind": "badgeuse",
@@ -111,23 +82,40 @@
         "hinge": "left"
       },
       {
-        "id": "4kpwrvn",
+        "id": "f9zi2vb",
         "kind": "porte",
-        "x": 220,
-        "y": 310,
+        "x": 620,
+        "y": 820,
         "rot": 0,
-        "hinge": "right",
-        "deviceId": "port2"
+        "hinge": "left"
       },
       {
-        "id": "8vwgixz",
-        "kind": "badgeuse",
-        "x": 260,
-        "y": 310,
+        "id": "4qyuy8n",
+        "kind": "porte",
+        "x": 750,
+        "y": 80,
         "rot": 0,
         "hinge": "left",
-        "targetDoorId": "port2",
-        "deviceId": "bd3"
+        "deviceId": "pt11"
+      },
+      {
+        "id": "z2bd2a2",
+        "kind": "badgeuse",
+        "x": 790,
+        "y": 80,
+        "rot": 0,
+        "hinge": "left",
+        "targetDoorId": "pt11",
+        "deviceId": "bd11"
+      },
+      {
+        "id": "345az50",
+        "kind": "porte",
+        "x": 470,
+        "y": 80,
+        "rot": 0,
+        "hinge": "left",
+        "deviceId": "pt12"
       }
     ],
     "simPersons": [
@@ -144,6 +132,13 @@
         "lastName": "deux",
         "badgeId": "aaa",
         "badgeFrequencySec": 20
+      },
+      {
+        "id": "8zfbmeg",
+        "firstName": "person",
+        "lastName": "prenom",
+        "badgeId": "idbd",
+        "badgeFrequencySec": 5
       }
     ]
   }

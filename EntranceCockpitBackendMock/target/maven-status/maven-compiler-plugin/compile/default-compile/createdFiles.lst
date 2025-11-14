@@ -1,0 +1,8 @@
+com\example\entrance\controller\LogController.class
+com\example\entrance\model\MonitoringEvent.class
+com\example\entrance\service\MonitoringHub.class
+com\example\entrance\websocket\MonitoringSocketHandler.class
+com\example\entrance\service\MockEventGenerator.class
+com\example\entrance\config\WebSocketConfig.class
+com\example\entrance\EntranceCockpitBackendMockApplication.class
+com\example\entrance\controller\MockEventController.class

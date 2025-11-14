@@ -14,6 +14,10 @@ MQTT_PORT      = int(os.getenv("MQTT_PORT", "1883"))
 IMAGE_BADGEUSE = os.getenv("IMAGE_BADGEUSE", "iot-badgeuse:latest")
 IMAGE_PORTE    = os.getenv("IMAGE_PORTE", "iot-porte:latest")
 DOCKER_NETWORK = os.getenv("DOCKER_NETWORK")  # ex: "badgeusedoor_iot"
+PAYLOAD_SCHEMA = {
+    "badge_events": {"badgeID": "string", "doorID": "string", "timestamp": "ISO8601"},
+    "door_commands": {"doorID": "string", "badgeID": "string", "action": "OPEN|CLOSE|TOGGLE", "timestamp": "ISO8601"},
+}
 
 # --- Docker client ---
 client = docker.from_env()
@@ -167,7 +171,13 @@ def _door_id_of(container) -> Optional[str]:
 def health():
     try:
         client.ping()
-        return {"ok": True, "docker": "up", "mqtt": {"host": MQTT_HOST, "port": MQTT_PORT}, "network": DOCKER_NETWORK}
+        return {
+            "ok": True,
+            "docker": "up",
+            "mqtt": {"host": MQTT_HOST, "port": MQTT_PORT},
+            "network": DOCKER_NETWORK,
+            "payload_schema": PAYLOAD_SCHEMA,
+        }
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
@@ -272,34 +282,6 @@ def delete_device(device_id: str, remove_image: bool = Query(default=False)):
     except Exception as e:
         log.exception("delete_device failed")
         raise HTTPException(status_code=500, detail=str(e))
-
-# -------- Proxies d'actions (internal URL + readiness) --------
-@app.post("/badge/{device_id}")
-def proxy_badge(device_id: str, body: dict = Body(...)):
-    # Injecter door_id si absent mais connu via DOOR_ID
-    try:
-        c = client.containers.get(device_id)
-    except docker.errors.NotFound:
-        raise HTTPException(status_code=404, detail="Badgeuse inconnue")
-    try:
-        url = _service_url_by_id(device_id)  # ex: http://badgeuse-007:8000
-    except docker.errors.NotFound:
-        raise HTTPException(status_code=404, detail="Badgeuse inconnue")
-    if not _wait_ready(url, 6.0):
-        raise HTTPException(status_code=503, detail="Badgeuse non prête")
-
-    door_id = _door_id_of(c)
-    payload = dict(body or {})
-    if door_id and "door_id" not in payload:
-        payload["door_id"] = door_id
-
-    try:
-        r = requests.post(f"{url}/badge", json=payload, timeout=5)
-        data = r.json() if r.content else {}
-        return {"status": r.status_code, "data": data}
-    except Exception as e:
-        log.exception("proxy_badge failed")
-        raise HTTPException(status_code=502, detail=str(e))
 
 @app.post("/door/{device_id}/{action}")
 def proxy_door(device_id: str, action: str):

@@ -1,0 +1,35 @@
+<div class="modal-backdrop" *ngIf="visible">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <h3>Unknown badge detected</h3>
+        <p>Register the badge to grant future access.</p>
+      </div>
+      <button type="button" class="chip" (click)="close.emit()">Close</button>
+    </div>
+
+    <form (ngSubmit)="handleSubmit()" class="manual-form">
+      <label class="field">
+        <span>Badge ID</span>
+        <input [(ngModel)]="form.badgeID" name="badgeID" readonly />
+      </label>
+
+      <label class="field">
+        <span>First name</span>
+        <input [(ngModel)]="form.firstName" name="unknownFirstName" required placeholder="First name" />
+      </label>
+
+      <label class="field">
+        <span>Last name</span>
+        <input [(ngModel)]="form.lastName" name="unknownLastName" required placeholder="Last name" />
+      </label>
+
+      <div class="panel-actions">
+        <button type="submit" class="btn solid" [disabled]="loading">Register badge</button>
+      </div>
+    </form>
+
+    <div class="logs-empty" *ngIf="loading">Registering badge...</div>
+    <div class="text-error" *ngIf="!loading && error">{{ error }}</div>
+  </div>
+</div>

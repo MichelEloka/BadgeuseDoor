@@ -1,0 +1,100 @@
+[
+  {
+    "id": "etage-1",
+    "name": "Étage 1",
+    "width": 1400,
+    "height": 900,
+    "walls": [
+      {
+        "id": "kw518kp",
+        "x1": 80,
+        "y1": 80,
+        "x2": 1320,
+        "y2": 80,
+        "thick": 8
+      },
+      {
+        "id": "nv3r0za",
+        "x1": 1320,
+        "y1": 80,
+        "x2": 1320,
+        "y2": 820,
+        "thick": 8
+      },
+      {
+        "id": "vgiv7wn",
+        "x1": 1320,
+        "y1": 820,
+        "x2": 80,
+        "y2": 820,
+        "thick": 8
+      },
+      {
+        "id": "ty3nma6",
+        "x1": 80,
+        "y1": 820,
+        "x2": 80,
+        "y2": 80,
+        "thick": 8
+      },
+      {
+        "id": "4esmj4b",
+        "x1": 400,
+        "y1": 80,
+        "x2": 400,
+        "y2": 300,
+        "thick": 8
+      }
+    ],
+    "boxes": [],
+    "nodes": [
+      {
+        "id": "6apuw4j",
+        "kind": "porte",
+        "x": 670,
+        "y": 80,
+        "rot": 0,
+        "hinge": "left",
+        "deviceId": "pt1"
+      },
+      {
+        "id": "nahi5q8",
+        "kind": "badgeuse",
+        "x": 710,
+        "y": 80,
+        "rot": 0,
+        "hinge": "left",
+        "targetDoorId": "pt1",
+        "deviceId": "bd1"
+      },
+      {
+        "id": "5iszieo",
+        "kind": "porte",
+        "x": 970,
+        "y": 80,
+        "rot": 0,
+        "hinge": "left",
+        "deviceId": "pt2"
+      },
+      {
+        "id": "zmdnutj",
+        "kind": "badgeuse",
+        "x": 1010,
+        "y": 80,
+        "rot": 0,
+        "hinge": "left",
+        "targetDoorId": "pt2",
+        "deviceId": "bdé"
+      }
+    ],
+    "simPersons": [
+      {
+        "id": "cl6eq15",
+        "firstName": "eloka",
+        "lastName": "michel",
+        "badgeId": "badgeID1",
+        "badgeFrequencySec": 13
+      }
+    ]
+  }
+]

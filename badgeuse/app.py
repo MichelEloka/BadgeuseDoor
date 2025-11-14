@@ -1,6 +1,7 @@
 import os, json
 from datetime import datetime, timezone
-from fastapi import FastAPI, Body, HTTPException
+from typing import Optional, Tuple
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import CallbackAPIVersion
@@ -18,19 +19,55 @@ MQTT_PASS = os.getenv("MQTT_PASS", "")
 DEVICE_ID = os.getenv("DEVICE_ID", "badgeuse-001")
 DOOR_ID   = os.getenv("DOOR_ID", "")              # <— injecté par l’orchestrateur (optionnel)
 
-TOPIC_EVENTS = f"iot/badgeuse/{DEVICE_ID}/events"
-TOPIC_CMDS   = f"iot/badgeuse/{DEVICE_ID}/commands"
+def _topic_events(device_id: str) -> str:
+    return f"iot/badgeuse/{device_id}/events"
+
+def _topic_commands(device_id: str) -> str:
+    return f"iot/badgeuse/{device_id}/commands"
+
+TOPIC_EVENTS = _topic_events(DEVICE_ID)
+TOPIC_CMDS   = _topic_commands(DEVICE_ID)
+TOPIC_CMDS_FILTER = "iot/badgeuse/+/commands"
 
 # --- MQTT client (API v2) ------------------------------------------------
 connected = False
 
+def _reason_success(reason_code) -> bool:
+    if reason_code is None:
+        return False
+    if isinstance(reason_code, int):
+        return reason_code == mqtt.MQTT_ERR_SUCCESS
+    try:
+        return int(reason_code) == mqtt.MQTT_ERR_SUCCESS
+    except Exception:
+        return str(reason_code).strip().lower() in {"success", "ok", "0"}
+
+def _normalize_badge_payload(payload: dict) -> Tuple[str, Optional[str]]:
+    badge_id = str(payload.get("badgeID") or payload.get("badge_id") or payload.get("tag_id") or "BADGE-TEST")
+    raw_door = payload.get("doorID") or payload.get("door_id")
+    door_id = str(raw_door) if raw_door not in (None, "") else (DOOR_ID or None)
+    return badge_id, door_id
+
+def _publish_badge_event(device_id: str, badge_id: str, door_id: Optional[str], origin: str):
+    now = datetime.now(timezone.utc).isoformat()
+    message = {
+        "badgeID": badge_id,
+        "doorID": door_id or "",
+        "timestamp": now,
+    }
+    topic = _topic_events(device_id)
+    info = client.publish(topic, json.dumps(message), qos=1, retain=False)
+    log.info(f"[MQTT] badge_event ({origin}) -> {topic} badge={badge_id} door={door_id or '-'} device={device_id}")
+    return message, info, topic
+
 def on_connect(client, userdata, flags, reason_code, properties=None):
     global connected
-    connected = (reason_code == 0)
+    connected = _reason_success(reason_code)
     if connected:
         log.info(f"[MQTT] Connected to {MQTT_HOST}:{MQTT_PORT} (reason_code={reason_code})")
-        # (optionnel) s'abonner aux commandes si tu en as
         client.subscribe(TOPIC_CMDS, qos=1)
+        client.subscribe(TOPIC_CMDS_FILTER, qos=1)
+        log.info(f"[MQTT] Subscribed to {TOPIC_CMDS} and {TOPIC_CMDS_FILTER}")
     else:
         log.error(f"[MQTT] Connect failed (reason_code={reason_code})")
 
@@ -38,6 +75,31 @@ def on_disconnect(client, userdata, reason_code, properties=None):
     global connected
     connected = False
     log.warning(f"[MQTT] Disconnected (reason_code={reason_code})")
+
+def on_message(client, userdata, msg):
+    raw_payload = msg.payload.decode("utf-8", errors="ignore")
+    topic_parts = msg.topic.split("/")
+    target_device = topic_parts[2] if len(topic_parts) >= 3 else DEVICE_ID
+    log.info(f"[MQTT] cmd topic={msg.topic} device={target_device} payload={raw_payload}")
+    try:
+        payload = json.loads(raw_payload)
+    except Exception:
+        log.warning(f"[MQTT] Non JSON payload on {msg.topic}")
+        return
+
+    action = str(payload.get("action") or payload.get("type") or "").lower()
+    if action not in {"badge", "simulate_badge", "badge_event"}:
+        log.debug(f"[MQTT] Ignored action '{action}' on {msg.topic}")
+        return
+
+    badge_id, door_id = _normalize_badge_payload(payload.get("data") or payload)
+    if not door_id:
+        log.debug("[MQTT] Command without door_id, fallback to env/default")
+
+    try:
+        _publish_badge_event(target_device, badge_id, door_id, origin="mqtt-command")
+    except Exception:
+        log.exception("[MQTT] Unable to publish badge event from command")
 
 def on_publish(client, userdata, mid, reason_code=mqtt.MQTT_ERR_SUCCESS, properties=None):
     if reason_code == mqtt.MQTT_ERR_SUCCESS:
@@ -55,10 +117,12 @@ if MQTT_USER:
 
 client.on_connect = on_connect
 client.on_disconnect = on_disconnect
+client.on_message = on_message
 client.on_publish = on_publish
 client.reconnect_delay_set(min_delay=1, max_delay=5)
 
 log.info(f"[MQTT] Connecting to {MQTT_HOST}:{MQTT_PORT} …")
+log.info(f"[BOOT] DEVICE_ID={DEVICE_ID} DOOR_ID={DOOR_ID or '-'} CMD_TOPIC={TOPIC_CMDS} CMD_FILTER={TOPIC_CMDS_FILTER}")
 client.connect(MQTT_HOST, MQTT_PORT, keepalive=60)
 client.loop_start()
 
@@ -73,48 +137,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.post("/badge")
-def simulate_badge(payload: dict = Body(default={"badge_id": "BADGE-TEST", "success": True})):
-    """
-    Déclenche un événement de badge.
-    Champs acceptés dans payload :
-      - badge_id (str)
-      - success (bool)
-      - door_id (str, optionnel) : si non fourni, on prend DOOR_ID de l'env (si dispo)
-    """
-    badge_id = str(payload.get("badge_id") or payload.get("tag_id") or "BADGE-TEST")
-    success = bool(payload.get("success", True))
-    # priorité au door_id fourni par l'appelant (front/orchestrateur) sinon fallback env
-    door_id = str(payload.get("door_id")) if payload.get("door_id") is not None else (DOOR_ID or None)
-
-    now = datetime.now(timezone.utc).isoformat()
-
-    message = {
-        "device_id": DEVICE_ID,
-        "type": "badge_event",
-        "ts": now,
-        "data": {
-            "badge_id": badge_id,
-            "success": success,
-            # on inclut door_id seulement s'il est connu
-            **({"door_id": door_id} if door_id else {})
-        }
-    }
-
-    # Publie même si pas connecté (queue interne Paho), mais renvoie 503 pour informer le caller
-    info = client.publish(TOPIC_EVENTS, json.dumps(message), qos=1, retain=False)
-    if not connected:
-        log.warning("[MQTT] Not connected yet, message queued")
-        raise HTTPException(status_code=503, detail={"queued": True, "message": message})
-
-    # attendre l'envoi (2s max) pour détecter un échec réel
-    ok = info.wait_for_publish(timeout=2.0)
-    if not ok:
-        log.error("[MQTT] Publish timeout")
-        raise HTTPException(status_code=504, detail="MQTT publish timeout")
-
-    return {"published_to": TOPIC_EVENTS, "message": message}
 
 @app.get("/health")
 def health():

@@ -1,0 +1,32 @@
+<div class="modal-backdrop" *ngIf="visible">
+  <section class="modal-card manual-modal">
+    <div class="modal-header">
+      <div>
+        <h3>Override manuel</h3>
+        <p>Sélectionnez la porte que vous souhaitez ouvrir manuellement.</p>
+      </div>
+      <button type="button" class="chip" (click)="handleClose()">Fermer</button>
+    </div>
+
+    <form (ngSubmit)="handleSubmit()" class="manual-form">
+      <label class="field">
+        <span>Porte</span>
+        <select [(ngModel)]="form.doorID" name="doorID" required [disabled]="!doors.length">
+          <option value="" disabled selected *ngIf="!form.doorID">Choisissez une porte</option>
+          <option *ngFor="let door of doors" [value]="door">{{ door }}</option>
+        </select>
+      </label>
+      <div class="text-error" *ngIf="doorsError">{{ doorsError }}</div>
+
+      <div class="panel-actions">
+        <button type="button" class="btn ghost" (click)="reset()" [disabled]="loading">Réinitialiser</button>
+        <button type="submit" class="btn solid" [disabled]="loading">Déclencher l'ouverture</button>
+      </div>
+    </form>
+
+    <div class="logs-empty" *ngIf="loading">Override manuel en cours...</div>
+    <div class="text-success" *ngIf="!loading && successMessage">{{ successMessage }}</div>
+    <div class="text-error" *ngIf="!loading && errorMessage">{{ errorMessage }}</div>
+    <div class="text-error" *ngIf="doorsError">{{ doorsError }}</div>
+  </section>
+</div>

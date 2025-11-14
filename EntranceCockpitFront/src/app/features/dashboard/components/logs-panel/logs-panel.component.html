@@ -1,0 +1,144 @@
+<section class="logs-card logs-panel-modern">
+  <div class="logs-header">
+    <div>
+      <h2>{{ title }}</h2>
+      <p>Live events pushed by the backend.</p>
+    </div>
+    <div class="panel-actions modern" *ngIf="controls">
+      <button type="button" class="btn ghost modern" (click)="clearRequested.emit()" [disabled]="!logs.length">Effacer</button>
+      <button type="button" class="btn solid modern" (click)="reconnectRequested.emit()">Recharger</button>
+    </div>
+  </div>
+
+  <div class="error-banner" *ngIf="lastError as error">
+    {{ error }}
+  </div>
+
+  <div class="logs-empty" *ngIf="!logs.length">
+    {{ emptyLabel }}
+  </div>
+
+  <div class="logs-grid-modern" *ngIf="logs.length">
+    <div class="log-stack success">
+      <div class="stack-header">
+        <span>Accès autorisés</span>
+        <span class="count">{{ successLogs.length }}</span>
+      </div>
+      <div class="stack-list" *ngIf="successLogs.length; else noSuccess">
+        <button
+          type="button"
+          *ngFor="let log of successLogs; trackBy: trackById"
+          class="stack-item"
+          [class.active]="isExpanded(log)"
+          (click)="selectLog(log, $event)"
+        >
+          <span class="stack-time">{{ log.isoTimestamp | date: "HH:mm:ss" }}</span>
+          <span class="stack-title">{{ log.message }}</span>
+          <span class="stack-meta">{{ log.doorID ?? "Door inconnue" }}</span>
+        </button>
+      </div>
+      <ng-template #noSuccess>
+        <p class="stack-placeholder">Aucun accès autorisé.</p>
+      </ng-template>
+    </div>
+
+    <div class="log-feed">
+      <div class="feed-list">
+        <article
+          *ngFor="let log of logs; trackBy: trackById"
+          class="log-row-modern"
+          [class.active]="isExpanded(log)"
+          [ngClass]="log.status"
+          (dblclick)="selectLog(log, $event)"
+          tabindex="0"
+          title="Double-cliquez pour déplier le log"
+        >
+          <div class="row-main">
+            <span class="pulse"></span>
+            <div>
+              <p class="row-title">{{ log.message }}</p>
+              <p class="row-subtitle">{{ describe(log) }}</p>
+            </div>
+          </div>
+          <div class="row-meta">
+            <span>{{ log.isoTimestamp | date: "dd/MM HH:mm:ss" }}</span>
+            <span>{{ log.topic }}</span>
+          </div>
+
+          <div class="row-details" *ngIf="isExpanded(log)">
+            <div class="row-details-top">
+              <span class="status-chip" [ngClass]="log.status">{{ formatStatus(log) }}</span>
+              <span class="row-details-time">{{ log.isoTimestamp | date: "dd/MM HH:mm:ss" }}</span>
+            </div>
+            <p class="row-details-title">{{ log.message }}</p>
+            <p class="row-details-subtitle">{{ describe(log) }}</p>
+
+            <dl class="row-details-meta">
+              <div>
+                <dt>Badge</dt>
+                <dd>{{ log.badgeID ?? "Inconnu" }}</dd>
+              </div>
+              <div>
+                <dt>Porte</dt>
+                <dd>{{ log.doorID ?? "Inconnue" }}</dd>
+              </div>
+              <div>
+                <dt>Device</dt>
+                <dd>{{ log.deviceId ?? "Inconnu" }}</dd>
+              </div>
+              <div>
+                <dt>Topic</dt>
+                <dd>{{ log.topic }}</dd>
+              </div>
+            </dl>
+
+            <div class="row-details-extra">
+              <ng-container *ngIf="detailsFor(log) as details; else ownerHint">
+                <div class="row-details-header">
+                  <strong>Porteur du badge</strong>
+                  <span class="status-tag" *ngIf="details.loading">Chargement...</span>
+                </div>
+                <p class="text-error" *ngIf="!details.loading && details.error">{{ details.error }}</p>
+                <p
+                  class="row-badge-owner"
+                  *ngIf="!details.loading && !details.error && badgeOwnerLabel(log) as owner; else ownerUnknown"
+                >
+                  {{ owner }}
+                </p>
+              </ng-container>
+            </div>
+            <ng-template #ownerHint>
+              <p class="log-extra-note">Double-cliquez pour afficher le porteur du badge.</p>
+            </ng-template>
+            <ng-template #ownerUnknown>
+              <p class="log-extra-note">Porteur inconnu pour ce badge.</p>
+            </ng-template>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <div class="log-stack failure">
+      <div class="stack-header">
+        <span>Accès refusés</span>
+        <span class="count">{{ failureLogs.length }}</span>
+      </div>
+      <div class="stack-list" *ngIf="failureLogs.length; else noFailure">
+        <button
+          type="button"
+          *ngFor="let log of failureLogs; trackBy: trackById"
+          class="stack-item"
+          [class.active]="isExpanded(log)"
+          (click)="selectLog(log, $event)"
+        >
+          <span class="stack-time">{{ log.isoTimestamp | date: "HH:mm:ss" }}</span>
+          <span class="stack-title">{{ log.message }}</span>
+          <span class="stack-meta">{{ log.doorID ?? "Door inconnue" }}</span>
+        </button>
+      </div>
+      <ng-template #noFailure>
+        <p class="stack-placeholder">Aucun refus.</p>
+      </ng-template>
+    </div>
+  </div>
+</section>

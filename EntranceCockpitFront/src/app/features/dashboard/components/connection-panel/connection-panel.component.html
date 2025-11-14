@@ -1,0 +1,22 @@
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <h2>Connexion flux métier</h2>
+      <p>Indiquez l’URL du flux temps réel fournie par votre orchestrateur.</p>
+    </div>
+    <div class="panel-actions">
+      <button type="button" class="btn ghost" (click)="disconnectRequested.emit()">Disconnect</button>
+      <button type="button" class="btn solid" [disabled]="isBusy" (click)="connectRequested.emit()">
+        {{ isBusy ? "Connecting..." : "Apply" }}
+      </button>
+    </div>
+  </div>
+  <label class="field">
+    <span>URL du flux</span>
+    <input [ngModel]="wsUrl" (ngModelChange)="wsUrlChange.emit($event)" placeholder="wss://exemple.cockpit/feed" />
+  </label>
+  <div class="panel-footer">
+    <span>Current feed:</span>
+    <strong>{{ currentUrl || "not connected" }}</strong>
+  </div>
+</section>

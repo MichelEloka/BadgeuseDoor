@@ -1,0 +1,19 @@
+<section class="stats">
+  <div class="stat-card">
+    <p>Total événements</p>
+    <strong>{{ stats.total }}</strong>
+  </div>
+  <div class="stat-card success">
+    <p>Accès validés</p>
+    <strong>{{ stats.success }}</strong>
+  </div>
+  <div class="stat-card failure">
+    <p>Accès refusés</p>
+    <strong>{{ stats.failure }}</strong>
+  </div>
+  <div class="stat-card highlight" *ngIf="latestSuccess as success">
+    <p class="highlight-title">Dernier accès accordé</p>
+    <strong class="highlight-badge">{{ success.badgeID || "Badge inconnu" }}</strong>
+    <small class="highlight-time">{{ success.isoTimestamp | date: "dd/MM HH:mm:ss" }}</small>
+  </div>
+</section>

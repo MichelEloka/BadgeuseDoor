@@ -1,0 +1,166 @@
+<div class="dashboard-shell">
+  <app-top-bar
+    brandTitle="Entrance Cockpit"
+    brandSubtitle="Supervision en temps reel"
+    [connectionState]="connectionState()"
+    [statusLabel]="connectionLabel()"
+    [darkMode]="darkMode()"
+    (usersToggle)="openUsersModal()"
+    (themeToggle)="toggleTheme()"
+  ></app-top-bar>
+
+  <section class="cta-section">
+    <div class="cta-actions">
+      <button type="button" class="btn solid" (click)="openManualModal()">Ouverture manuelle</button>
+      <button type="button" class="btn ghost" (click)="connect()">Se reconnecter</button>
+      <button type="button" class="btn ghost" (click)="disconnect()">Couper le flux</button>
+      <button type="button" class="btn ghost" (click)="clearLogs()">Effacer les logs</button>
+    </div>
+    <p class="text-success" *ngIf="manualSuccess()">{{ manualSuccess() }}</p>
+    <p class="text-error" *ngIf="manualError()">{{ manualError() }}</p>
+  </section>
+
+  <section class="stats-wrapper">
+    <app-stats-panel class="stats-panel" [stats]="stats()" [latestSuccess]="latestSuccess()"></app-stats-panel>
+  </section>
+
+  <section class="logs-section single">
+    <article class="log-panel-card">
+      <app-logs-panel
+        title="Activité complète"
+        [logs]="logs()"
+        [emptyLabel]="'Aucun événement reçu.'"
+        [lastError]="lastError()"
+        [expandedLogId]="expandedLogId()"
+        [logDetails]="logDetailsById()"
+        (clearRequested)="clearLogs()"
+        (reconnectRequested)="connect()"
+        (logSelected)="handleLogClick($event)"
+      ></app-logs-panel>
+    </article>
+  </section>
+</div>
+
+<div class="toast-stack" *ngIf="toastMessages().length">
+  <article
+    class="toast-card"
+    *ngFor="let toast of toastMessages()"
+    [ngClass]="toast.log.status || 'pending'"
+  >
+    <div class="toast-content">
+      <p class="toast-title">{{ toast.log.message }}</p>
+      <p class="toast-meta">
+        <span>{{ toast.log.badgeID || "Badge inconnu" }}</span>
+        <span>{{ toast.log.isoTimestamp | date: "HH:mm:ss" }}</span>
+      </p>
+    </div>
+    <button
+      type="button"
+      class="toast-close"
+      (click)="dismissToast(toast.id)"
+      aria-label="Fermer la notification"
+    >
+      &times;
+    </button>
+  </article>
+</div>
+
+<div class="modal-backdrop" *ngIf="showUsersModal()">
+  <section class="modal-card users-modal">
+    <div class="modal-header">
+      <div>
+        <h3>Utilisateurs enregistres</h3>
+        <p>Gestion des badges autorises.</p>
+      </div>
+      <div class="panel-actions">
+        <button type="button" class="chip" (click)="openAddUserModal()">Ajouter</button>
+        <button type="button" class="chip" (click)="closeUsersModal()">Fermer</button>
+      </div>
+    </div>
+
+    <div class="logs-empty" *ngIf="usersLoading()">Chargement des utilisateurs...</div>
+    <div class="text-error" *ngIf="usersError()">{{ usersError() }}</div>
+
+    <table *ngIf="users().length" class="users-table">
+      <thead>
+        <tr>
+          <th>Badge</th>
+          <th>Prenom</th>
+          <th>Nom</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users()">
+          <td>{{ user.badgeID }}</td>
+          <td>{{ user.firstName }}</td>
+          <td>{{ user.lastName }}</td>
+          <td>
+            <button
+              type="button"
+              class="chip danger"
+              (click)="handleDeleteUser(user)"
+              [disabled]="deleteUserId() === (user.id || user.badgeID)"
+            >
+              Supprimer
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="!users().length && !usersLoading()">Aucun utilisateur enregistre.</p>
+  </section>
+</div>
+
+<div class="modal-backdrop" *ngIf="showAddUserModal()">
+  <section class="modal-card add-user-modal">
+    <div class="modal-header">
+      <div>
+        <h3>Ajouter un utilisateur</h3>
+        <p>Associez un badge a un visiteur.</p>
+      </div>
+      <button type="button" class="chip" (click)="closeAddUserModal()">Fermer</button>
+    </div>
+
+    <form #addUserForm="ngForm" class="manual-form" (ngSubmit)="submitAddUser(addUserForm)">
+      <label class="field">
+        <span>Badge</span>
+        <input name="badgeID" required [(ngModel)]="newUserForm.badgeID" placeholder="BADGE-010" />
+      </label>
+      <label class="field">
+        <span>Prenom</span>
+        <input name="firstName" required [(ngModel)]="newUserForm.firstName" placeholder="Ava" />
+      </label>
+      <label class="field">
+        <span>Nom</span>
+        <input name="lastName" required [(ngModel)]="newUserForm.lastName" placeholder="Turner" />
+      </label>
+
+      <div class="panel-actions">
+        <button type="button" class="btn ghost" (click)="addUserForm.resetForm()" [disabled]="addUserLoading()">Reinitialiser</button>
+        <button type="submit" class="btn solid" [disabled]="addUserLoading()">Enregistrer</button>
+      </div>
+    </form>
+    <div class="text-error" *ngIf="usersError()">{{ usersError() }}</div>
+  </section>
+</div>
+
+<app-manual-access-panel
+  [visible]="showManualModal()"
+  [doors]="doors()"
+  [loading]="manualLoading()"
+  [successMessage]="manualSuccess()"
+  [errorMessage]="manualError()"
+  [doorsError]="doorsError()"
+  (submitForm)="handleManualAccess($event)"
+  (close)="closeManualModal()"
+></app-manual-access-panel>
+
+<app-unknown-badge-modal
+  [visible]="showUnknownModal()"
+  [badgeID]="pendingBadgeId() || ''"
+  [loading]="unknownLoading()"
+  [error]="unknownError()"
+  (submitBadge)="registerUnknownBadge($event)"
+  (close)="closeUnknownBadgeModal()"
+></app-unknown-badge-modal>

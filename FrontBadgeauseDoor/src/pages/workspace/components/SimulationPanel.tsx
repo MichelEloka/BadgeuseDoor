@@ -53,12 +53,12 @@ export function SimulationPanel({ persons, onAddPerson, onRemovePerson, onUpdate
           />
           <Input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Nom" className="h-8 rounded-lg border-slate-200 text-xs dark:border-slate-600" />
           <div className="flex flex-wrap gap-2">
-            <Input
-              value={badgeId}
-              onChange={(e) => setBadgeId(e.target.value)}
-              placeholder="badge_id"
-              className="h-8 flex-1 min-w-[140px] rounded-lg border-slate-200 text-xs dark:border-slate-600"
-            />
+          <Input
+            value={badgeId}
+            onChange={(e) => setBadgeId(e.target.value)}
+            placeholder="badgeID"
+            className="h-8 flex-1 min-w-[140px] rounded-lg border-slate-200 text-xs dark:border-slate-600"
+          />
             <Input
               type="number"
               min={1}

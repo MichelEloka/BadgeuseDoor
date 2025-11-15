@@ -57,7 +57,7 @@ services:
       - ./mosquitto/data:/mosquitto/data
       - ./mosquitto/log:/mosquitto/log
       - ./mosquitto:/init 
-    entrypoint: ["/bin/sh", "/init/create-user.sh"]
+ 
  
 networks:
   iot: {}

@@ -1,4 +1,7 @@
+com\example\entrance\controller\DeviceController.class
+com\example\entrance\model\DeviceRecord.class
 com\example\entrance\controller\LogController.class
+com\example\entrance\service\DeviceRegistryService.class
 com\example\entrance\model\MonitoringEvent.class
 com\example\entrance\service\MonitoringHub.class
 com\example\entrance\websocket\MonitoringSocketHandler.class

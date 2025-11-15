@@ -7,13 +7,16 @@ export type Wall = {
   thick?: number;
 };
 
-export type Box = {
-  id: string;
+export type ZonePoint = {
   x: number;
   y: number;
-  w: number;
-  h: number;
-  thick?: number;
+};
+
+export type ZoneShape = {
+  id: string;
+  points: ZonePoint[];
+  name?: string;
+  doorIds?: string[];
 };
 
 export type Hinge = "left" | "right";
@@ -44,9 +47,9 @@ export type Floor = {
   width: number;
   height: number;
   walls: Wall[];
-  boxes: Box[];
   nodes: DeviceNode[];
   simPersons?: SimPerson[];
+  zones?: ZoneShape[];
 };
 
 export interface BadgeEventPayload {

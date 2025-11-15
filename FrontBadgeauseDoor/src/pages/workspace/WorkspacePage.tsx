@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { deleteDeviceOnOrch, doorCmd, fetchPlan, pollUntilReady, savePlan } from "@/api/orchestrator";
+import { createMockDevice, deleteMockDevice, fetchMockDevices, fetchMockUsers, type MockDeviceRecord, type MockUser } from "@/api/mockDirectory";
 import { ORCH_URL, MQTT_WS_URL_DEFAULT } from "@/config";
 import { useDockerStatus } from "@/hooks/useDockerStatus";
 import { useDebouncedEffect } from "@/hooks/useDebouncedEffect";
@@ -12,8 +13,9 @@ import { SimulationPanel } from "./components/SimulationPanel";
 import { TopBar } from "./components/TopBar";
 import { CanvasBoard } from "./components/CanvasBoard";
 import { LogsPanel } from "./components/LogsPanel";
-import type { Box, DeviceNode, Floor, Hinge, Wall, SimPerson } from "@/types/floor";
-import { uid } from "@/utils/geometry";
+import { ZonesPanel } from "./components/ZonesPanel";
+import type { DeviceNode, Floor, Hinge, Wall, SimPerson, ZonePoint, ZoneShape } from "@/types/floor";
+import { distancePointToPolygon, pointInPolygon, uid } from "@/utils/geometry";
 import type { Tool } from "./types";
 
 export default function WorkspacePage() {
@@ -37,26 +39,53 @@ export default function WorkspacePage() {
         { id: uid(), x1: 80, y1: 820, x2: 80, y2: 80, thick: 8 },
         { id: uid(), x1: 400, y1: 80, x2: 400, y2: 300, thick: 8 },
       ],
-      boxes: [],
       nodes: [],
       simPersons: [],
+      zones: [],
     },
   ]);
   const [selFloorId] = useState("etage-1");
   const floor = useMemo(() => floors.find((f) => f.id === selFloorId)!, [floors, selFloorId]);
   const simPersons = floor.simPersons ?? [];
+  const zones = floor.zones ?? [];
+  const [showZoneWalls, setShowZoneWalls] = useState(false);
+  const [showZoneFill, setShowZoneFill] = useState(true);
+
+  const [badgeCatalog, setBadgeCatalog] = useState<MockUser[]>([]);
+  const [deviceRegistry, setDeviceRegistry] = useState<MockDeviceRecord[]>([]);
+  const doorCatalog = useMemo(() => deviceRegistry.filter((d) => d.type === "porte").map((d) => d.id), [deviceRegistry]);
 
   useEffect(() => {
     (async () => {
       try {
         const fetched = await fetchPlan(selFloorId);
         const plan = { ...fetched, simPersons: fetched.simPersons ?? [] };
-        setFloors((fs) => fs.map((f) => (f.id === selFloorId ? { ...f, ...plan } : f)));
+        setFloors((fs) => fs.map((f) => (f.id === selFloorId ? applyZoneDoorLinks({ ...f, ...plan }) : f)));
       } catch {
         // pas de plan => on garde le défaut
       }
     })();
   }, [selFloorId]);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const [devices, badges] = await Promise.all([fetchMockDevices().catch(() => []), fetchMockUsers().catch(() => [])]);
+        if (!active) return;
+        setDeviceRegistry(devices);
+        setBadgeCatalog(badges);
+      } catch {
+        if (active) {
+          setDeviceRegistry([]);
+          setBadgeCatalog([]);
+        }
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useDebouncedEffect(() => {
     const f = floors.find((x) => x.id === selFloorId);
@@ -67,8 +96,10 @@ export default function WorkspacePage() {
   const [grid, setGrid] = useState(10);
   const [thick, setThick] = useState(8);
   const [showPalettePanel, setShowPalettePanel] = useState(true);
+  const [showZonesPanel, setShowZonesPanel] = useState(true);
   const [showSimulationPanel, setShowSimulationPanel] = useState(true);
   const [showPropertiesPanel, setShowPropertiesPanel] = useState(true);
+  const [pendingZoneRenameId, setPendingZoneRenameId] = useState<string | null>(null);
 
   const { mqttUrl, setMqttUrl, connected, isConnecting, connect, disconnect, porteState, logs, publishBadgeCommand } = useMqttBridge(MQTT_WS_URL_DEFAULT);
   const dockerActive = useDockerStatus();
@@ -80,12 +111,16 @@ export default function WorkspacePage() {
   const [simRunning, setSimRunning] = useState(false);
 
   const updateCurrentFloor = (mutator: (floor: Floor) => Floor) => {
-    setFloors((fs) => fs.map((f) => (f.id === floor.id ? mutator(f) : f)));
+    setFloors((fs) =>
+      fs.map((f) => {
+        if (f.id !== selFloorId) return f;
+        const mutated = mutator(f);
+        return applyZoneDoorLinks(mutated);
+      })
+    );
   };
 
   const addWall = (wall: Wall) => updateCurrentFloor((f) => ({ ...f, walls: [...f.walls, wall] }));
-  const addBox = (box: Box) => updateCurrentFloor((f) => ({ ...f, boxes: [...f.boxes, box] }));
-  const deleteBox = (boxId: string) => updateCurrentFloor((f) => ({ ...f, boxes: f.boxes.filter((b) => b.id !== boxId) }));
   const addNode = (node: DeviceNode) => updateCurrentFloor((f) => ({ ...f, nodes: [...f.nodes, node] }));
   const deleteWall = (wallId: string) => updateCurrentFloor((f) => ({ ...f, walls: f.walls.filter((w) => w.id !== wallId) }));
 
@@ -96,6 +131,30 @@ export default function WorkspacePage() {
 
   const deleteNodeById = (nodeId: string) => {
     updateCurrentFloor((f) => ({ ...f, nodes: f.nodes.filter((n) => n.id !== nodeId) }));
+  };
+
+  const updateZone = (zoneId: string, patch: Partial<ZoneShape>) =>
+    updateCurrentFloor((f) => ({
+      ...f,
+      zones: (f.zones ?? []).map((zone) => (zone.id === zoneId ? { ...zone, ...patch } : zone)),
+    }));
+
+  const deleteZone = (zoneId: string) =>
+    updateCurrentFloor((f) => ({
+      ...f,
+      zones: (f.zones ?? []).filter((zone) => zone.id !== zoneId),
+    }));
+
+  const handleCreateNode = async (partial: Omit<DeviceNode, "deviceId">) => {
+    try {
+      const record = await createMockDevice(partial.kind);
+      const node: DeviceNode = { ...partial, deviceId: record.id };
+      addNode(node);
+      setSelNodeId(node.id);
+      setDeviceRegistry((prev) => [...prev.filter((d) => d.id !== record.id), record]);
+    } catch (error) {
+      alert("Impossible de générer un identifiant pour ce capteur (mock backend).");
+    }
   };
 
   const flipSelectedHinge = () => {
@@ -230,31 +289,54 @@ export default function WorkspacePage() {
           }
           await new Promise((res) => setTimeout(res, 500));
         }
-      } finally {
-        setLoadingMap((m) => {
-          const copy = { ...m };
-          if (node.deviceId) delete copy[node.deviceId];
-          return copy;
-        });
-      }
+    } finally {
+      setLoadingMap((m) => {
+        const copy = { ...m };
+        if (node.deviceId) delete copy[node.deviceId];
+        return copy;
+      });
     }
-    deleteNodeById(node.id);
-    setSelNodeId(null);
   }
+  if (node.deviceId) {
+    try {
+      await deleteMockDevice(node.deviceId);
+    } catch {
+      // ignore mock delete errors
+    } finally {
+      setDeviceRegistry((prev) => prev.filter((d) => d.id !== node.deviceId));
+    }
+  }
+  deleteNodeById(node.id);
+  setSelNodeId(null);
+}
 
-  const handleBadge = (node: DeviceNode) => {
+  const handleBadge = (node: DeviceNode, badgeId?: string) => {
     if (!node.deviceId) return;
     if (!connected) {
       connect();
       alert("Connexion MQTT en cours... reessaie dans un instant.");
       return;
     }
-    sendBadgeCommand(node.deviceId, "BADGE-TEST", node.targetDoorId);
+    const fallback = badgeCatalog[0]?.badgeID || "BADGE-TEST";
+    const badgeToSend = badgeId?.trim() || fallback;
+    sendBadgeCommand(node.deviceId, badgeToSend, node.targetDoorId);
   };
 
   const handleDoorAction = (node: DeviceNode, action: "open" | "close" | "toggle") => {
     if (!node.deviceId) return;
     doorCmd(node.deviceId, action).catch(() => {});
+  };
+
+  const handleCreateZone = (points: ZonePoint[]) => {
+    if (points.length < 3) return;
+    const zoneId = uid();
+    const defaultName = `Zone ${(floor.zones?.length ?? 0) + 1}`;
+    updateCurrentFloor((f) => ({
+      ...f,
+      zones: [...(f.zones ?? []), { id: zoneId, points, name: defaultName }],
+    }));
+    setPendingZoneRenameId(zoneId);
+    setShowZonesPanel(true);
   };
 
   useEffect(() => {
@@ -270,8 +352,13 @@ export default function WorkspacePage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [selNode]);
 
+  const showLeftPanel = showPalettePanel || showZonesPanel;
   const showRightPanel = showSimulationPanel || showPropertiesPanel || showLogs;
-  const canvasColClass = showRightPanel ? (showPalettePanel ? "lg:col-span-8" : "lg:col-span-10") : showPalettePanel ? "lg:col-span-10" : "lg:col-span-12";
+  const canvasColClass = (() => {
+    if (showLeftPanel && showRightPanel) return "lg:col-span-8";
+    if (showLeftPanel || showRightPanel) return "lg:col-span-10";
+    return "lg:col-span-12";
+  })();
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
@@ -299,45 +386,63 @@ export default function WorkspacePage() {
 
         <div className="flex flex-wrap gap-2">
           <PanelToggle label="Palette" active={showPalettePanel} onClick={() => setShowPalettePanel((s) => !s)} />
-          <PanelToggle label="Simulation" active={showSimulationPanel} onClick={() => setShowSimulationPanel((s) => !s)} />
+        <PanelToggle label="Zones" active={showZonesPanel} onClick={() => setShowZonesPanel((s) => !s)} />
+        <PanelToggle label="Simulation" active={showSimulationPanel} onClick={() => setShowSimulationPanel((s) => !s)} />
           <PanelToggle label="Propriétés" active={showPropertiesPanel} onClick={() => setShowPropertiesPanel((s) => !s)} />
           <PanelToggle label="Logs" active={showLogs} onClick={() => setShowLogs((s) => !s)} />
         </div>
 
         <div className="grid grid-cols-12 gap-3">
-          {showPalettePanel && (
-            <div className="col-span-12 lg:col-span-2">
-              <PalettePanel
-                tool={tool}
-                onToolChange={setTool}
-                grid={grid}
-                onGridChange={setGrid}
-                thick={thick}
-                onThickChange={setThick}
-                selNode={selNode}
-                onFlipHinge={flipSelectedHinge}
-                onRotateDoor={rotateSelectedDoor}
-                onResetAngle={resetSelectedDoorAngle}
-              />
+          {showLeftPanel && (
+            <div className="col-span-12 lg:col-span-2 space-y-3">
+              {showPalettePanel && (
+                <PalettePanel
+                  tool={tool}
+                  onToolChange={setTool}
+                  grid={grid}
+                  onGridChange={setGrid}
+                  thick={thick}
+                  onThickChange={setThick}
+                  selNode={selNode}
+                  onFlipHinge={flipSelectedHinge}
+                  onRotateDoor={rotateSelectedDoor}
+                  onResetAngle={resetSelectedDoorAngle}
+                />
+              )}
+              {showZonesPanel && (
+                <ZonesPanel
+                  zones={zones}
+                  showBorders={showZoneWalls}
+                  showFill={showZoneFill}
+                  onToggleBorders={() => setShowZoneWalls((v) => !v)}
+                  onToggleFill={() => setShowZoneFill((v) => !v)}
+                  onRename={(zoneId, name) => updateZone(zoneId, { name })}
+                  onDelete={(zoneId) => deleteZone(zoneId)}
+                  autoFocusZoneId={pendingZoneRenameId}
+                  onAutoFocusConsumed={() => setPendingZoneRenameId(null)}
+                />
+              )}
             </div>
           )}
 
           <div className={`col-span-12 ${canvasColClass}`}>
-            <CanvasBoard
-              floor={floor}
-              tool={tool}
-              grid={grid}
-              thick={thick}
-              selNodeId={selNodeId}
-              onSelectNode={setSelNodeId}
-              onAddWall={addWall}
-              onAddBox={addBox}
-              onAddNode={addNode}
-              onUpdateNode={updateNode}
-              onDeleteWall={deleteWall}
-              onDeleteBox={deleteBox}
-              loadingMap={loadingMap}
-              dockerActive={dockerActive}
+          <CanvasBoard
+            floor={floor}
+            tool={tool}
+            grid={grid}
+            thick={thick}
+            selNodeId={selNodeId}
+            onSelectNode={setSelNodeId}
+            onAddWall={addWall}
+            onCreateNode={handleCreateNode}
+            onUpdateNode={updateNode}
+            onDeleteWall={deleteWall}
+            zones={zones}
+            showZoneWalls={showZoneWalls}
+            showZoneFill={showZoneFill}
+            onCreateZone={handleCreateZone}
+            loadingMap={loadingMap}
+            dockerActive={dockerActive}
               porteState={porteState}
               isDarkMode={dark}
             />
@@ -359,6 +464,7 @@ export default function WorkspacePage() {
                   running={simRunning}
                   canRun={canRunSimulation}
                   onToggleSimulation={toggleSimulation}
+                  badgeCatalog={badgeCatalog}
                 />
               )}
               {showPropertiesPanel && (
@@ -371,6 +477,8 @@ export default function WorkspacePage() {
                   onDeleteNode={handleDeleteNodeAndContainer}
                   onBadge={handleBadge}
                   onDoorAction={handleDoorAction}
+                  doorCatalog={doorCatalog}
+                  badgeCatalog={badgeCatalog}
                 />
               )}
               {showLogs && <LogsPanel logs={logs} />}
@@ -396,6 +504,48 @@ function PanelToggle({ label, active, onClick }: { label: string; active: boolea
       {active ? "Masquer" : "Afficher"} {label}
     </button>
   );
+}
+
+const DOOR_TOUCH_THRESHOLD = 18;
+
+function arraysEqual(a: string[], b: string[]) {
+  if (a.length !== b.length) return false;
+  return a.every((val, idx) => val === b[idx]);
+}
+
+function computeDoorIdsForZone(zone: ZoneShape, doorNodes: DeviceNode[]) {
+  if (!zone.points?.length || !doorNodes.length) return [];
+  const identifiers: string[] = [];
+  const seen = new Set<string>();
+  for (const door of doorNodes) {
+    const doorId = door.deviceId || door.id;
+    if (!doorId) continue;
+    const inside = pointInPolygon({ x: door.x, y: door.y }, zone.points);
+    const distance = inside ? 0 : distancePointToPolygon(door.x, door.y, zone.points);
+    if (inside || distance <= DOOR_TOUCH_THRESHOLD) {
+      if (!seen.has(doorId)) {
+        seen.add(doorId);
+        identifiers.push(doorId);
+      }
+    }
+  }
+  return identifiers;
+}
+
+function applyZoneDoorLinks(floor: Floor): Floor {
+  if (!floor.zones?.length) return floor;
+  const doorNodes = floor.nodes.filter((n) => n.kind === "porte");
+  let changed = false;
+  const enriched = floor.zones.map((zone) => {
+    const doorIds = computeDoorIdsForZone(zone, doorNodes);
+    const previous = zone.doorIds ?? [];
+    if (!arraysEqual(previous, doorIds)) {
+      changed = true;
+      return { ...zone, doorIds };
+    }
+    return zone;
+  });
+  return changed ? { ...floor, zones: enriched } : floor;
 }
 
 

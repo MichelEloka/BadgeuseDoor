@@ -1,6 +1,7 @@
 package com.example.entrance.controller;
 
 import com.example.entrance.model.MonitoringEvent;
+import com.example.entrance.service.DeviceRegistryService;
 import com.example.entrance.service.MockDirectoryService;
 import com.example.entrance.service.MockEventGenerator;
 import org.springframework.http.HttpStatus;
@@ -19,13 +20,16 @@ public class ManualAccessController {
 
     private final MockEventGenerator generator;
     private final MockDirectoryService directoryService;
+    private final DeviceRegistryService registryService;
 
     public ManualAccessController(
             MockEventGenerator generator,
-            MockDirectoryService directoryService
+            MockDirectoryService directoryService,
+            DeviceRegistryService registryService
     ) {
         this.generator = generator;
         this.directoryService = directoryService;
+        this.registryService = registryService;
     }
 
     @PostMapping
@@ -35,7 +39,9 @@ public class ManualAccessController {
         if (!StringUtils.hasText(doorId)) {
             return ResponseEntity.badRequest().body(Map.of("message", "Door ID is required"));
         }
-        if (!directoryService.doorIds().isEmpty() && !directoryService.doorIds().contains(doorId)) {
+        boolean exists = registryService.findAll().stream()
+                .anyMatch(record -> "porte".equalsIgnoreCase(record.type()) && record.id().equalsIgnoreCase(doorId));
+        if (!exists && !directoryService.doorIds().contains(doorId)) {
             return ResponseEntity.badRequest().body(Map.of("message", "Unknown door ID"));
         }
 

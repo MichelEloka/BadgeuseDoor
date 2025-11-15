@@ -4,7 +4,7 @@ import type { MouseEvent, WheelEvent } from "react";
 import { DoorGlyph } from "@/components/DoorGlyph";
 import { Spinner } from "@/components/Spinner";
 import { BADGEUSE_LINK_RADIUS } from "@/config";
-import type { Box, DeviceNode, Floor, Hinge, Wall } from "@/types/floor";
+import type { DeviceNode, Floor, Hinge, Wall, ZonePoint, ZoneShape } from "@/types/floor";
 import { clamp, dist, nearestWallSnap, snap, uid } from "@/utils/geometry";
 import type { Tool } from "../types";
 
@@ -16,11 +16,13 @@ interface CanvasBoardProps {
   selNodeId: string | null;
   onSelectNode: (id: string | null) => void;
   onAddWall: (wall: Wall) => void;
-  onAddBox: (box: Box) => void;
-  onAddNode: (node: DeviceNode) => void;
+  onCreateNode: (node: Omit<DeviceNode, "deviceId">) => void;
   onUpdateNode: (nodeId: string, updater: (node: DeviceNode) => DeviceNode) => void;
   onDeleteWall: (wallId: string) => void;
-  onDeleteBox: (boxId: string) => void;
+  zones: ZoneShape[];
+  showZoneWalls: boolean;
+  showZoneFill: boolean;
+  onCreateZone: (points: ZonePoint[]) => void;
   loadingMap: Record<string, "creating" | "deleting" | undefined>;
   dockerActive: Record<string, { ready: boolean; status: string }>;
   porteState: Record<string, boolean>;
@@ -35,11 +37,13 @@ export function CanvasBoard({
   selNodeId,
   onSelectNode,
   onAddWall,
-  onAddBox,
-  onAddNode,
+  onCreateNode,
   onUpdateNode,
   onDeleteWall,
-  onDeleteBox,
+  zones,
+  showZoneWalls,
+  showZoneFill,
+  onCreateZone,
   loadingMap,
   dockerActive,
   porteState,
@@ -50,10 +54,9 @@ export function CanvasBoard({
   const panRef = useRef({ drag: false, sx: 0, sy: 0, ox: 0, oy: 0 });
   const [hover, setHover] = useState<{ x: number; y: number } | null>(null);
   const [drawLineStart, setDrawLineStart] = useState<{ x1: number; y1: number } | null>(null);
-  const [drawRectStart, setDrawRectStart] = useState<{ x: number; y: number } | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
   const [selectedWallId, setSelectedWallId] = useState<string | null>(null);
-  const [selectedBoxId, setSelectedBoxId] = useState<string | null>(null);
+  const [zoneDraft, setZoneDraft] = useState<ZonePoint[]>([]);
 
   const clientToWorld = (evt: MouseEvent<Element>) => {
     const svg = svgRef.current!;
@@ -72,7 +75,6 @@ export function CanvasBoard({
   const colors = useMemo(
     () => ({
       wallStroke: isDarkMode ? "#e2e8f0" : "#0f172a",
-      boxFill: isDarkMode ? "rgba(148,163,184,0.18)" : "rgba(148,163,184,0.08)",
       gridLines: isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
       labelPrimary: isDarkMode ? "#e2e8f0" : "#334155",
       labelSecondary: isDarkMode ? "#94a3b8" : "#64748b",
@@ -112,8 +114,8 @@ export function CanvasBoard({
     } else if (kind === "badgeuse") {
       targetDoorId = findNearestDoorDeviceId(x, y);
     }
-    const nn: DeviceNode = { id: uid(), kind, x, y, rot, hinge, targetDoorId };
-    onAddNode(nn);
+    const nn: Omit<DeviceNode, "deviceId"> = { id: uid(), kind, x, y, rot, hinge, targetDoorId };
+    onCreateNode(nn);
     onSelectNode(nn.id);
   };
 
@@ -122,22 +124,8 @@ export function CanvasBoard({
     if (e.detail === 2) {
       onDeleteWall(wall.id);
       setSelectedWallId(null);
-      setSelectedBoxId(null);
     } else {
       setSelectedWallId(wall.id);
-      setSelectedBoxId(null);
-    }
-  };
-
-  const handleBoxClick = (box: Box, e: MouseEvent<Element>) => {
-    e.stopPropagation();
-    if (e.detail === 2) {
-      onDeleteBox(box.id);
-      setSelectedBoxId(null);
-      setSelectedWallId(null);
-    } else {
-      setSelectedBoxId(box.id);
-      setSelectedWallId(null);
     }
   };
 
@@ -165,8 +153,6 @@ export function CanvasBoard({
       handlePanStart(e);
     } else if (tool === "wall-line") {
       setDrawLineStart({ x1: snap(w.x, grid), y1: snap(w.y, grid) });
-    } else if (tool === "wall-rect") {
-      setDrawRectStart({ x: snap(w.x, grid), y: snap(w.y, grid) });
     }
   };
 
@@ -214,20 +200,6 @@ export function CanvasBoard({
       setDrawLineStart(null);
       return;
     }
-    if (tool === "wall-rect" && drawRectStart) {
-      const x0 = drawRectStart.x;
-      const y0 = drawRectStart.y;
-      const x1 = snap(w.x, grid);
-      const y1 = snap(w.y, grid);
-      const x = Math.min(x0, x1);
-      const y = Math.min(y0, y1);
-      const wdt = Math.abs(x1 - x0);
-      const hgt = Math.abs(y1 - y0);
-      if (wdt > 4 && hgt > 4) {
-        onAddBox({ id: uid(), x, y, w: wdt, h: hgt, thick });
-      }
-      setDrawRectStart(null);
-    }
   };
 
   const onNodeDown = (id: string) => (e: MouseEvent<Element>) => {
@@ -235,7 +207,6 @@ export function CanvasBoard({
     onSelectNode(id);
     setDragId(id);
     setSelectedWallId(null);
-    setSelectedBoxId(null);
   };
 
   const onNodeUp = () => setDragId(null);
@@ -244,7 +215,7 @@ export function CanvasBoard({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setDrawLineStart(null);
-        setDrawRectStart(null);
+        setZoneDraft([]);
         panRef.current.drag = false;
         setDragId(null);
         setSelectedWallId(null);
@@ -253,15 +224,18 @@ export function CanvasBoard({
         if (selectedWallId) {
           onDeleteWall(selectedWallId);
           setSelectedWallId(null);
-        } else if (selectedBoxId) {
-          onDeleteBox(selectedBoxId);
-          setSelectedBoxId(null);
         }
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selectedWallId, selectedBoxId, onDeleteWall, onDeleteBox]);
+  }, [selectedWallId, onDeleteWall]);
+
+  useEffect(() => {
+    if (tool !== "draw-zone" && zoneDraft.length) {
+      setZoneDraft([]);
+    }
+  }, [tool, zoneDraft.length]);
 
   return (
     <div className="rounded-xl border shadow bg-white dark:bg-slate-900 overflow-hidden select-none">
@@ -275,11 +249,24 @@ export function CanvasBoard({
           onNodeUp();
         }}
         onClick={(e) => {
-          setSelectedWallId(null);
-          setSelectedBoxId(null);
-          if (tool === "place-porte") placeNode("porte")(e);
-          if (tool === "place-badgeuse") placeNode("badgeuse")(e);
-        }}
+            setSelectedWallId(null);
+            if (tool === "draw-zone") {
+              e.stopPropagation();
+              const w = clientToWorld(e);
+              setZoneDraft((draft) => [...draft, { x: snap(w.x, grid), y: snap(w.y, grid) }]);
+              return;
+            }
+            if (tool === "place-porte") placeNode("porte")(e);
+            if (tool === "place-badgeuse") placeNode("badgeuse")(e);
+          }}
+          onDoubleClick={(e) => {
+            if (tool === "draw-zone" && zoneDraft.length >= 3) {
+              e.preventDefault();
+              e.stopPropagation();
+              onCreateZone(zoneDraft);
+              setZoneDraft([]);
+            }
+          }}
         width="100%"
         height="720"
         viewBox={`0 0 ${floor.width} ${floor.height}`}
@@ -289,24 +276,6 @@ export function CanvasBoard({
         }}
       >
         <g transform={`translate(${view.x} ${view.y}) scale(${view.z})`}>
-          {floor.boxes.map((b) => {
-            const isSelected = selectedBoxId === b.id;
-            return (
-              <rect
-                key={b.id}
-                x={b.x}
-                y={b.y}
-                width={b.w}
-                height={b.h}
-                fill={colors.boxFill}
-                stroke={isSelected ? colors.selection : colors.wallStroke}
-                strokeWidth={(b.thick || thick) + (isSelected ? 2 : 0)}
-                rx={2}
-                onClick={(e) => handleBoxClick(b, e)}
-                style={{ cursor: "pointer" }}
-              />
-            );
-          })}
 
           {floor.walls.map((w) => {
             const isSelected = selectedWallId === w.id;
@@ -325,6 +294,58 @@ export function CanvasBoard({
               />
             );
           })}
+
+          {zones.map((zone) => {
+            if (!zone.points.length) return null;
+            const pointsAttr = zone.points.map((p) => `${p.x},${p.y}`).join(" ");
+            const centroid = zone.points.reduce(
+              (acc, point) => ({ x: acc.x + point.x, y: acc.y + point.y }),
+              { x: 0, y: 0 }
+            );
+            centroid.x /= zone.points.length;
+            centroid.y /= zone.points.length;
+            return (
+              <g key={zone.id}>
+                <polygon
+                  points={pointsAttr}
+                  fill={
+                    showZoneFill ? (isDarkMode ? "rgba(14,165,233,0.12)" : "rgba(14,165,233,0.18)") : "transparent"
+                  }
+                  stroke={showZoneWalls ? "#0ea5e9" : "transparent"}
+                  strokeWidth={showZoneWalls ? 2 : 0}
+                  strokeDasharray="6 4"
+                />
+                {zone.name && (
+                  <text
+                    x={centroid.x}
+                    y={centroid.y}
+                    textAnchor="middle"
+                    alignmentBaseline="middle"
+                    fontSize={12}
+                    fill={colors.labelPrimary}
+                    style={{ pointerEvents: "none" }}
+                  >
+                    {zone.name}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+
+          {zoneDraft.length > 0 && (
+            <g>
+              <polyline
+                points={zoneDraft.map((p) => `${p.x},${p.y}`).join(" ")}
+                fill="none"
+                stroke="#38bdf8"
+                strokeWidth={2}
+                strokeDasharray="4 2"
+              />
+              {zoneDraft.map((point, idx) => (
+                <circle key={`${point.x}-${point.y}-${idx}`} cx={point.x} cy={point.y} r={3} fill="#38bdf8" stroke="#0f172a" strokeWidth={1} />
+              ))}
+            </g>
+          )}
 
           {floor.nodes
             .filter((n) => n.kind === "badgeuse" && n.targetDoorId)
@@ -349,19 +370,6 @@ export function CanvasBoard({
           {drawLineStart && hover && (
             <line x1={drawLineStart.x1} y1={drawLineStart.y1} x2={hover.x} y2={hover.y} stroke="#38bdf8" strokeDasharray="6 6" strokeWidth={thick} />
           )}
-          {drawRectStart && hover && (
-            <rect
-              x={Math.min(drawRectStart.x, hover.x)}
-              y={Math.min(drawRectStart.y, hover.y)}
-              width={Math.abs(hover.x - drawRectStart.x)}
-              height={Math.abs(hover.y - drawRectStart.y)}
-              fill="rgba(56,189,248,0.12)"
-              stroke="#38bdf8"
-              strokeDasharray="6 6"
-              strokeWidth={thick}
-            />
-          )}
-
           {floor.nodes.map((n) => {
             const isLoading = !!(n.deviceId && loadingMap[n.deviceId]);
             const dockerOk = n.deviceId ? dockerActive[n.deviceId]?.ready : false;
@@ -376,7 +384,6 @@ export function CanvasBoard({
                   e.stopPropagation();
                   onSelectNode(n.id);
                   setSelectedWallId(null);
-                  setSelectedBoxId(null);
                 }}
               >
                 {n.kind === "porte" ? (
@@ -384,14 +391,14 @@ export function CanvasBoard({
                     angle={n.rot || 0}
                     open={doorIsOpen(n.deviceId)}
                     hinge={n.hinge || "left"}
-                    label={n.deviceId || "porte"}
+                    label={selNodeId === n.id ? n.deviceId || "porte" : "porte"}
                     labelColor={colors.labelPrimary}
                   />
                 ) : (
                   <g>
                     <circle r={10} fill="#0284c7" />
                     <text x={0} y={-14} fontSize={10} textAnchor="middle" fill={colors.labelPrimary}>
-                      {n.deviceId || "badgeuse"}
+                      {selNodeId === n.id && n.deviceId ? n.deviceId : "badgeuse"}
                     </text>
                     {n.targetDoorId && (
                       <text x={0} y={14} fontSize={9} textAnchor="middle" fill={colors.labelSecondary}>
@@ -436,3 +443,4 @@ export function CanvasBoard({
     </div>
   );
 }
+

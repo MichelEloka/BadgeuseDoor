@@ -1,4 +1,4 @@
-import type { Wall } from "@/types/floor";
+import type { Wall, ZonePoint } from "@/types/floor";
 
 export const uid = () => Math.random().toString(36).slice(2, 9);
 
@@ -37,5 +37,33 @@ export function nearestWallSnap(
     if (!best || proj.d < best.d) best = { ...proj, wallId: w.id };
   }
   return best ? { x: best.x, y: best.y, angle: best.angle, wallId: best.wallId } : null;
+}
+
+export function pointInPolygon(point: ZonePoint, polygon: ZonePoint[]) {
+  if (polygon.length < 3) return false;
+  const { x, y } = point;
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i].x;
+    const yi = polygon[i].y;
+    const xj = polygon[j].x;
+    const yj = polygon[j].y;
+    const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi || 1e-7) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+export function distancePointToPolygon(px: number, py: number, polygon: ZonePoint[]) {
+  if (polygon.length === 0) return Infinity;
+  if (polygon.length === 1) return Math.hypot(px - polygon[0].x, py - polygon[0].y);
+  let best = Infinity;
+  for (let i = 0; i < polygon.length; i++) {
+    const a = polygon[i];
+    const b = polygon[(i + 1) % polygon.length];
+    const proj = projectPointOnSegment(px, py, a.x, a.y, b.x, b.y);
+    if (proj.d < best) best = proj.d;
+  }
+  return best;
 }
 

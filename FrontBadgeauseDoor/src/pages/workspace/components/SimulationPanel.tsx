@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-
+import type { MockUser } from "@/api/mockDirectory";
 import type { SimPerson } from "@/types/floor";
 
 interface SimulationPanelProps {
@@ -14,20 +14,34 @@ interface SimulationPanelProps {
   running: boolean;
   canRun: boolean;
   onToggleSimulation: () => void;
+  badgeCatalog: MockUser[];
 }
 
-export function SimulationPanel({ persons, onAddPerson, onRemovePerson, onUpdatePerson, running, canRun, onToggleSimulation }: SimulationPanelProps) {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [badgeId, setBadgeId] = useState("");
+export function SimulationPanel({ persons, onAddPerson, onRemovePerson, onUpdatePerson, running, canRun, onToggleSimulation, badgeCatalog }: SimulationPanelProps) {
+  const [selectedUserId, setSelectedUserId] = useState("");
   const [frequency, setFrequency] = useState(5);
 
+  const selectedUser = useMemo(() => badgeCatalog.find((u) => u.id === selectedUserId), [badgeCatalog, selectedUserId]);
+
+  useEffect(() => {
+    if (!badgeCatalog.length) {
+      setSelectedUserId("");
+      return;
+    }
+    if (!selectedUserId || !badgeCatalog.some((u) => u.id === selectedUserId)) {
+      setSelectedUserId(badgeCatalog[0].id);
+    }
+  }, [badgeCatalog, selectedUserId]);
+
   const handleAdd = () => {
-    if (!firstName.trim() || !lastName.trim() || !badgeId.trim() || frequency <= 0) return;
-    onAddPerson({ firstName: firstName.trim(), lastName: lastName.trim(), badgeId: badgeId.trim(), badgeFrequencySec: frequency });
-    setFirstName("");
-    setLastName("");
-    setBadgeId("");
+    if (!selectedUser || frequency <= 0) return;
+    const badgeId = selectedUser.badgeID || selectedUser.id;
+    onAddPerson({
+      firstName: selectedUser.firstName,
+      lastName: selectedUser.lastName,
+      badgeId,
+      badgeFrequencySec: frequency,
+    });
     setFrequency(5);
   };
 
@@ -45,20 +59,29 @@ export function SimulationPanel({ persons, onAddPerson, onRemovePerson, onUpdate
         </div>
 
         <div className="space-y-2">
-          <Input
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            placeholder="Prénom"
-            className="h-8 rounded-lg border-slate-200 text-xs dark:border-slate-600"
-          />
-          <Input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Nom" className="h-8 rounded-lg border-slate-200 text-xs dark:border-slate-600" />
+          <div className="space-y-1">
+            <select
+              value={selectedUserId}
+              onChange={(e) => setSelectedUserId(e.target.value)}
+              className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-xs dark:border-slate-700 dark:bg-slate-900/70"
+              disabled={!badgeCatalog.length}
+            >
+              {!badgeCatalog.length && <option value="">Chargement des badges…</option>}
+              {badgeCatalog.length > 0 && <option value="">Choisir un badge…</option>}
+              {badgeCatalog.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.firstName} {user.lastName} ({user.badgeID || user.id})
+                </option>
+              ))}
+            </select>
+            {selectedUser && (
+              <div className="rounded-lg border border-slate-100 bg-slate-50 px-2 py-1 text-[11px] text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300">
+                Badge sélectionné : <strong>{selectedUser.badgeID || selectedUser.id}</strong>
+              </div>
+            )}
+            {!badgeCatalog.length && <div className="text-[11px] text-slate-500 dark:text-slate-400">Aucun badge disponible (mock API).</div>}
+          </div>
           <div className="flex flex-wrap gap-2">
-          <Input
-            value={badgeId}
-            onChange={(e) => setBadgeId(e.target.value)}
-            placeholder="badgeID"
-            className="h-8 flex-1 min-w-[140px] rounded-lg border-slate-200 text-xs dark:border-slate-600"
-          />
             <Input
               type="number"
               min={1}
@@ -67,7 +90,7 @@ export function SimulationPanel({ persons, onAddPerson, onRemovePerson, onUpdate
               placeholder="fréq (s)"
               className="h-8 w-24 rounded-lg border-slate-200 text-xs dark:border-slate-600"
             />
-            <Button size="sm" className="rounded-lg px-4 shrink-0" onClick={handleAdd}>
+            <Button size="sm" className="rounded-lg px-4 shrink-0" onClick={handleAdd} disabled={!selectedUser}>
               Ajouter
             </Button>
           </div>

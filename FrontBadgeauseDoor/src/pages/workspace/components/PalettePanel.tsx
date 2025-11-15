@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { DeviceNode } from "@/types/floor";
 import type { Tool } from "../types";
-import { DoorOpen, Hand, KeyRound, Minus, Plus, Ruler, Square } from "lucide-react";
+import { DoorOpen, Hand, KeyRound, Minus, Plus, Ruler, PenSquare } from "lucide-react";
 
 interface PalettePanelProps {
   tool: Tool;
@@ -42,7 +42,7 @@ export function PalettePanel({
         <div className="grid grid-cols-1 gap-1">
           <PaletteButton icon={<Hand className="h-4 w-4" />} label="Pan" active={tool === "pan"} onClick={() => onToolChange("pan")} />
           <PaletteButton icon={<Ruler className="h-4 w-4" />} label="Mur (ligne)" active={tool === "wall-line"} onClick={() => onToolChange("wall-line")} />
-          <PaletteButton icon={<Square className="h-4 w-4" />} label="Pièce (carré)" active={tool === "wall-rect"} onClick={() => onToolChange("wall-rect")} />
+          <PaletteButton icon={<PenSquare className="h-4 w-4" />} label="Dessiner zone" active={tool === "draw-zone"} onClick={() => onToolChange("draw-zone")} />
           <PaletteButton icon={<DoorOpen className="h-4 w-4" />} label="Placer porte" active={tool === "place-porte"} onClick={() => onToolChange("place-porte")} />
           <PaletteButton icon={<KeyRound className="h-4 w-4" />} label="Placer badgeuse" active={tool === "place-badgeuse"} onClick={() => onToolChange("place-badgeuse")} />
         </div>

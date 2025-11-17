@@ -11,6 +11,7 @@ import {
   type DirectoryDeviceRecord,
   type DirectoryUser,
 } from "@/api/directory";
+import { createSimulatorDevice, deleteSimulatorDevice } from "@/api/simulator";
 import { ORCH_URL, MQTT_WS_URL_DEFAULT } from "@/config";
 import { useDockerStatus } from "@/hooks/useDockerStatus";
 import { useDebouncedEffect } from "@/hooks/useDebouncedEffect";
@@ -237,17 +238,25 @@ export default function WorkspacePage() {
     }));
 
   const handleCreateNode = async (partial: Omit<DeviceNode, "deviceId">) => {
+    let record: DirectoryDeviceRecord | null = null;
     try {
-      const record = await createDirectoryDevice(partial.kind);
+      record = await createDirectoryDevice(partial.kind);
+      const linkedDoor = partial.kind === "badgeuse" ? partial.targetDoorId : undefined;
+      await createSimulatorDevice(partial.kind, record.id, linkedDoor);
+
       const node: DeviceNode = { ...partial, deviceId: record.id };
       addNode(node);
       setSelNodeId(node.id);
-      setDeviceRegistry((prev) => [...prev.filter((d) => d.id !== record.id), record]);
+      setDeviceRegistry((prev) => [...prev.filter((d) => d.id !== record!.id), record!]);
       if (isDirectoryDoor(record.type)) {
         setDoorCatalog((prev) => (prev.includes(record.id) ? prev : [...prev, record.id]));
       }
     } catch (error) {
-      alert("Impossible de générer un identifiant pour ce capteur (backend).");
+      if (record?.id) {
+        await deleteDirectoryDevice(record.id).catch(() => {});
+        setDeviceRegistry((prev) => prev.filter((d) => d.id !== record!.id));
+      }
+      alert("Impossible de créer ce capteur. Vérifie l'orchestrateur et iotsimulator.");
     }
   };
 
@@ -393,14 +402,30 @@ export default function WorkspacePage() {
   }
   if (node.deviceId) {
     try {
+      await deleteSimulatorDevice(node.deviceId);
+    } catch {
+      alert("Impossible de supprimer ce capteur côté iotsimulator.");
+      setLoadingMap((m) => {
+        const copy = { ...m };
+        if (node.deviceId) delete copy[node.deviceId];
+        return copy;
+      });
+      return;
+    }
+    try {
       await deleteDirectoryDevice(node.deviceId);
     } catch {
-      // ignore backend delete errors
-    } finally {
-      setDeviceRegistry((prev) => prev.filter((d) => d.id !== node.deviceId));
-      if (node.kind === "porte") {
-        setDoorCatalog((prev) => prev.filter((id) => id !== node.deviceId));
-      }
+      alert("Suppression backend impossible. Réessaie plus tard.");
+      setLoadingMap((m) => {
+        const copy = { ...m };
+        if (node.deviceId) delete copy[node.deviceId];
+        return copy;
+      });
+      return;
+    }
+    setDeviceRegistry((prev) => prev.filter((d) => d.id !== node.deviceId));
+    if (node.kind === "porte") {
+      setDoorCatalog((prev) => prev.filter((id) => id !== node.deviceId));
     }
   }
   deleteNodeById(node.id);

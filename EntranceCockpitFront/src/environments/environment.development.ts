@@ -7,5 +7,5 @@ export const environment = {
   manualOverrideUrl: "http://172.31.249.2:9500/api/manual-access",
   doorsApiUrl: "http://172.31.249.2:9500/api/doors",
   logDetailsApiUrl: "http://172.31.249.2:9500/api/logs",
-  mockDevicesApiUrl: "http://172.31.249.2:9500/api/mock/devices",
+  mockDevicesApiUrl: "http://172.31.249.2:9500/api/devices",
 };

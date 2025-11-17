@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @Transactional
@@ -87,7 +88,12 @@ public class DeviceRegistryService {
     }
 
     private String generateId(String type) {
-        return type + "-" + Long.toHexString(System.nanoTime());
+        String candidate;
+        do {
+            long random = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
+            candidate = type + "-" + Long.toHexString(random);
+        } while (repository.existsByDeviceIdIgnoreCase(candidate));
+        return candidate;
     }
 
     private DeviceRecord toRecord(DeviceEntity entity) {

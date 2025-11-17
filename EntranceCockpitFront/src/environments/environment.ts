@@ -29,7 +29,7 @@ export const environment = {
    */
   logDetailsApiUrl: "http://172.31.249.2:9500/api/logs",
   /**
-   * REST endpoint returning mock devices (portes & badgeuses).
+   * REST endpoint returning the devices registered in the real backend.
    */
-  mockDevicesApiUrl: "http://172.31.249.2:9500/api/mock/devices",
+  mockDevicesApiUrl: "http://172.31.249.2:9500/api/devices",
 };

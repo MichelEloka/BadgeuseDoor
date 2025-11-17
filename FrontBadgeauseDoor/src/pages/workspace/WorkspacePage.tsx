@@ -240,13 +240,14 @@ export default function WorkspacePage() {
     addNode(node);
     setSelNodeId(node.id);
     try {
-      const record = await createOrchestratorDevice(node.kind, { deviceId: node.deviceId, doorId: node.targetDoorId });
-      patchNode(node.id, (prev) => ({ ...prev, deviceId: record.id }));
-      setDeviceRegistry((prev) => [...prev.filter((d) => d.id !== record.id), record]);
-      if (isDirectoryDoor(record.type)) {
-        setDoorCatalog((prev) => (prev.includes(record.id) ? prev : [...prev, record.id]));
-      }
-      await pollUntilReady(node.kind, record.id);
+        const record = await createOrchestratorDevice(node.kind, { deviceId: node.deviceId, doorId: node.targetDoorId });
+        const assignedId = record.id || `${node.kind}-${uid()}`;
+        patchNode(node.id, (prev) => ({ ...prev, deviceId: assignedId }));
+        setDeviceRegistry((prev) => [...prev.filter((d) => d.id !== record.id), record]);
+        if (isDirectoryDoor(record.type)) {
+          setDoorCatalog((prev) => (prev.includes(record.id) ? prev : [...prev, record.id]));
+        }
+        await pollUntilReady(node.kind, assignedId);
     } catch (error) {
       alert("Impossible de créer ce capteur côté backend.");
       deleteNodeById(node.id);
@@ -341,7 +342,8 @@ export default function WorkspacePage() {
     setLoadingMap((m) => ({ ...m, [key]: "creating" }));
     try {
       const record = await createOrchestratorDevice(node.kind, { deviceId: node.deviceId, doorId: node.targetDoorId });
-      patchNode(node.id, (prev) => ({ ...prev, deviceId: record.id }));
+      const assignedId = record.id || `${node.kind}-${uid()}`;
+      patchNode(node.id, (prev) => ({ ...prev, deviceId: assignedId }));
       setDeviceRegistry((prev) => {
         const filtered = prev.filter((d) => d.id !== record.id);
         return [...filtered, record];
@@ -349,7 +351,7 @@ export default function WorkspacePage() {
       if (isDirectoryDoor(record.type)) {
         setDoorCatalog((prev) => (prev.includes(record.id) ? prev : [...prev, record.id]));
       }
-      await pollUntilReady(node.kind, record.id);
+      await pollUntilReady(node.kind, assignedId);
     } finally {
       setLoadingMap((m) => {
         const copy = { ...m };

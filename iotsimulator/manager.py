@@ -29,31 +29,36 @@ class DeviceManager:
         with self._lock:
             record = self._devices.get(device_id)
 
-            if record:
+            if record is None:
+                target_door = door_id if kind == "badgeuse" else None
+                new_worker = self._build_worker(kind, device_id, target_door)
+                record = DeviceRecord(kind, new_worker, target_door)
+                self._devices[device_id] = record
+                to_start = new_worker
+            else:
                 if record.kind != kind:
                     to_stop = record.worker
-                    new_worker = self._build_worker(kind, device_id, door_id)
-                    record = DeviceRecord(kind, new_worker, door_id if kind == "badgeuse" else None)
+                    target_door = door_id if kind == "badgeuse" else None
+                    new_worker = self._build_worker(kind, device_id, target_door)
+                    record = DeviceRecord(kind, new_worker, target_door)
+                    self._devices[device_id] = record
+                    to_start = new_worker
+                elif kind == "badgeuse" and door_id and door_id != record.door_id:
+                    to_stop = record.worker
+                    new_worker = BadgeuseWorker(device_id, door_id)
+                    record = DeviceRecord(kind, new_worker, door_id)
+                    self._devices[device_id] = record
+                    to_start = new_worker
+                elif not record.worker.is_alive():
+                    to_stop = record.worker
+                    target_door = record.door_id if record.kind == "badgeuse" else None
+                    new_worker = self._build_worker(kind, device_id, target_door)
+                    record = DeviceRecord(kind, new_worker, target_door)
                     self._devices[device_id] = record
                     to_start = new_worker
                 else:
-                    if kind == "badgeuse" and door_id and door_id != record.door_id:
-                        to_stop = record.worker
-                        new_worker = BadgeuseWorker(device_id, door_id)
-                        record = DeviceRecord(kind, new_worker, door_id)
-                        self._devices[device_id] = record
-                        to_start = new_worker
-                    elif not record.worker.is_alive():
-                        to_stop = record.worker
-                        new_worker = self._build_worker(kind, device_id, record.door_id)
-                        record = DeviceRecord(kind, new_worker, record.door_id)
-                        self._devices[device_id] = record
-                        to_start = new_worker
-            else:
-                new_worker = self._build_worker(kind, device_id, door_id)
-                record = DeviceRecord(kind, new_worker, door_id if kind == "badgeuse" else None)
-                self._devices[device_id] = record
-                to_start = new_worker
+                    if kind == "badgeuse" and not record.door_id and door_id:
+                        record.door_id = door_id
 
         if to_stop:
             to_stop.stop()

@@ -45,22 +45,6 @@ public class OrchestratorController {
                 ))
                 .toList();
     }
-+
-+    @PostMapping("/devices")
-+    public ResponseEntity<?> createDevice(@RequestBody Map<String, String> payload) {
-+        String kind = payload.getOrDefault("kind", payload.getOrDefault("type", ""));
-+        if (!StringUtils.hasText(kind)) {
-+            return ResponseEntity.badRequest().body(Map.of("message", "Device kind is required"));
-+        }
-+        String preferredId = payload.getOrDefault("device_id", payload.getOrDefault("deviceId", null));
-+        String doorId = payload.getOrDefault("door_id", payload.getOrDefault("doorId", null));
-+        try {
-+            DeviceRecord record = deviceRegistryService.register(kind, preferredId, doorId);
-+            return ResponseEntity.ok(record);
-+        } catch (IllegalStateException ex) {
-+            return ResponseEntity.status(409).body(Map.of("message", ex.getMessage()));
-+        }
-+    }
 
     @DeleteMapping("/devices/{deviceId}")
     public ResponseEntity<Void> removeDevice(@PathVariable String deviceId, @RequestParam(name = "remove_image", required = false) String ignore) {
@@ -74,4 +58,12 @@ public class OrchestratorController {
             return ResponseEntity.badRequest().body(Map.of("message", "Door ID required"));
         }
         if (!deviceRegistryService.doorExists(doorId)) {
-@@
+            return ResponseEntity.status(404).body(Map.of("message", "Unknown door"));
+        }
+        return ResponseEntity.accepted().body(Map.of(
+                "doorId", doorId,
+                "action", action,
+                "status", "accepted"
+        ));
+    }
+}

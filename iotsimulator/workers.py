@@ -14,11 +14,11 @@ class DeviceWorker(threading.Thread):
         self.device_id = device_id
         self.kind = kind
         self.ready = threading.Event()
-        self._stop = threading.Event()
+        self._stop_event = threading.Event()
         self.connected = False
 
     def stop(self) -> None:
-        self._stop.set()
+        self._stop_event.set()
 
     def wait_ready(self, timeout: float) -> bool:
         return self.ready.wait(timeout)
@@ -93,7 +93,7 @@ class BadgeuseWorker(DeviceWorker):
         self.client.connect(MQTT_HOST, MQTT_PORT, keepalive=60)
         self.client.loop_start()
         try:
-            while not self._stop.wait(0.25):
+            while not self._stop_event.wait(0.25):
                 pass
         finally:
             try:
@@ -186,7 +186,7 @@ class DoorWorker(DeviceWorker):
         self.client.connect(MQTT_HOST, MQTT_PORT, keepalive=60)
         self.client.loop_start()
         try:
-            while not self._stop.wait(0.25):
+            while not self._stop_event.wait(0.25):
                 pass
         finally:
             try:
@@ -211,4 +211,5 @@ class DoorWorker(DeviceWorker):
             }
         )
         return base
+
 

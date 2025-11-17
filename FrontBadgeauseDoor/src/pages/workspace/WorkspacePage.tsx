@@ -109,6 +109,13 @@ export default function WorkspacePage() {
           .map((d) => d.id);
         const combined = Array.from(new Set([...(doors ?? []), ...derivedDoors]));
         setDoorCatalog(combined);
+        setLocalDockerActive((prev) => {
+          const next: Record<string, { ready: boolean; status: string }> = {};
+          devices.forEach((d) => {
+            next[d.id] = prev[d.id] ?? { ready: true, status: "running" };
+          });
+          return next;
+        });
       } catch {
         if (active) {
           setDeviceRegistry([]);
@@ -192,7 +199,12 @@ export default function WorkspacePage() {
   const [pendingZoneRenameId, setPendingZoneRenameId] = useState<string | null>(null);
 
   const { mqttUrl, setMqttUrl, connected, isConnecting, connect, disconnect, porteState, logs, publishBadgeCommand } = useMqttBridge(MQTT_WS_URL_DEFAULT);
-  const dockerActive = useDockerStatus();
+  const remoteDockerActive = useDockerStatus();
+  const [localDockerActive, setLocalDockerActive] = useState<Record<string, { ready: boolean; status: string }>>({});
+  const dockerActive = useMemo(
+    () => ({ ...remoteDockerActive, ...localDockerActive }),
+    [remoteDockerActive, localDockerActive]
+  );
 
   const [selNodeId, setSelNodeId] = useState<string | null>(null);
   const selNode = floor.nodes.find((n) => n.id === selNodeId) || null;
@@ -250,6 +262,8 @@ export default function WorkspacePage() {
         setDoorCatalog((prev) => (prev.includes(assignedId) ? prev : [...prev, assignedId]));
       }
       await pollUntilReady(node.kind, assignedId);
+      setLocalDockerActive((prev) => ({ ...prev, [assignedId]: { ready: true, status: "running" } }));
+      setLocalDockerActive((prev) => ({ ...prev, [assignedId]: { ready: true, status: "running" } }));
     } catch (error) {
       alert("Impossible de créer ce capteur côté backend.");
       deleteNodeById(node.id);
@@ -401,6 +415,11 @@ export default function WorkspacePage() {
       if (node.kind === "porte") {
         setDoorCatalog((prev) => prev.filter((id) => id !== node.deviceId));
       }
+      setLocalDockerActive((prev) => {
+        const copy = { ...prev };
+        delete copy[node.deviceId!];
+        return copy;
+      });
     }
   }
   deleteNodeById(node.id);

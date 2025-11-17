@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { deleteDeviceOnOrch, doorCmd, fetchPlan, pollUntilReady, savePlan } from "@/api/orchestrator";
 import {
-  createDirectoryDevice,
   deleteDirectoryDevice,
   fetchDirectoryDevices,
   fetchDirectoryUsers,
@@ -236,19 +235,10 @@ export default function WorkspacePage() {
       zones: (f.zones ?? []).filter((zone) => zone.id !== zoneId),
     }));
 
-  const handleCreateNode = async (partial: Omit<DeviceNode, "deviceId">) => {
-    try {
-      const record = await createDirectoryDevice(partial.kind);
-      const node: DeviceNode = { ...partial, deviceId: record.id };
-      addNode(node);
-      setSelNodeId(node.id);
-      setDeviceRegistry((prev) => [...prev.filter((d) => d.id !== record.id), record]);
-      if (isDirectoryDoor(record.type)) {
-        setDoorCatalog((prev) => (prev.includes(record.id) ? prev : [...prev, record.id]));
-      }
-    } catch {
-      alert("Impossible de générer un identifiant pour ce capteur (backend).");
-    }
+  const handleCreateNode = (partial: Omit<DeviceNode, "deviceId">) => {
+    const node: DeviceNode = { ...partial };
+    addNode(node);
+    setSelNodeId(node.id);
   };
 
   const flipSelectedHinge = () => {
@@ -336,12 +326,15 @@ export default function WorkspacePage() {
 
   async function ensureService(node: DeviceNode) {
     if (!node.deviceId) {
-      alert("Renseigne un deviceId");
-      return;
+      setLoadingMap((m) => ({ ...m, [node.id]: "creating" }));
+    } else {
+      setLoadingMap((m) => ({ ...m, [node.deviceId!]: "creating" }));
     }
-    setLoadingMap((m) => ({ ...m, [node.deviceId!]: "creating" }));
     try {
-      const body: any = { kind: node.kind, device_id: node.deviceId };
+      const body: Record<string, unknown> = { kind: node.kind };
+      if (node.deviceId) {
+        body.device_id = node.deviceId;
+      }
       if (node.kind === "badgeuse" && node.targetDoorId) {
         body.door_id = node.targetDoorId;
       }
@@ -354,11 +347,21 @@ export default function WorkspacePage() {
         alert(`Création ${node.kind} KO (${r.status})`);
         return;
       }
-      await pollUntilReady(node.kind, node.deviceId);
+      const created: DirectoryDeviceRecord = await r.json();
+      patchNode(node.id, (prev) => ({ ...prev, deviceId: created.id }));
+      setDeviceRegistry((prev) => {
+        const filtered = prev.filter((d) => d.id !== created.id);
+        return [...filtered, created];
+      });
+      if (isDirectoryDoor(created.type)) {
+        setDoorCatalog((prev) => (prev.includes(created.id) ? prev : [...prev, created.id]));
+      }
+      await pollUntilReady(node.kind, created.id);
     } finally {
       setLoadingMap((m) => {
         const copy = { ...m };
         if (node.deviceId) delete copy[node.deviceId];
+        if (!node.deviceId) delete copy[node.id];
         return copy;
       });
     }

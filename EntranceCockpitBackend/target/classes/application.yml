@@ -23,6 +23,9 @@ events:
     extra-topics: ${EVENTS_KAFKA_EXTRA_TOPICS:}
     group-id: ${KAFKA_GROUP_ID:entrance-cockpit}
 
+simulator:
+  base-url: ${SIMULATOR_BASE_URL:http://172.31.252.161:9002}
+
 logging:
   level:
     root: info

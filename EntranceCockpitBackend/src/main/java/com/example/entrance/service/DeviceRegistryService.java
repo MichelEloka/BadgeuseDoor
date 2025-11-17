@@ -3,6 +3,7 @@ package com.example.entrance.service;
 import com.example.entrance.entity.DeviceEntity;
 import com.example.entrance.model.DeviceRecord;
 import com.example.entrance.repository.DeviceRepository;
+import com.example.entrance.service.simulator.SimulatorClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -14,9 +15,11 @@ import java.util.List;
 public class DeviceRegistryService {
 
     private final DeviceRepository repository;
+    private final SimulatorClient simulatorClient;
 
-    public DeviceRegistryService(DeviceRepository repository) {
+    public DeviceRegistryService(DeviceRepository repository, SimulatorClient simulatorClient) {
         this.repository = repository;
+        this.simulatorClient = simulatorClient;
     }
 
     @Transactional(readOnly = true)
@@ -34,6 +37,8 @@ public class DeviceRegistryService {
             throw new IllegalStateException("Device ID already exists");
         }
 
+        simulatorClient.createDevice(normalizedType, finalId, targetDoorId);
+
         DeviceEntity entity = new DeviceEntity();
         entity.setDeviceId(finalId);
         entity.setType(normalizedType);
@@ -48,6 +53,8 @@ public class DeviceRegistryService {
         if (!StringUtils.hasText(deviceId)) {
             return false;
         }
+        simulatorClient.deleteDevice(deviceId.trim());
+
         return repository.findByDeviceIdIgnoreCase(deviceId.trim())
                 .map(entity -> {
                     repository.delete(entity);

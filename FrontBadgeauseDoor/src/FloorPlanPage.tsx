@@ -29,7 +29,7 @@ import {
  */
 
 // ====== CONFIG ======
-const ORCH_URL = import.meta.env.VITE_ORCH_URL || "http://172.31.249.2:9002";
+const ORCH_URL = import.meta.env.VITE_ORCH_URL || "http://172.31.249.2:9500/orchestrator";
 const MQTT_WS_URL_DEFAULT = "ws://localhost:9001";
 
 // ====== Types ======

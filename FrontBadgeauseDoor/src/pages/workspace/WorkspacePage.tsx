@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { deleteDeviceOnOrch, doorCmd, fetchPlan, pollUntilReady, savePlan } from "@/api/orchestrator";
+import { createOrchestratorDevice, deleteDeviceOnOrch, doorCmd, fetchPlan, pollUntilReady, savePlan, type OrchestratorDevice } from "@/api/orchestrator";
 import {
   deleteDirectoryDevice,
   fetchDirectoryDevices,
@@ -235,10 +235,22 @@ export default function WorkspacePage() {
       zones: (f.zones ?? []).filter((zone) => zone.id !== zoneId),
     }));
 
-  const handleCreateNode = (partial: Omit<DeviceNode, "deviceId">) => {
+  const handleCreateNode = async (partial: Omit<DeviceNode, "deviceId">) => {
     const node: DeviceNode = { ...partial };
     addNode(node);
     setSelNodeId(node.id);
+    try {
+      const record = await createOrchestratorDevice(node.kind, { deviceId: node.deviceId, doorId: node.targetDoorId });
+      patchNode(node.id, (prev) => ({ ...prev, deviceId: record.id }));
+      setDeviceRegistry((prev) => [...prev.filter((d) => d.id !== record.id), record]);
+      if (isDirectoryDoor(record.type)) {
+        setDoorCatalog((prev) => (prev.includes(record.id) ? prev : [...prev, record.id]));
+      }
+      await pollUntilReady(node.kind, record.id);
+    } catch (error) {
+      alert("Impossible de créer ce capteur côté backend.");
+      deleteNodeById(node.id);
+    }
   };
 
   const flipSelectedHinge = () => {
@@ -325,43 +337,23 @@ export default function WorkspacePage() {
   }, [simRunning, canRunSimulation, simPersons, badgeNodes, connected, sendBadgeCommand]);
 
   async function ensureService(node: DeviceNode) {
-    if (!node.deviceId) {
-      setLoadingMap((m) => ({ ...m, [node.id]: "creating" }));
-    } else {
-      setLoadingMap((m) => ({ ...m, [node.deviceId!]: "creating" }));
-    }
+    const key = node.deviceId || node.id;
+    setLoadingMap((m) => ({ ...m, [key]: "creating" }));
     try {
-      const body: Record<string, unknown> = { kind: node.kind };
-      if (node.deviceId) {
-        body.device_id = node.deviceId;
-      }
-      if (node.kind === "badgeuse" && node.targetDoorId) {
-        body.door_id = node.targetDoorId;
-      }
-      const r = await fetch(`${ORCH_URL}/devices`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (!r.ok) {
-        alert(`Création ${node.kind} KO (${r.status})`);
-        return;
-      }
-      const created: DirectoryDeviceRecord = await r.json();
-      patchNode(node.id, (prev) => ({ ...prev, deviceId: created.id }));
+      const record = await createOrchestratorDevice(node.kind, { deviceId: node.deviceId, doorId: node.targetDoorId });
+      patchNode(node.id, (prev) => ({ ...prev, deviceId: record.id }));
       setDeviceRegistry((prev) => {
-        const filtered = prev.filter((d) => d.id !== created.id);
-        return [...filtered, created];
+        const filtered = prev.filter((d) => d.id !== record.id);
+        return [...filtered, record];
       });
-      if (isDirectoryDoor(created.type)) {
-        setDoorCatalog((prev) => (prev.includes(created.id) ? prev : [...prev, created.id]));
+      if (isDirectoryDoor(record.type)) {
+        setDoorCatalog((prev) => (prev.includes(record.id) ? prev : [...prev, record.id]));
       }
-      await pollUntilReady(node.kind, created.id);
+      await pollUntilReady(node.kind, record.id);
     } finally {
       setLoadingMap((m) => {
         const copy = { ...m };
-        if (node.deviceId) delete copy[node.deviceId];
-        if (!node.deviceId) delete copy[node.id];
+        delete copy[key];
         return copy;
       });
     }

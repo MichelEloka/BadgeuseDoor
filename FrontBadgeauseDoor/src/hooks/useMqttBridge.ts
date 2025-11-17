@@ -137,15 +137,16 @@ export function useMqttBridge(initialUrl: string) {
           return reject(new Error("MQTT non connecte"));
         }
         const topicDeviceId = (deviceId || "").trim();
-        if (!topicDeviceId) {
-          return reject(new Error("deviceId vide"));
+        const targetDoor = payload.doorId?.trim();
+        if (!topicDeviceId && !targetDoor) {
+          return reject(new Error("deviceId ou doorId requis"));
         }
-        const topic = `iot/badgeuse/${topicDeviceId}/commands`;
+        const topic = targetDoor ? `iot/porte/${targetDoor}/events` : `iot/badgeuse/${topicDeviceId}/commands`;
         const message = {
           action: "simulate_badge",
           timestamp: new Date().toISOString(),
           badgeID: payload.badgeId,
-          ...(payload.doorId ? { doorID: payload.doorId } : {}),
+          ...(targetDoor ? { doorID: targetDoor } : payload.doorId ? { doorID: payload.doorId } : {}),
         };
         client.publish(topic, JSON.stringify(message), { qos: 1 }, (err) => {
           if (err) {

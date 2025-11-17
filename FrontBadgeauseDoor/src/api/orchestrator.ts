@@ -1,10 +1,31 @@
 import { ORCH_URL } from "@/config";
 import type { Floor } from "@/types/floor";
+import type { DirectoryDeviceRecord } from "@/api/directory";
 
 export async function fetchPlan(floorId: string) {
   const r = await fetch(`${ORCH_URL}/plans/${floorId}`);
   if (!r.ok) throw new Error("plan not found");
   return (await r.json()) as Floor;
+}
+
+export async function createOrchestratorDevice(kind: "badgeuse" | "porte", options?: { deviceId?: string; doorId?: string | null }) {
+  const payload: Record<string, unknown> = { kind };
+  if (options?.deviceId) {
+    payload.device_id = options.deviceId;
+  }
+  if (options?.doorId) {
+    payload.door_id = options.doorId;
+  }
+  const r = await fetch(`${ORCH_URL}/devices`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!r.ok) {
+    const message = await r.text().catch(() => "");
+    throw new Error(`Orchestrator create failed (${r.status}) ${message}`);
+  }
+  return (await r.json()) as DirectoryDeviceRecord;
 }
 
 export async function savePlan(floor: Floor) {

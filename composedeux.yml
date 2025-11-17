@@ -1,0 +1,158 @@
+services:
+  redis:
+    image: redis:7.2
+    command: [
+      "redis-server",
+      "--bind","0.0.0.0",
+      "--protected-mode","no",
+      "--requirepass","${REDIS_PASSWORD}",
+      "--save","",
+      "--appendonly","no",
+      "--maxmemory","${REDIS_MAXMEMORY}",
+      "--maxmemory-policy","allkeys-lfu",
+      "--lazyfree-lazy-eviction","yes",
+      "--lazyfree-lazy-expire","yes"
+    ]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+  
+    healthcheck:
+      test: ["CMD","redis-cli","-a","${REDIS_PASSWORD}","PING"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - core-net
+
+  postgres:
+    image: postgres:16
+    container_name: postgres  
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: Europe/Paris
+      PGTZ: Europe/Paris
+    command: ["postgres","-c","listen_addresses=*","-c","port=5432"]
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - core-net
+  pgadmin:
+    image: dpage/pgadmin4:8.3
+    container_name: pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: seulgi.shin.fr@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: episen-tp-paas
+      TZ: Europe/Paris
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - core-net
+
+  cache-loader:
+    build: 
+      context: ./cache-loader
+      dockerfile: Dockerfile  
+    env_file: .env
+    environment:
+      PG_DSN: host=postgres port=5432 dbname=${POSTGRES_DB} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} sslmode=disable
+      REDIS_DSN: redis://:${REDIS_PASSWORD}@redis:6379/0
+    volumes:
+      - ./cache-loader/data:/data 
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    networks:
+      - core-net
+  telemetry-service:
+    build: .
+    container_name: telemetry-service
+    environment:
+      MQTT_BROKER: "mqtt://172.31.252.161:1883"
+      MQTT_USER: "toto"
+      MQTT_PASSWORD: "toto"
+
+      MQTT_TOPIC_BADGE: "iot/badgeuse/+/events"
+      MQTT_TOPIC_DOOR_BASE: "iot/porte"
+
+      KAFKA_BROKER: "172.31.252.16:9092"
+      TOPIC_ATTEMPTS: "attempts"
+      TOPIC_ENTRANCE: "entrance"
+    command: ["node", "index.js"]
+    restart: unless-stopped
+  iotBadgeDoorSimulateor:
+    build: ./iotsimulator
+    container_name: iotBadgeDoorSimulateor
+    image: badgeusedoor/iotbadgedoorsimulator
+    environment:
+      MQTT_HOST: "host.docker.internal"
+      MQTT_PORT: "1883"
+      SIMULATOR_DATA_DIR: "/data"
+    ports:
+      - "9002:9002"
+    networks: [iot]
+    volumes:
+      - ./iotsimulator/simulator_data:/data
+    restart: unless-stopped
+  entrance-cockpit-front:
+    build:
+      context: ./EntranceCockpitFront
+      dockerfile: Dockerfile
+    container_name: entrance-cockpit-front
+    ports:
+      - "4201:80"
+    networks: [iot]
+    restart: unless-stopped
+  second-entrance-cockpit-front:
+    build:
+      context: ./SecondEntranceCockpitFront
+      dockerfile: Dockerfile
+    container_name: second-entrance-cockpit-front
+    ports:
+      - "4202:80"
+    networks: [iot]
+    restart: unless-stopped
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: mosquitto
+    restart: unless-stopped
+
+    environment:
+      MQTT_USER: "toto"
+      MQTT_PASSWORD: "toto"
+
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    networks: [iot]
+ 
+volumes:
+  redis-data:
+
+
+
+
+networks:
+  core-net:
+    name: core-net 
+    driver: bridge
+  iot: {}
+

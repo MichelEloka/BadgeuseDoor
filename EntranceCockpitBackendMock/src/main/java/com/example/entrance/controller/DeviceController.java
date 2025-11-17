@@ -50,4 +50,22 @@ public class DeviceController {
         }
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{deviceId}")
+    public ResponseEntity<?> patch(@PathVariable("deviceId") String deviceId, @RequestBody Map<String, Object> body) {
+        if (!StringUtils.hasText(deviceId)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Device ID is required"));
+        }
+        Object rawLocation = body.get("location");
+        String location = rawLocation == null ? null : rawLocation.toString();
+        try {
+            DeviceRecord updated = registryService.updateLocation(deviceId.trim(), location);
+            if (updated == null) {
+                return ResponseEntity.status(404).body(Map.of("message", "Device not found"));
+            }
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
+        }
+    }
 }

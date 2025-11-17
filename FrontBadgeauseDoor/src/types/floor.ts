@@ -31,6 +31,8 @@ export type DeviceNode = {
   hinge?: Hinge;
   /** Porte liée pour badgeuse (deviceId de la porte) */
   targetDoorId?: string;
+  /** Nom(s) des zones touchant la porte, concaténées avec \"et\" */
+  location?: string;
 };
 
 export type SimPerson = {

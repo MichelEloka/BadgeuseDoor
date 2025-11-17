@@ -57,6 +57,17 @@ services:
       - ./mosquitto/data:/mosquitto/data
       - ./mosquitto/log:/mosquitto/log
     networks: [iot]
+  hivemq:
+    image: hivemq/hivemq-ce:latest
+    container_name: hivemq
+    ports:
+      - "8080:8080"   # Web UI
+      - "1884:1883"   # MQTT port (alternative)
+    volumes:
+      - ./hivemq/data:/opt/hivemq/data
+      - ./hivemq/log:/opt/hivemq/log
+    restart: unless-stopped
+
  
  
 networks:

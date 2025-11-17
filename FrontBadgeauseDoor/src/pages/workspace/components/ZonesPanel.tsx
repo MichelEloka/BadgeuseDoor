@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -37,9 +37,32 @@ export function ZonesPanel({
     setEditing((prev) => ({ ...prev, [zone.id]: value }));
   };
 
-  const handleBlur = (zone: ZoneShape) => {
-    const value = getValue(zone).trim();
-    onRename(zone.id, value);
+  const resetEditing = (zone: ZoneShape) =>
+    setEditing((prev) => {
+      const copy = { ...prev };
+      delete copy[zone.id];
+      return copy;
+    });
+
+  const handleConfirm = (zone: ZoneShape) => {
+    const current = zone.name?.trim() ?? "";
+    const next = getValue(zone).trim();
+    if (!next || next === current) {
+      resetEditing(zone);
+      return;
+    }
+    resetEditing(zone);
+    onRename(zone.id, next);
+  };
+
+  const handleKeyDown = (zone: ZoneShape, event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleConfirm(zone);
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      setEditing((prev) => ({ ...prev, [zone.id]: zone.name ?? "" }));
+    }
   };
 
   useEffect(() => {
@@ -73,31 +96,48 @@ export function ZonesPanel({
           </div>
         </div>
         {!zones.length && <div className="text-xs text-slate-500 dark:text-slate-400">Aucune zone définie.</div>}
-        {zones.map((zone, index) => (
-          <div key={zone.id} className="rounded-lg border border-slate-200/70 bg-white/90 p-2 dark:border-slate-700 dark:bg-slate-900/50">
-            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400">Zone {index + 1}</p>
-            <Input
-              ref={(el) => {
-                inputRefs.current[zone.id] = el;
-              }}
-              value={getValue(zone)}
-              onChange={(e) => handleChange(zone, e.target.value)}
-              onBlur={() => handleBlur(zone)}
-              placeholder="Nom de la zone"
-              className="mt-1 h-8 rounded-xl border-slate-200 text-xs dark:border-slate-600"
-            />
-            <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-              <span className="font-semibold text-slate-600 dark:text-slate-300">Portes liées :</span>{" "}
-              {zone.doorIds?.length ? zone.doorIds.join(", ") : "Aucune"}
-            </p>
-            <div className="mt-2 flex justify-between text-[11px] text-slate-500 dark:text-slate-400">
-              <span>{zone.points.length} sommets</span>
-              <Button size="sm" variant="ghost" className="h-6 rounded-full px-2 text-[11px]" onClick={() => onDelete(zone.id)}>
-                Supprimer
-              </Button>
+        {zones.map((zone, index) => {
+          const trimmedCurrent = zone.name?.trim() ?? "";
+          const pendingValue = getValue(zone);
+          const trimmedPending = pendingValue.trim();
+          const canConfirm = trimmedPending.length > 0 && trimmedPending !== trimmedCurrent;
+
+          return (
+            <div key={zone.id} className="rounded-lg border border-slate-200/70 bg-white/90 p-2 dark:border-slate-700 dark:bg-slate-900/50">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400">Zone {index + 1}</p>
+              <div className="mt-1 flex gap-2">
+                <Input
+                  ref={(el) => {
+                    inputRefs.current[zone.id] = el;
+                  }}
+                  value={pendingValue}
+                  onKeyDown={(e) => handleKeyDown(zone, e)}
+                  onChange={(e) => handleChange(zone, e.target.value)}
+                  placeholder="Nom de la zone"
+                  className="h-8 flex-1 rounded-xl border-slate-200 text-xs dark:border-slate-600"
+                />
+                <Button
+                  size="sm"
+                  className="h-8 rounded-xl border border-slate-200 bg-white/80 px-3 text-[11px] font-medium text-slate-700 hover:bg-white dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                  disabled={!canConfirm}
+                  onClick={() => handleConfirm(zone)}
+                >
+                  Confirmer
+                </Button>
+              </div>
+              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                <span className="font-semibold text-slate-600 dark:text-slate-300">Portes liées :</span>{" "}
+                {zone.doorIds?.length ? zone.doorIds.join(", ") : "Aucune"}
+              </p>
+              <div className="mt-2 flex justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <span>{zone.points.length} sommets</span>
+                <Button size="sm" variant="ghost" className="h-6 rounded-full px-2 text-[11px]" onClick={() => onDelete(zone.id)}>
+                  Supprimer
+                </Button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </CardContent>
     </Card>
   );

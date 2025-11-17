@@ -4,6 +4,7 @@
     brandSubtitle="Supervision en temps reel"
     [connectionState]="connectionState()"
     [statusLabel]="connectionLabel()"
+    [showUsers]="showUsersModal()"
     [darkMode]="darkMode()"
     (usersToggle)="openUsersModal()"
     (themeToggle)="toggleTheme()"
@@ -13,7 +14,7 @@
     <div class="cta-actions">
       <button type="button" class="btn solid" (click)="openManualModal()">Ouverture manuelle</button>
       <button type="button" class="btn ghost" (click)="connect()">Se reconnecter</button>
-      <button type="button" class="btn ghost" (click)="disconnect()">Couper le flux</button>
+      <button type="button" class="btn ghost" (click)="toggleDevicesModal()">Voir portes & badges</button>
       <button type="button" class="btn ghost" (click)="clearLogs()">Effacer les logs</button>
     </div>
     <p class="text-success" *ngIf="manualSuccess()">{{ manualSuccess() }}</p>
@@ -109,6 +110,106 @@
       </tbody>
     </table>
     <p *ngIf="!users().length && !usersLoading()">Aucun utilisateur enregistre.</p>
+  </section>
+</div>
+
+<div class="modal-backdrop" *ngIf="showDevicesModal()">
+  <section class="modal-card devices-modal">
+    <div class="modal-header">
+      <div>
+        <h3>Portes & badges</h3>
+        <p>Consulte la liste des devices simulés.</p>
+      </div>
+      <div class="panel-actions">
+        <button type="button" class="chip" (click)="loadDevices()" [disabled]="devicesLoading()">Rafraîchir</button>
+        <button type="button" class="chip" (click)="closeDevicesModal()">Fermer</button>
+      </div>
+    </div>
+
+    <div class="text-error" *ngIf="devicesError()">{{ devicesError() }}</div>
+    <div class="logs-empty" *ngIf="devicesLoading()">Chargement des devices...</div>
+
+    <div class="device-columns" *ngIf="!devicesLoading() && (doorDevices().length || badgeDevices().length)">
+      <section class="device-column">
+        <h4>Portes ({{ doorDevices().length }})</h4>
+        <div class="table-wrapper" *ngIf="doorDevices().length; else noDoors">
+          <table class="users-table device-table">
+            <thead>
+              <tr>
+                <th>Identifiant</th>
+                <th>Création</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let door of doorDevices()">
+                <td>
+                  <div class="device-id">{{ door.id }}</div>
+                  <p class="device-meta" *ngIf="door.location">Zone: {{ door.location }}</p>
+                </td>
+                <td>{{ door.createdAt | date: "dd/MM HH:mm:ss" }}</td>
+                <td class="device-actions">
+                  <button
+                    type="button"
+                    class="chip danger"
+                    (click)="handleDeleteDevice(door)"
+                    [disabled]="door.builtin || deletingDeviceId() === door.id"
+                    title="{{ door.builtin ? 'Device protégé' : 'Supprimer ce device' }}"
+                  >
+                    Supprimer
+                  </button>
+                  <span class="device-tag" *ngIf="door.builtin">Builtin</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noDoors>
+          <p class="logs-empty">Aucune porte enregistrée.</p>
+        </ng-template>
+      </section>
+
+      <section class="device-column">
+        <h4>Badgeuses ({{ badgeDevices().length }})</h4>
+        <div class="table-wrapper" *ngIf="badgeDevices().length; else noBadges">
+          <table class="users-table device-table">
+            <thead>
+              <tr>
+                <th>Identifiant</th>
+                <th>Création</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let badge of badgeDevices()">
+                <td>
+                  <div class="device-id">{{ badge.id }}</div>
+                  <p class="device-meta" *ngIf="badge.location">Zone: {{ badge.location }}</p>
+                </td>
+                <td>{{ badge.createdAt | date: "dd/MM HH:mm:ss" }}</td>
+                <td class="device-actions">
+                  <button
+                    type="button"
+                    class="chip danger"
+                    (click)="handleDeleteDevice(badge)"
+                    [disabled]="badge.builtin || deletingDeviceId() === badge.id"
+                    title="{{ badge.builtin ? 'Device protégé' : 'Supprimer ce device' }}"
+                  >
+                    Supprimer
+                  </button>
+                  <span class="device-tag" *ngIf="badge.builtin">Builtin</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noBadges>
+          <p class="logs-empty">Aucune badgeuse enregistrée.</p>
+        </ng-template>
+      </section>
+    </div>
+
+    <p class="logs-empty" *ngIf="!devicesLoading() && !doorDevices().length && !badgeDevices().length">Aucun device disponible.</p>
   </section>
 </div>
 

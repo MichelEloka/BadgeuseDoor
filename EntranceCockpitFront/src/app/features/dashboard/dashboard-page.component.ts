@@ -12,6 +12,7 @@ import { LogDetailsService } from "../../core/services/log-details.service";
 import { ManualOverrideService, type ManualOverridePayload } from "../../core/services/manual-override.service";
 import { DoorDirectoryService } from "../../core/services/door-directory.service";
 import { UserDirectoryService } from "../../core/services/user-directory.service";
+import { MockDeviceService, type MockDeviceRecord } from "../../core/services/mock-device.service";
 import { TopBarComponent } from "../../shared/ui/top-bar/top-bar.component";
 import { LogsPanelComponent } from "./components/logs-panel/logs-panel.component";
 import { ManualAccessPanelComponent } from "./components/manual-access-panel/manual-access-panel.component";
@@ -48,6 +49,7 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
   private readonly manualOverride = inject(ManualOverrideService);
   private readonly doorDirectory = inject(DoorDirectoryService);
   private readonly userDirectory = inject(UserDirectoryService);
+  private readonly mockDeviceService = inject(MockDeviceService);
   private readonly document = inject(DOCUMENT);
   private readonly hasWindow = typeof window !== "undefined";
   private readonly wsUrl = environment.wsUrl;
@@ -77,6 +79,11 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
   readonly deleteUserId = signal<string | null>(null);
   readonly showAddUserModal = signal(false);
   readonly showUsersModal = signal(false);
+  readonly showDevicesModal = signal(false);
+  readonly devices = signal<MockDeviceRecord[]>([]);
+  readonly devicesLoading = signal(false);
+  readonly devicesError = signal<string | null>(null);
+  readonly deletingDeviceId = signal<string | null>(null);
   readonly logDetailsById = signal<Record<string, LogDetailsState>>({});
 
   private readonly notifiedLogIds = new Set<string>();
@@ -97,6 +104,8 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
 
   readonly acceptedLogs = computed(() => this.logs().filter((log) => log.status === "success"));
   readonly deniedLogs = computed(() => this.logs().filter((log) => log.status === "failure"));
+  readonly doorDevices = computed(() => this.devices().filter((device) => device.type === "porte"));
+  readonly badgeDevices = computed(() => this.devices().filter((device) => device.type === "badgeuse"));
   readonly stats = computed<DashboardStats>(() => {
     const entries = this.logs();
     const success = entries.filter((log) => log.status === "success").length;
@@ -185,6 +194,49 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
 
   closeUsersModal() {
     this.showUsersModal.set(false);
+  }
+
+  toggleDevicesModal() {
+    const next = !this.showDevicesModal();
+    this.showDevicesModal.set(next);
+    if (next) {
+      void this.loadDevices();
+    }
+  }
+
+  closeDevicesModal() {
+    this.showDevicesModal.set(false);
+  }
+
+  async loadDevices() {
+    this.devicesLoading.set(true);
+    this.devicesError.set(null);
+    try {
+      const list = await firstValueFrom(this.mockDeviceService.fetchDevices());
+      this.devices.set(list);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Impossible de récupérer les devices.";
+      this.devicesError.set(message);
+    } finally {
+      this.devicesLoading.set(false);
+    }
+  }
+
+  async handleDeleteDevice(device: MockDeviceRecord) {
+    if (!device || device.builtin) {
+      return;
+    }
+    this.deletingDeviceId.set(device.id);
+    this.devicesError.set(null);
+    try {
+      await firstValueFrom(this.mockDeviceService.deleteDevice(device.id));
+      this.devices.update((current) => current.filter((entry) => entry.id !== device.id));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Suppression impossible pour ce device.";
+      this.devicesError.set(message);
+    } finally {
+      this.deletingDeviceId.set(null);
+    }
   }
 
   toggleRefusedList() {

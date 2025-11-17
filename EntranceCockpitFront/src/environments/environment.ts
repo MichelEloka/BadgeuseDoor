@@ -28,4 +28,8 @@ export const environment = {
    * REST endpoint returning additional details for a log entry.
    */
   logDetailsApiUrl: "http://localhost:9500/api/logs",
+  /**
+   * REST endpoint returning mock devices (portes & badgeuses).
+   */
+  mockDevicesApiUrl: "http://localhost:9500/api/mock/devices",
 };

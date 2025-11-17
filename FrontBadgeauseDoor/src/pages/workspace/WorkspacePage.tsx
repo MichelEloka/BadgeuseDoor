@@ -1,7 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { deleteDeviceOnOrch, doorCmd, fetchPlan, pollUntilReady, savePlan } from "@/api/orchestrator";
-import { createMockDevice, deleteMockDevice, fetchMockDevices, fetchMockUsers, type MockDeviceRecord, type MockUser } from "@/api/mockDirectory";
+import {
+  createMockDevice,
+  deleteMockDevice,
+  fetchMockDevices,
+  fetchMockUsers,
+  updateMockDevice,
+  type MockDeviceRecord,
+  type MockUser,
+} from "@/api/mockDirectory";
 import { ORCH_URL, MQTT_WS_URL_DEFAULT } from "@/config";
 import { useDockerStatus } from "@/hooks/useDockerStatus";
 import { useDebouncedEffect } from "@/hooks/useDebouncedEffect";
@@ -46,6 +54,7 @@ export default function WorkspacePage() {
   ]);
   const [selFloorId] = useState("etage-1");
   const floor = useMemo(() => floors.find((f) => f.id === selFloorId)!, [floors, selFloorId]);
+  const nodesForSync = floor.nodes;
   const simPersons = floor.simPersons ?? [];
   const zones = floor.zones ?? [];
   const [showZoneWalls, setShowZoneWalls] = useState(false);
@@ -54,6 +63,22 @@ export default function WorkspacePage() {
   const [badgeCatalog, setBadgeCatalog] = useState<MockUser[]>([]);
   const [deviceRegistry, setDeviceRegistry] = useState<MockDeviceRecord[]>([]);
   const doorCatalog = useMemo(() => deviceRegistry.filter((d) => d.type === "porte").map((d) => d.id), [deviceRegistry]);
+  const syncedLocations = useRef<Record<string, string | null | undefined>>({});
+  const pendingLocationSyncs = useRef<Record<string, Promise<void>>>({});
+  const retryTimers = useRef<number[]>([]);
+  const [locationRetryTick, setLocationRetryTick] = useState(0);
+
+  const scheduleLocationRetry = useCallback(() => {
+    if (typeof window === "undefined") {
+      setLocationRetryTick((tick) => tick + 1);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      retryTimers.current = retryTimers.current.filter((item) => item !== timer);
+      setLocationRetryTick((tick) => tick + 1);
+    }, 1500);
+    retryTimers.current.push(timer);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -91,6 +116,61 @@ export default function WorkspacePage() {
     const f = floors.find((x) => x.id === selFloorId);
     if (f) savePlan(f).catch(() => {});
   }, [floors, selFloorId], 700);
+
+  useEffect(
+    () => () => {
+      retryTimers.current.forEach((timer) => clearTimeout(timer));
+      retryTimers.current = [];
+    },
+    []
+  );
+
+  useEffect(() => {
+    const doorNodes = nodesForSync.filter((node) => node.kind === "porte" && node.deviceId);
+    const activeIds = new Set<string>();
+    doorNodes.forEach((node) => {
+      const deviceId = node.deviceId!;
+      activeIds.add(deviceId);
+      const normalized = node.location?.trim() || null;
+      const cache = syncedLocations.current;
+      const previous = Object.prototype.hasOwnProperty.call(cache, deviceId) ? cache[deviceId] ?? null : null;
+      if (previous === normalized) {
+        return;
+      }
+      const queue = pendingLocationSyncs.current;
+      const chained = queue[deviceId] ?? Promise.resolve();
+      const next = chained
+        .catch(() => {})
+        .then(async () => {
+          try {
+            const record = await updateMockDevice(deviceId, { location: normalized });
+            const ackRaw = record.location;
+            const ack = typeof ackRaw === "string" ? ackRaw : normalized ?? null;
+            cache[deviceId] = ack;
+            setDeviceRegistry((prev) => {
+              const idx = prev.findIndex((entry) => entry.id === record.id);
+              if (idx === -1) return prev;
+              const copy = [...prev];
+              copy[idx] = { ...copy[idx], location: ack };
+              return copy;
+            });
+          } catch (err) {
+            console.warn(`[mock-api] update location failed for ${deviceId}`, err);
+            scheduleLocationRetry();
+          }
+        });
+      queue[deviceId] = next.finally(() => {
+        if (queue[deviceId] === next) {
+          delete queue[deviceId];
+        }
+      });
+    });
+    Object.keys(syncedLocations.current).forEach((deviceId) => {
+      if (!activeIds.has(deviceId)) {
+        delete syncedLocations.current[deviceId];
+      }
+    });
+  }, [nodesForSync, scheduleLocationRetry, setDeviceRegistry, locationRetryTick]);
 
   const [tool, setTool] = useState<Tool>("pan");
   const [grid, setGrid] = useState(10);
@@ -513,12 +593,16 @@ function arraysEqual(a: string[], b: string[]) {
   return a.every((val, idx) => val === b[idx]);
 }
 
+function doorIdentifier(door: DeviceNode) {
+  return door.deviceId || door.id;
+}
+
 function computeDoorIdsForZone(zone: ZoneShape, doorNodes: DeviceNode[]) {
   if (!zone.points?.length || !doorNodes.length) return [];
   const identifiers: string[] = [];
   const seen = new Set<string>();
   for (const door of doorNodes) {
-    const doorId = door.deviceId || door.id;
+    const doorId = doorIdentifier(door);
     if (!doorId) continue;
     const inside = pointInPolygon({ x: door.x, y: door.y }, zone.points);
     const distance = inside ? 0 : distancePointToPolygon(door.x, door.y, zone.points);
@@ -533,19 +617,65 @@ function computeDoorIdsForZone(zone: ZoneShape, doorNodes: DeviceNode[]) {
 }
 
 function applyZoneDoorLinks(floor: Floor): Floor {
-  if (!floor.zones?.length) return floor;
+  if (!floor.zones?.length) {
+    const shouldStripLocations = floor.nodes.some((node) => node.kind === "porte" && node.location);
+    if (!shouldStripLocations) return floor;
+    const cleanedNodes = floor.nodes.map((node) => {
+      if (node.kind !== "porte" || !node.location) return node;
+      const { location: _omitted, ...rest } = node;
+      return rest as DeviceNode;
+    });
+    return shouldStripLocations ? { ...floor, nodes: cleanedNodes } : floor;
+  }
   const doorNodes = floor.nodes.filter((n) => n.kind === "porte");
-  let changed = false;
+  let zonesChanged = false;
   const enriched = floor.zones.map((zone) => {
     const doorIds = computeDoorIdsForZone(zone, doorNodes);
     const previous = zone.doorIds ?? [];
     if (!arraysEqual(previous, doorIds)) {
-      changed = true;
+      zonesChanged = true;
       return { ...zone, doorIds };
     }
     return zone;
   });
-  return changed ? { ...floor, zones: enriched } : floor;
+  const doorLocations = new Map<string, string[]>();
+  enriched.forEach((zone, idx) => {
+    if (!zone.doorIds?.length) return;
+    const baseName = zone.name?.trim();
+    const label = baseName && baseName.length > 0 ? baseName : `Zone ${idx + 1}`;
+    zone.doorIds.forEach((doorId) => {
+      if (!doorLocations.has(doorId)) {
+        doorLocations.set(doorId, []);
+      }
+      const entries = doorLocations.get(doorId)!;
+      if (!entries.includes(label)) {
+        entries.push(label);
+      }
+    });
+  });
+  let nodesChanged = false;
+  const updatedNodes = floor.nodes.map((node) => {
+    if (node.kind !== "porte") return node;
+    const identifier = doorIdentifier(node);
+    const zoneNames = (identifier && doorLocations.get(identifier)) || [];
+    const locationLabel = zoneNames.length ? zoneNames.join(" et ") : undefined;
+    if (locationLabel && node.location !== locationLabel) {
+      nodesChanged = true;
+      return { ...node, location: locationLabel };
+    }
+    if (!locationLabel && node.location) {
+      nodesChanged = true;
+      const { location: _removed, ...rest } = node;
+      return rest as DeviceNode;
+    }
+    return node;
+  });
+  if (!zonesChanged && !nodesChanged) return floor;
+  return {
+    ...floor,
+    zones: zonesChanged ? enriched : floor.zones,
+    nodes: nodesChanged ? updatedNodes : floor.nodes,
+  };
 }
 
 

@@ -17,7 +17,7 @@ public class DeviceRegistryService {
     private final AtomicInteger sequence = new AtomicInteger(100);
 
     public DeviceRegistryService(MockDirectoryService directoryService) {
-        directoryService.doorIds().forEach(id -> devices.put(id, new DeviceRecord(id, "porte", Instant.now(), true)));
+        directoryService.doorIds().forEach(id -> devices.put(id, new DeviceRecord(id, "porte", Instant.now(), true, null)));
     }
 
     public List<DeviceRecord> findAll() {
@@ -33,7 +33,7 @@ public class DeviceRegistryService {
         if (devices.containsKey(finalId)) {
             throw new IllegalStateException("Device ID already exists");
         }
-        DeviceRecord record = new DeviceRecord(finalId, normalizedType, Instant.now(), false);
+        DeviceRecord record = new DeviceRecord(finalId, normalizedType, Instant.now(), false, null);
         devices.put(finalId, record);
         return record;
     }
@@ -43,6 +43,16 @@ public class DeviceRegistryService {
             return false;
         }
         return devices.remove(deviceId.trim()) != null;
+    }
+
+    public DeviceRecord updateLocation(String deviceId, String location) {
+        if (!StringUtils.hasText(deviceId)) {
+            throw new IllegalArgumentException("Device ID is required");
+        }
+        String normalizedLocation = StringUtils.hasText(location) ? location.trim() : null;
+        return devices.computeIfPresent(deviceId.trim(), (key, existing) ->
+                new DeviceRecord(existing.id(), existing.type(), existing.createdAt(), existing.builtin(), normalizedLocation)
+        );
     }
 
     private String generateId(String type) {

@@ -12,6 +12,7 @@ export interface MockDeviceRecord {
   type: string;
   createdAt: string;
   builtin: boolean;
+  location?: string | null;
 }
 
 async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
@@ -50,4 +51,12 @@ export async function deleteMockDevice(deviceId: string) {
     const text = await response.text().catch(() => "");
     throw new Error(`Mock API ${response.status}: ${text || "request failed"}`);
   }
+}
+
+export function updateMockDevice(deviceId: string, patch: { location?: string | null }) {
+  return fetchJson<MockDeviceRecord>(`/devices/${encodeURIComponent(deviceId)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
 }

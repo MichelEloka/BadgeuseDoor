@@ -1079,6 +1079,64 @@ input {
   overflow: auto;
 }
 
+.devices-modal {
+  width: min(980px, 96vw);
+  max-height: 85vh;
+  padding: 1.75rem;
+  gap: 1.25rem;
+}
+
+.device-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.device-column {
+  border: 1px solid color-mix(in srgb, var(--border), transparent 10%);
+  border-radius: 1.1rem;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--card), transparent 4%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.device-column h4 {
+  margin: 0;
+}
+
+.device-table th,
+.device-table td {
+  font-size: 0.85rem;
+}
+
+.device-id {
+  font-weight: 600;
+}
+
+.device-meta {
+  margin: 0.1rem 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.device-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.device-tag {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-radius: 999px;
+  padding: 0.05rem 0.6rem;
+  border: 1px solid color-mix(in srgb, var(--border), transparent 10%);
+  color: var(--text-muted);
+}
+
 .add-user-modal {
   width: min(520px, 92vw);
   max-height: 80vh;

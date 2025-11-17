@@ -74,6 +74,7 @@ export function PropertiesPanel({
         {selNode && (
           <div className="space-y-2.5">
             <SummaryCard label="Type" value={selNode.kind === "porte" ? "PORTE" : "BADGEUSE"} />
+            {selNode.kind === "porte" && <SummaryCard label="Localisation" value={selNode.location || "Aucune zone détectée"} />}
 
             <Field label="deviceId">
               {selNode.kind === "porte" ? (

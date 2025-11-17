@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import mqtt from "mqtt";
 
+import { MQTT_PASSWORD_DEFAULT, MQTT_USERNAME_DEFAULT } from "@/config";
 import type { BadgeEventPayload } from "@/types/floor";
 
 interface MqttLog {
@@ -74,7 +75,11 @@ export function useMqttBridge(initialUrl: string) {
       clientRef.current = null;
     }
 
-    const c = mqtt.connect(mqttUrl, { reconnectPeriod: 2000 });
+    const c = mqtt.connect(mqttUrl, {
+      reconnectPeriod: 2000,
+      username: MQTT_USERNAME_DEFAULT || undefined,
+      password: MQTT_PASSWORD_DEFAULT || undefined,
+    });
     clientRef.current = c;
     c.on("connect", () => {
       setConnected(true);

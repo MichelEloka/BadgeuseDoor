@@ -1,11 +1,11 @@
 export const environment = {
   production: false,
-  wsUrl: "ws://localhost:9500/events",
+  wsUrl: "ws://172.31.249.170:9500/events",
   maxEntries: 200,
-  usersApiUrl: "http://localhost:9500/api/mock/users",
-  usersDeleteApiUrl: "http://localhost:9500/api/mock/users/delete",
-  manualOverrideUrl: "http://localhost:9500/api/mock/manual-access",
-  doorsApiUrl: "http://localhost:9500/api/mock/doors",
-  logDetailsApiUrl: "http://localhost:9500/api/mock/logs",
-  mockDevicesApiUrl: "http://localhost:9500/api/mock/devices",
+  usersApiUrl: "http://172.31.249.170:9500/api/users",
+  usersDeleteApiUrl: "http://172.31.249.170:9500/api/users/delete",
+  manualOverrideUrl: "http://172.31.249.170:9500/api/manual-access",
+  doorsApiUrl: "http://172.31.249.170:9500/api/doors",
+  logDetailsApiUrl: "http://172.31.249.170:9500/api/logs",
+  mockDevicesApiUrl: "http://172.31.249.170:9500/api/mock/devices",
 };

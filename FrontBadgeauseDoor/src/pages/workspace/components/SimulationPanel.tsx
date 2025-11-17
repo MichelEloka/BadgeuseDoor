@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import type { MockUser } from "@/api/mockDirectory";
+import type { DirectoryUser } from "@/api/directory";
 import type { SimPerson } from "@/types/floor";
 
 interface SimulationPanelProps {
@@ -14,7 +14,7 @@ interface SimulationPanelProps {
   running: boolean;
   canRun: boolean;
   onToggleSimulation: () => void;
-  badgeCatalog: MockUser[];
+  badgeCatalog: DirectoryUser[];
 }
 
 export function SimulationPanel({ persons, onAddPerson, onRemovePerson, onUpdatePerson, running, canRun, onToggleSimulation, badgeCatalog }: SimulationPanelProps) {
@@ -79,7 +79,7 @@ export function SimulationPanel({ persons, onAddPerson, onRemovePerson, onUpdate
                 Badge sélectionné : <strong>{selectedUser.badgeID || selectedUser.id}</strong>
               </div>
             )}
-            {!badgeCatalog.length && <div className="text-[11px] text-slate-500 dark:text-slate-400">Aucun badge disponible (mock API).</div>}
+            {!badgeCatalog.length && <div className="text-[11px] text-slate-500 dark:text-slate-400">Aucun badge disponible (backend).</div>}
           </div>
           <div className="flex flex-wrap gap-2">
             <Input

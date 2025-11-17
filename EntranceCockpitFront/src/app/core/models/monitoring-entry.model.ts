@@ -6,6 +6,12 @@ export interface MonitoringPayload {
   timestamp?: string;
   device_id?: string;
   deviceId?: string;
+  badgeID?: string;
+  badge_id?: string;
+  doorID?: string;
+  door_id?: string;
+  status?: string;
+  result?: string;
   data?: {
     success?: boolean;
     badgeID?: string;

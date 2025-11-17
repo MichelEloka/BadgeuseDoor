@@ -1,4 +1,4 @@
-import json
+ï»¿import json
 import threading
 from typing import Dict, Optional
 
@@ -47,17 +47,17 @@ class BadgeuseWorker(DeviceWorker):
     def _on_connect(self, client, userdata, flags, reason_code, properties=None):
         self.connected = reason_code == 0
         if self.connected:
-            log.info("[badgeuse %s] connecté à %s:%s", self.device_id, MQTT_HOST, MQTT_PORT)
+            log.info("[badgeuse %s] connectï¿½ ï¿½ %s:%s", self.device_id, MQTT_HOST, MQTT_PORT)
             client.subscribe(self.command_topic, qos=1)
             client.subscribe(self.command_filter, qos=1)
             self.ready.set()
         else:
-            log.error("[badgeuse %s] connexion refusée (%s)", self.device_id, reason_code)
+            log.error("[badgeuse %s] connexion refusï¿½e (%s)", self.device_id, reason_code)
 
     def _on_disconnect(self, client, userdata, reason_code, properties=None):
         self.connected = False
         self.ready.clear()
-        log.warning("[badgeuse %s] déconnectée (%s)", self.device_id, reason_code)
+        log.warning("[badgeuse %s] dï¿½connectï¿½e (%s)", self.device_id, reason_code)
 
     def _normalize_payload(self, payload: Dict) -> tuple[str, Optional[str]]:
         badge_id = str(payload.get("badgeID") or payload.get("badge_id") or payload.get("tag_id") or "BADGE-TEST")
@@ -125,7 +125,7 @@ class DoorWorker(DeviceWorker):
         self.client.on_connect = self._on_connect
         self.client.on_disconnect = self._on_disconnect
         self.client.on_message = self._on_message
-        self.command_topic = f"iot/porte/{device_id}/commands"
+        self.command_topic = f"iot/porte/{device_id}/events"
         self.state_topic = f"iot/porte/{device_id}/state"
         self.state = {"is_open": False, "last_change": None}
         self._state_lock = threading.Lock()
@@ -135,15 +135,15 @@ class DoorWorker(DeviceWorker):
         if self.connected:
             client.subscribe(self.command_topic, qos=1)
             self.ready.set()
-            log.info("[porte %s] connectée à %s:%s", self.device_id, MQTT_HOST, MQTT_PORT)
+            log.info("[porte %s] connectï¿½e ï¿½ %s:%s", self.device_id, MQTT_HOST, MQTT_PORT)
             self._publish_state()
         else:
-            log.error("[porte %s] connexion refusée (%s)", self.device_id, reason_code)
+            log.error("[porte %s] connexion refusï¿½e (%s)", self.device_id, reason_code)
 
     def _on_disconnect(self, client, userdata, reason_code, properties=None):
         self.connected = False
         self.ready.clear()
-        log.warning("[porte %s] déconnectée (%s)", self.device_id, reason_code)
+        log.warning("[porte %s] dï¿½connectï¿½e (%s)", self.device_id, reason_code)
 
     def _publish_state(self):
         payload = {
@@ -211,3 +211,4 @@ class DoorWorker(DeviceWorker):
             }
         )
         return base
+

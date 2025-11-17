@@ -2,14 +2,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { deleteDeviceOnOrch, doorCmd, fetchPlan, pollUntilReady, savePlan } from "@/api/orchestrator";
 import {
-  createMockDevice,
-  deleteMockDevice,
-  fetchMockDevices,
-  fetchMockUsers,
-  updateMockDevice,
-  type MockDeviceRecord,
-  type MockUser,
-} from "@/api/mockDirectory";
+  createDirectoryDevice,
+  deleteDirectoryDevice,
+  fetchDirectoryDevices,
+  fetchDirectoryUsers,
+  fetchDoorIds,
+  updateDirectoryDevice,
+  type DirectoryDeviceRecord,
+  type DirectoryUser,
+} from "@/api/directory";
 import { ORCH_URL, MQTT_WS_URL_DEFAULT } from "@/config";
 import { useDockerStatus } from "@/hooks/useDockerStatus";
 import { useDebouncedEffect } from "@/hooks/useDebouncedEffect";
@@ -60,9 +61,9 @@ export default function WorkspacePage() {
   const [showZoneWalls, setShowZoneWalls] = useState(false);
   const [showZoneFill, setShowZoneFill] = useState(true);
 
-  const [badgeCatalog, setBadgeCatalog] = useState<MockUser[]>([]);
-  const [deviceRegistry, setDeviceRegistry] = useState<MockDeviceRecord[]>([]);
-  const doorCatalog = useMemo(() => deviceRegistry.filter((d) => d.type === "porte").map((d) => d.id), [deviceRegistry]);
+  const [badgeCatalog, setBadgeCatalog] = useState<DirectoryUser[]>([]);
+  const [deviceRegistry, setDeviceRegistry] = useState<DirectoryDeviceRecord[]>([]);
+  const [doorCatalog, setDoorCatalog] = useState<string[]>([]);
   const syncedLocations = useRef<Record<string, string | null | undefined>>({});
   const pendingLocationSyncs = useRef<Record<string, Promise<void>>>({});
   const retryTimers = useRef<number[]>([]);
@@ -96,14 +97,24 @@ export default function WorkspacePage() {
     let active = true;
     (async () => {
       try {
-        const [devices, badges] = await Promise.all([fetchMockDevices().catch(() => []), fetchMockUsers().catch(() => [])]);
+        const [devices, badges, doors] = await Promise.all([
+          fetchDirectoryDevices().catch(() => []),
+          fetchDirectoryUsers().catch(() => []),
+          fetchDoorIds().catch(() => []),
+        ]);
         if (!active) return;
         setDeviceRegistry(devices);
         setBadgeCatalog(badges);
+        const derivedDoors = devices
+          .filter((d) => isDirectoryDoor(d.type))
+          .map((d) => d.id);
+        const combined = Array.from(new Set([...(doors ?? []), ...derivedDoors]));
+        setDoorCatalog(combined);
       } catch {
         if (active) {
           setDeviceRegistry([]);
           setBadgeCatalog([]);
+          setDoorCatalog([]);
         }
       }
     })();
@@ -143,7 +154,7 @@ export default function WorkspacePage() {
         .catch(() => {})
         .then(async () => {
           try {
-            const record = await updateMockDevice(deviceId, { location: normalized });
+            const record = await updateDirectoryDevice(deviceId, { location: normalized });
             const ackRaw = record.location;
             const ack = typeof ackRaw === "string" ? ackRaw : normalized ?? null;
             cache[deviceId] = ack;
@@ -155,7 +166,7 @@ export default function WorkspacePage() {
               return copy;
             });
           } catch (err) {
-            console.warn(`[mock-api] update location failed for ${deviceId}`, err);
+            console.warn(`[directory-api] update location failed for ${deviceId}`, err);
             scheduleLocationRetry();
           }
         });
@@ -227,13 +238,16 @@ export default function WorkspacePage() {
 
   const handleCreateNode = async (partial: Omit<DeviceNode, "deviceId">) => {
     try {
-      const record = await createMockDevice(partial.kind);
+      const record = await createDirectoryDevice(partial.kind);
       const node: DeviceNode = { ...partial, deviceId: record.id };
       addNode(node);
       setSelNodeId(node.id);
       setDeviceRegistry((prev) => [...prev.filter((d) => d.id !== record.id), record]);
+      if (isDirectoryDoor(record.type)) {
+        setDoorCatalog((prev) => (prev.includes(record.id) ? prev : [...prev, record.id]));
+      }
     } catch (error) {
-      alert("Impossible de générer un identifiant pour ce capteur (mock backend).");
+      alert("Impossible de générer un identifiant pour ce capteur (backend).");
     }
   };
 
@@ -379,11 +393,14 @@ export default function WorkspacePage() {
   }
   if (node.deviceId) {
     try {
-      await deleteMockDevice(node.deviceId);
+      await deleteDirectoryDevice(node.deviceId);
     } catch {
-      // ignore mock delete errors
+      // ignore backend delete errors
     } finally {
       setDeviceRegistry((prev) => prev.filter((d) => d.id !== node.deviceId));
+      if (node.kind === "porte") {
+        setDoorCatalog((prev) => prev.filter((id) => id !== node.deviceId));
+      }
     }
   }
   deleteNodeById(node.id);
@@ -587,6 +604,12 @@ function PanelToggle({ label, active, onClick }: { label: string; active: boolea
 }
 
 const DOOR_TOUCH_THRESHOLD = 18;
+
+function isDirectoryDoor(type?: string | null | undefined) {
+  if (!type) return false;
+  const normalized = type.trim().toLowerCase();
+  return normalized === "door" || normalized === "porte";
+}
 
 function arraysEqual(a: string[], b: string[]) {
   if (a.length !== b.length) return false;

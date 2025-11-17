@@ -11,7 +11,7 @@ MQTT_USER = os.getenv("MQTT_USER", "")
 MQTT_PASS = os.getenv("MQTT_PASS", "")
 DEVICE_ID = os.getenv("DEVICE_ID", "porte-001")
 TOPIC_STATE = f"iot/porte/{DEVICE_ID}/state"
-TOPIC_CMDS  = f"iot/porte/{DEVICE_ID}/commands"
+TOPIC_EVENTS = f"iot/porte/{DEVICE_ID}/events"
 
 state = {"is_open": False, "last_change": None}
 
@@ -28,7 +28,7 @@ def publish_state(client):
     client.publish(TOPIC_STATE, json.dumps(payload), qos=1, retain=True)
 
 def on_connect(client, userdata, flags, rc, properties=None):
-    client.subscribe(TOPIC_CMDS, qos=1)
+    client.subscribe(TOPIC_EVENTS, qos=1)
     publish_state(client)
 
 def on_message(client, userdata, msg):

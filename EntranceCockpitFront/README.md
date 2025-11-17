@@ -21,7 +21,7 @@ npm start
 # http://localhost:4200
 ```
 
-Par défaut l’URL de flux (`environment.wsUrl`) pointe sur `ws://localhost:9500/events` mais elle est modifiable à chaud depuis le panneau “Connexion backend”.
+Par défaut l’URL de flux (`environment.wsUrl`) pointe sur `ws://172.31.249.170:9500/events` mais elle est modifiable à chaud depuis le panneau “Connexion backend”.
 
 ## Build
 
@@ -56,12 +56,12 @@ Le front dialogue avec un backend HTTP/WS. Les URLs par défaut sont définies d
 
 | Méthode | Clé d’environnement | Endpoint par défaut | Description |
 | --- | --- | --- | --- |
-| `WS` | `wsUrl` | `ws://localhost:9500/events` | Flux en temps réel des événements badgeuse. |
-| `GET` | `usersApiUrl` | `http://localhost:9500/api/mock/users` | Récupère la liste des utilisateurs connus. |
-| `POST` | `usersApiUrl` | `http://localhost:9500/api/mock/users` | Crée un utilisateur (payload `{ badgeID, firstName, lastName }`). |
-| `DELETE` | `usersDeleteApiUrl` | `http://localhost:9500/api/mock/users/delete/{id}` | Supprime un utilisateur à partir de son `id` ou de son `badgeID` (le placeholder `:id` est remplacé automatiquement s’il est présent). |
-| `GET` | `doorsApiUrl` | `http://localhost:9500/api/mock/doors` | Liste des portes disponibles pour l’override manuel. |
-| `POST` | `manualOverrideUrl` | `http://localhost:9500/api/mock/manual-access` | Déclenche une ouverture manuelle (payload `{ firstName, lastName, doorID }`). |
-| `GET` | `logDetailsApiUrl` | `http://localhost:9500/api/mock/logs/{id}` | Retourne les détails complémentaires d’un évènement (utilisé lors du clic sur un log). |
+| `WS` | `wsUrl` | `ws://172.31.249.170:9500/events` | Flux en temps réel des événements badgeuse. |
+| `GET` | `usersApiUrl` | `http://172.31.249.170:9500/api/users` | Récupère la liste des utilisateurs connus. |
+| `POST` | `usersApiUrl` | `http://172.31.249.170:9500/api/users` | Crée un utilisateur (payload `{ badgeID, firstName, lastName }`). |
+| `DELETE` | `usersDeleteApiUrl` | `http://172.31.249.170:9500/api/users/delete/{id}` | Supprime un utilisateur à partir de son `id` ou de son `badgeID` (le placeholder `:id` est remplacé automatiquement s’il est présent). |
+| `GET` | `doorsApiUrl` | `http://172.31.249.170:9500/api/doors` | Liste des portes disponibles pour l’override manuel. |
+| `POST` | `manualOverrideUrl` | `http://172.31.249.170:9500/api/manual-access` | Déclenche une ouverture manuelle (payload `{ firstName, lastName, doorID }`). |
+| `GET` | `logDetailsApiUrl` | `http://172.31.249.170:9500/api/logs/{id}` | Retourne les détails complémentaires d’un évènement (utilisé lors du clic sur un log). |
 
 Adaptez ces valeurs à votre backend (préprod/prod) en éditant les fichiers d’environnement.

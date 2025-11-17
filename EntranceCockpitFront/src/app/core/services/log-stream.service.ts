@@ -112,14 +112,17 @@ export class LogStreamService {
     const status = this.resolveStatus(parsed);
     const topic = (parsed as { type?: string } | null)?.type ?? source;
     const message = this.buildMessage(topic, status, parsed);
+    const badgeID = this.extractBadgeId(parsed);
+    const doorID = this.extractDoorId(parsed);
+    const deviceId = this.extractDeviceId(parsed);
 
     const log: MonitoringEntry = {
       id: this.makeId(),
       timestamp: Number.isNaN(ts) ? Date.now() : ts,
       isoTimestamp: new Date(Number.isNaN(ts) ? Date.now() : ts).toISOString(),
-      badgeID: this.pickString(parsed?.data, "badgeID", "badge_id"),
-      doorID: this.pickString(parsed?.data, "doorID", "door_id"),
-      deviceId: this.pickString(parsed, "deviceId", "device_id"),
+      badgeID,
+      doorID,
+      deviceId,
       status,
       topic,
       message,
@@ -187,28 +190,41 @@ export class LogStreamService {
     const success = payload?.data?.success;
     if (success === true) return "success";
     if (success === false) return "failure";
+    const statusText = this.extractStatusLabel(payload);
+    if (statusText) {
+      const normalized = statusText.trim().toLowerCase();
+      if (/(allow|autorise|grant|success|accept|ok|green)/.test(normalized)) {
+        return "success";
+      }
+      if (/(deny|refus|fail|error|ko|reject|block|unauthor)/.test(normalized)) {
+        return "failure";
+      }
+    }
     return "info";
   }
 
   private buildMessage(topic: string, status: MonitoringStatus, payload: MonitoringPayload | null): string {
+    const badge = this.extractBadgeId(payload) ?? "badge inconnu";
+    const door = this.extractDoorId(payload) ?? "porte inconnue";
+    const statusLabel = this.extractStatusLabel(payload);
+
     if (topic === "manual_override") {
       const fullName = this.extractName(payload);
-      const door = this.pickString(payload?.data, "doorID", "door_id") ?? "door";
-      return `${door} opened manually${fullName ? ` for ${fullName}` : ""}`.trim();
+      const targetDoor = door || "porte";
+      return `${targetDoor} ouverte manuellement${fullName ? ` pour ${fullName}` : ""}`.trim();
     }
-    if (topic === "badge_event") {
-      const badge = this.pickString(payload?.data, "badgeID", "badge_id") ?? "unknown badge";
-      if (status === "success") return `Access granted for ${badge}`;
-      if (status === "failure") return `Access denied for ${badge}`;
-      return `Badge event detected for ${badge}`;
+    if (topic === "badge_event" || statusLabel) {
+      if (status === "success") return `Accès autorisé pour ${badge}`;
+      if (status === "failure") return `Accès refusé pour ${badge}`;
+      return `${statusLabel ?? "Evènement"} pour ${badge}`;
     }
     switch (status) {
       case "success":
-        return "Access granted";
+        return `Accès autorisé pour ${badge}`;
       case "failure":
-        return "Access denied";
+        return `Accès refusé pour ${badge}`;
       default:
-        return "Event detected";
+        return `Evènement détecté sur ${door}`;
     }
   }
 
@@ -224,6 +240,22 @@ export class LogStreamService {
       return crypto.randomUUID();
     }
     return `log-${Date.now().toString(36)}-${Math.random().toString(16).slice(2)}`;
+  }
+
+  private extractBadgeId(payload: MonitoringPayload | null): string | null {
+    return this.pickString(payload, "badgeID", "badge_id") ?? this.pickString(payload?.data, "badgeID", "badge_id") ?? null;
+  }
+
+  private extractDoorId(payload: MonitoringPayload | null): string | null {
+    return this.pickString(payload, "doorID", "door_id") ?? this.pickString(payload?.data, "doorID", "door_id") ?? null;
+  }
+
+  private extractDeviceId(payload: MonitoringPayload | null): string | null {
+    return this.pickString(payload, "deviceId", "device_id") ?? this.pickString(payload?.data, "deviceId", "device_id") ?? null;
+  }
+
+  private extractStatusLabel(payload: MonitoringPayload | null): string | null {
+    return this.pickString(payload, "status", "result", "action", "state");
   }
 }
 

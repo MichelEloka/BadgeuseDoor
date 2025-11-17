@@ -19,7 +19,7 @@ MQTT_PASS   = os.getenv("MQTT_PASS", "")
 CLIENT_ID   = os.getenv("CLIENT_ID", "bridge-doors")
 # Topics
 BADGE_EVENTS_TOPIC = os.getenv("BADGE_EVENTS_TOPIC", "iot/badgeuse/+/events")  # wildcard
-DOOR_CMDS_FMT      = os.getenv("DOOR_CMDS_FMT", "iot/porte/{door_id}/commands")
+DOOR_CMDS_FMT      = os.getenv("DOOR_CMDS_FMT", "iot/porte/{door_id}/events")
 # Comportement
 OPEN_ACTION        = os.getenv("OPEN_ACTION", "open")        # "open" | "toggle"
 AUTO_CLOSE_SEC     = int(os.getenv("AUTO_CLOSE_SEC", "5"))   # 0 pour désactiver

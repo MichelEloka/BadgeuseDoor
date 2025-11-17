@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/Spinner";
 import { cn } from "@/lib/utils";
-import type { MockUser } from "@/api/mockDirectory";
+import type { DirectoryUser } from "@/api/directory";
 import type { DeviceNode, Floor } from "@/types/floor";
 import { DoorClosed, DoorOpen, KeyRound, Trash2 } from "lucide-react";
 
@@ -18,7 +18,7 @@ interface PropertiesPanelProps {
   onBadge: (node: DeviceNode, badgeId: string) => void;
   onDoorAction: (node: DeviceNode, action: "open" | "close" | "toggle") => void;
   doorCatalog: string[];
-  badgeCatalog: MockUser[];
+  badgeCatalog: DirectoryUser[];
 }
 
 export function PropertiesPanel({
@@ -98,7 +98,7 @@ export function PropertiesPanel({
                   className="h-8 rounded-2xl border-slate-200/70 bg-white/85 px-3 text-[11px] focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900/70"
                 />
               )}
-              {selNode.kind === "porte" && !doorCatalogOptions.length && <p className="text-[10px] text-amber-500">Aucune porte disponible (mock API).</p>}
+              {selNode.kind === "porte" && !doorCatalogOptions.length && <p className="text-[10px] text-amber-500">Aucune porte disponible (backend).</p>}
             </Field>
 
             {selNode.kind === "badgeuse" && (

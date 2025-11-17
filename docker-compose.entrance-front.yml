@@ -1,0 +1,8 @@
+services:
+  entrance-cockpit-front:
+    build:
+      context: ./EntranceCockpitFront
+    container_name: entrance-cockpit-front
+    ports:
+      - "4201:80"
+    restart: unless-stopped

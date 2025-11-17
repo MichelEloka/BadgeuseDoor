@@ -1,0 +1,12 @@
+services:
+  orchestrator:
+    build:
+      context: ./orchestrator
+    container_name: orchestrator
+    environment:
+      ORCH_PORT: 9002
+      BADGEUSE_IMAGE: ${BADGEUSE_IMAGE:-badgeuse:latest}
+      PORTE_IMAGE: ${PORTE_IMAGE:-porte:latest}
+    ports:
+      - "9002:9002"
+    restart: unless-stopped

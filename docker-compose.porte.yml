@@ -1,0 +1,14 @@
+services:
+  porte:
+    build:
+      context: ./porte
+    container_name: porte
+    environment:
+      MQTT_HOST: 172.31.253.71
+      MQTT_PORT: 1883
+      MQTT_USER: toto
+      MQTT_PASS: toto
+      DEVICE_ID: ${PORTE_DEVICE_ID:-porte-001}
+    ports:
+      - "8001:8000"
+    restart: unless-stopped

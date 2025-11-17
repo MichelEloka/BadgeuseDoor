@@ -20,12 +20,12 @@ services:
     build: ./bridge
     container_name: bridge
     environment:
-      MQTT_HOST: "host.docker.internal"
+      MQTT_HOST: "172.31.253.71"
       MQTT_PORT: "1883"
-      # MQTT_USER: ""
-      # MQTT_PASS: ""
+      MQTT_USER: "toto"
+      MQTT_PASS: "toto"
       BADGE_EVENTS_TOPIC: "iot/badgeuse/+/events"
-      DOOR_CMDS_FMT: "iot/porte/{door_id}/commands"
+      DOOR_CMDS_FMT: "iot/porte/{door_id}/events"
       OPEN_ACTION: "open"
       AUTO_CLOSE_SEC: "5"  
       DEBOUNCE_SEC: "2"

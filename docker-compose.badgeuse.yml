@@ -1,0 +1,15 @@
+services:
+  badgeuse:
+    build:
+      context: ./badgeuse
+    container_name: badgeuse
+    environment:
+      MQTT_HOST: 172.31.253.71
+      MQTT_PORT: 1883
+      MQTT_USER: toto
+      MQTT_PASS: toto
+      DEVICE_ID: ${BADGEUSE_DEVICE_ID:-badgeuse-001}
+      DOOR_ID: ${BADGEUSE_DOOR_ID:-}
+    ports:
+      - "8000:8000"
+    restart: unless-stopped

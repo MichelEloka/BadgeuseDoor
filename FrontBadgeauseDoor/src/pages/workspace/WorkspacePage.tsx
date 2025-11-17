@@ -236,18 +236,20 @@ export default function WorkspacePage() {
     }));
 
   const handleCreateNode = async (partial: Omit<DeviceNode, "deviceId">) => {
-    const node: DeviceNode = { ...partial };
+    const preferredId = `${partial.kind}-${uid()}`;
+    const node: DeviceNode = { ...partial, deviceId: preferredId };
     addNode(node);
     setSelNodeId(node.id);
     try {
-        const record = await createOrchestratorDevice(node.kind, { deviceId: node.deviceId, doorId: node.targetDoorId });
-        const assignedId = record.id || `${node.kind}-${uid()}`;
-        patchNode(node.id, (prev) => ({ ...prev, deviceId: assignedId }));
-        setDeviceRegistry((prev) => [...prev.filter((d) => d.id !== record.id), record]);
-        if (isDirectoryDoor(record.type)) {
-          setDoorCatalog((prev) => (prev.includes(record.id) ? prev : [...prev, record.id]));
-        }
-        await pollUntilReady(node.kind, assignedId);
+      const record = await createOrchestratorDevice(node.kind, { deviceId: preferredId, doorId: node.targetDoorId });
+      const assignedId = record.id || preferredId;
+      const patchedRecord: DirectoryDeviceRecord = record.id ? record : { ...record, id: assignedId };
+      patchNode(node.id, (prev) => ({ ...prev, deviceId: assignedId }));
+      setDeviceRegistry((prev) => [...prev.filter((d) => d.id !== assignedId), patchedRecord]);
+      if (isDirectoryDoor(patchedRecord.type)) {
+        setDoorCatalog((prev) => (prev.includes(assignedId) ? prev : [...prev, assignedId]));
+      }
+      await pollUntilReady(node.kind, assignedId);
     } catch (error) {
       alert("Impossible de créer ce capteur côté backend.");
       deleteNodeById(node.id);
@@ -342,14 +344,15 @@ export default function WorkspacePage() {
     setLoadingMap((m) => ({ ...m, [key]: "creating" }));
     try {
       const record = await createOrchestratorDevice(node.kind, { deviceId: node.deviceId, doorId: node.targetDoorId });
-      const assignedId = record.id || `${node.kind}-${uid()}`;
+      const assignedId = record.id || node.deviceId || `${node.kind}-${uid()}`;
+      const patchedRecord: DirectoryDeviceRecord = record.id ? record : { ...record, id: assignedId };
       patchNode(node.id, (prev) => ({ ...prev, deviceId: assignedId }));
       setDeviceRegistry((prev) => {
-        const filtered = prev.filter((d) => d.id !== record.id);
-        return [...filtered, record];
+        const filtered = prev.filter((d) => d.id !== assignedId);
+        return [...filtered, patchedRecord];
       });
-      if (isDirectoryDoor(record.type)) {
-        setDoorCatalog((prev) => (prev.includes(record.id) ? prev : [...prev, record.id]));
+      if (isDirectoryDoor(patchedRecord.type)) {
+        setDoorCatalog((prev) => (prev.includes(assignedId) ? prev : [...prev, assignedId]));
       }
       await pollUntilReady(node.kind, assignedId);
     } finally {

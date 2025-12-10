@@ -15,8 +15,6 @@ services:
       SIMULATOR_BASE_URL: ${SIMULATOR_BASE_URL:-http://host.docker.internal:9002}
     ports:
       - "9500:9500"
-    depends_on:
-      - iotBadgeDoorSimulateor
     networks: [iot]
     restart: unless-stopped
 

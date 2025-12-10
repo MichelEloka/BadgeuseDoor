@@ -38,11 +38,19 @@ public class OrchestratorController {
     @GetMapping("/devices")
     public List<Map<String, Object>> listDevices() {
         return deviceRegistryService.findAll().stream()
-                .map(record -> Map.<String, Object>of(
-                        "id", record.id(),
-                        "kind", record.type(),
-                        "ready", true
-                ))
+                .map(record -> {
+                    Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("id", record.id());
+                    map.put("kind", record.type());
+                    map.put("ready", true);
+                    if ("badgeuse".equalsIgnoreCase(record.type()) && record.doorId() != null) {
+                        map.put("door_id", record.doorId());
+                    }
+                    if (record.zone() != null) {
+                        map.put("zone", record.zone());
+                    }
+                    return map;
+                })
                 .toList();
     }
 

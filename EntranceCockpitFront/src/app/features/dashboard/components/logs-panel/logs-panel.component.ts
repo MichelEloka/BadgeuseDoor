@@ -17,6 +17,7 @@ export class LogsPanelComponent {
   @Input() controls = true;
   @Input() expandedLogId: string | null = null;
   @Input() logDetails: Record<string, LogDetailsState> = {};
+  @Input() doorZones: Record<string, string> = {};
 
   @Output() clearRequested = new EventEmitter<void>();
   @Output() reconnectRequested = new EventEmitter<void>();
@@ -39,7 +40,8 @@ export class LogsPanelComponent {
     const badge = entry.badgeID ?? this.pickString(data, "badgeID", "badge_id") ?? "Unknown badge";
     const door = entry.doorID ?? this.pickString(data, "doorID", "door_id") ?? "Unknown door";
     const device = entry.deviceId ?? this.pickString(data, "deviceId", "device_id") ?? "Unknown device";
-    return `${badge} · ${door} · ${device}`;
+    const zone = this.doorZones[door] ?? null;
+    return zone ? `${badge} · ${door} (zone ${zone}) · ${device}` : `${badge} · ${door} · ${device}`;
   }
 
   formatStatus(entry: MonitoringEntry): string {

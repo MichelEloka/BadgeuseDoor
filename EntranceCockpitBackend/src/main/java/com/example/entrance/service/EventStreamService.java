@@ -174,6 +174,7 @@ public class EventStreamService {
             Map<String, Object> data = objectMapper.readValue(payload, new TypeReference<>() {});
             String badgeId = firstNonEmpty(data, "badgeID", "badgeId", "badge_id", "badge");
             String doorId = firstNonEmpty(data, "doorID", "doorId", "door_id", "door");
+            String deviceId = firstNonEmpty(data, "deviceId", "device_id", "device");
             String status = firstNonEmpty(data, "status", "action", "result", "state");
             String timestampRaw = firstNonEmpty(data, "timestamp", "ts", "date");
             Instant timestamp = parseTimestamp(timestampRaw);
@@ -181,6 +182,9 @@ public class EventStreamService {
             Map<String, String> payloadMap = new HashMap<>();
             payloadMap.put("badgeID", badgeId != null ? badgeId : "");
             payloadMap.put("doorID", doorId != null ? doorId : "");
+            if (StringUtils.hasText(deviceId)) {
+                payloadMap.put("deviceId", deviceId);
+            }
             payloadMap.put("status", status != null ? status : "UNKNOWN");
             payloadMap.put("timestamp", (timestamp != null ? timestamp : Instant.now()).toString());
             return payloadMap;

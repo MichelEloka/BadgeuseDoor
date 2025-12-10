@@ -1,11 +1,9 @@
-# bridge/app.py
-import os
 import json
 import logging
 import threading
 import time
 from datetime import datetime, timezone
-from typing import Optional, Dict
+from typing import Dict, Optional
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +12,7 @@ from paho.mqtt.client import CallbackAPIVersion
 from kafka import KafkaProducer, KafkaConsumer
 from kafka.errors import KafkaError
 import uvicorn
+import os
 
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(levelname)s: %(message)s")
 log = logging.getLogger("bridge")
@@ -25,11 +24,12 @@ MQTT_USER = os.getenv("MQTT_USER", "")
 MQTT_PASS = os.getenv("MQTT_PASS", "")
 CLIENT_ID = os.getenv("CLIENT_ID", "bridge-doors")
 # Topics
-BADGE_EVENTS_TOPIC = os.getenv("BADGE_EVENTS_TOPIC", "iot/badgeuse/+/events")  # wildcard
+# Le front publie désormais sur un topic unique (sans wildcard) avec deviceId dans le payload.
+BADGE_EVENTS_TOPIC = os.getenv("BADGE_EVENTS_TOPIC", "iot/badgeuse/events")
 DOOR_CMDS_FMT = os.getenv("DOOR_CMDS_FMT", "iot/porte/{door_id}/events")
 # Comportement
 OPEN_ACTION = os.getenv("OPEN_ACTION", "open")  # "open" | "toggle"
-AUTO_CLOSE_SEC = int(os.getenv("AUTO_CLOSE_SEC", "5"))  # 0 pour désactiver
+AUTO_CLOSE_SEC = int(os.getenv("AUTO_CLOSE_SEC", "0"))  # 0 pour désactiver
 DEBOUNCE_SEC = int(os.getenv("DEBOUNCE_SEC", "2"))  # anti-spam pour une même porte
 # Kafka
 KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
@@ -100,7 +100,6 @@ def send_to_kafka(badge_id: str, door_id: str, device_id: str):
   payload = {
     "badgeID": badge_id or "",
     "doorID": door_id or "",
-    "status": "GRANTED",
     "timestamp": now_iso(),
     "deviceId": device_id or "",
   }
@@ -159,6 +158,7 @@ def _start_kafka_logs_listener():
 
 def on_message(client, userdata, msg):
   # On attend l'event JSON de la badgeuse
+  log.info(f"[BRIDGE] MQTT message on {msg.topic} -> {msg.payload.decode('utf-8', errors='ignore')}")
   try:
     data = json.loads(msg.payload.decode("utf-8"))
   except Exception:
@@ -168,15 +168,17 @@ def on_message(client, userdata, msg):
   if not isinstance(data, dict):
     return
   topic_parts = msg.topic.split("/")
-  badge_device_id = topic_parts[2] if len(topic_parts) >= 3 else str(data.get("device_id", ""))
+  badge_device_id = str(data.get("deviceId") or data.get("device_id") or "")
+  if not badge_device_id and len(topic_parts) >= 3 and topic_parts[2] != "+":
+    badge_device_id = topic_parts[2]
 
   door_id: Optional[str] = None
   badge_id: Optional[str] = None
   success = True
 
   if "badgeID" in data or "doorID" in data:
-    badge_id = data.get("badgeID") or ""
-    door_id = data.get("doorID") or ""
+    badge_id = data.get("badgeID") or data.get("badgeId") or ""
+    door_id = data.get("doorID") or data.get("doorId") or ""
   elif data.get("type") == "badge_event":
     inner = data.get("data") or {}
     success = bool(inner.get("success", True))
@@ -205,6 +207,7 @@ def on_message(client, userdata, msg):
   log.info(f"[BRIDGE] <- {msg.topic} badge_device={badge_device_id} badge={badge_id} door={door_id} action={action}")
   publish_door(client, door_id, action, badge_id)
   schedule_autoclose(client, door_id)
+  log.info(f"[BRIDGE] -> Kafka topic={KAFKA_TOPIC_ATTEMPTS} payload={{'badgeID': {badge_id}, 'doorID': {door_id}, 'deviceId': {badge_device_id}}}")
   send_to_kafka(badge_id or "", door_id, badge_device_id or "")
 
 
@@ -265,20 +268,11 @@ app.add_middleware(
 @app.get("/health")
 def health():
   return {
-    "ok": True,
+    "status": "ok",
     "mqtt_connected": connected,
-    "subscribe": BADGE_EVENTS_TOPIC,
-    "door_cmds_fmt": DOOR_CMDS_FMT,
-    "auto_close_sec": AUTO_CLOSE_SEC,
-    "debounce_sec": DEBOUNCE_SEC,
-    "kafka_topic_attempts": KAFKA_TOPIC_ATTEMPTS,
-    "kafka_bootstrap": KAFKA_BOOTSTRAP,
-    "kafka_ready": kafka_producer is not None,
-    "kafka_logs_consumer": kafka_consumer_thread is not None and kafka_consumer_thread.is_alive(),
-    "kafka_topic_logs": KAFKA_TOPIC_LOGS,
+    "kafka_producer": kafka_producer is not None,
   }
 
 
 if __name__ == "__main__":
   uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", "9010")))
-kafka_consumer_thread: Optional[threading.Thread] = None

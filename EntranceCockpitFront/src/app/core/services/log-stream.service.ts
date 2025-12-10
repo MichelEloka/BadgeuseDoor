@@ -193,10 +193,10 @@ export class LogStreamService {
     const statusText = this.extractStatusLabel(payload);
     if (statusText) {
       const normalized = statusText.trim().toLowerCase();
-      if (/(allow|autorise|grant|success|accept|ok|green)/.test(normalized)) {
+      if (/(allow|autorise|grant|granted|success|accept|ok|green)/.test(normalized)) {
         return "success";
       }
-      if (/(deny|refus|fail|error|ko|reject|block|unauthor)/.test(normalized)) {
+      if (/(deny|denied|refus|fail|error|ko|reject|block|unauthor|forbid)/.test(normalized)) {
         return "failure";
       }
     }
@@ -255,7 +255,12 @@ export class LogStreamService {
   }
 
   private extractStatusLabel(payload: MonitoringPayload | null): string | null {
-    return this.pickString(payload, "status", "result", "action", "state");
+    const topLevel = this.pickString(payload, "status", "result", "action", "state");
+    if (topLevel) return topLevel;
+    if (payload?.data && typeof payload.data === "object") {
+      return this.pickString(payload.data as Record<string, unknown>, "status", "result", "action", "state");
+    }
+    return null;
   }
 }
 

@@ -80,7 +80,13 @@
               </div>
               <div>
                 <dt>Porte</dt>
-                <dd>{{ log.doorID ?? "Inconnue" }}</dd>
+                <dd>
+                  <ng-container *ngIf="log.doorID as door">
+                    {{ door }}
+                    <span class="zone-chip" *ngIf="doorZones[door]">· Zone {{ doorZones[door] }}</span>
+                  </ng-container>
+                  <ng-container *ngIf="!log.doorID">Inconnue</ng-container>
+                </dd>
               </div>
               <div>
                 <dt>Device</dt>

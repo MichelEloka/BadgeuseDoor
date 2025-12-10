@@ -43,40 +43,45 @@ class BadgeuseWorker(DeviceWorker):
         self.client.on_disconnect = self._on_disconnect
         self.client.on_message = self._on_message
         self.command_topic = f"iot/badgeuse/{device_id}/commands"
-        self.command_filter = "iot/badgeuse/+/commands"
 
     def _on_connect(self, client, userdata, flags, reason_code, properties=None):
         self.connected = reason_code == 0
         if self.connected:
-            log.info("[badgeuse %s] connect� � %s:%s", self.device_id, MQTT_HOST, MQTT_PORT)
+            log.info("[badgeuse %s] connectee a %s:%s (topic=%s)", self.device_id, MQTT_HOST, MQTT_PORT, self.command_topic)
             client.subscribe(self.command_topic, qos=1)
-            client.subscribe(self.command_filter, qos=1)
             self.ready.set()
         else:
-            log.error("[badgeuse %s] connexion refus�e (%s)", self.device_id, reason_code)
+            log.error("[badgeuse %s] connexion refusee (%s)", self.device_id, reason_code)
 
     def _on_disconnect(self, client, userdata, reason_code, properties=None):
         self.connected = False
         self.ready.clear()
-        log.warning("[badgeuse %s] d�connect�e (%s)", self.device_id, reason_code)
+        log.warning("[badgeuse %s] deconnectee (%s)", self.device_id, reason_code)
 
     def _normalize_payload(self, payload: Dict) -> tuple[str, Optional[str]]:
         badge_id = str(payload.get("badgeID") or payload.get("badge_id") or payload.get("tag_id") or "BADGE-TEST")
-        raw_door = payload.get("doorID") or payload.get("door_id")
-        door_id = str(raw_door) if raw_door not in (None, "") else self.door_id
-        return badge_id, door_id
+        # On ignore la door envoyée par le front : la badgeuse connaît déjà sa porte cible
+        return badge_id, self.door_id
 
     def _publish_badge_event(self, badge_id: str, door_id: Optional[str]):
         message = {
             "badgeID": badge_id,
             "doorID": door_id or "",
+            "deviceId": self.device_id,
             "timestamp": now_iso(),
         }
-        topic = f"iot/badgeuse/{self.device_id}/events"
+        topic = "iot/badgeuse/events"
         self.client.publish(topic, json.dumps(message), qos=1, retain=False)
-        log.info("[badgeuse %s] badge=%s door=%s", self.device_id, badge_id, door_id or "-")
+        log.info("[badgeuse %s] -> %s badge=%s door=%s", self.device_id, topic, badge_id, door_id or "-")
 
     def _on_message(self, client, userdata, msg):
+        log.info("[badgeuse %s] commande recue %s : %s", self.device_id, msg.topic, msg.payload.decode("utf-8", errors="ignore"))
+        parts = msg.topic.split("/")
+        if len(parts) >= 3:
+            target = parts[2]
+            if target and target != self.device_id:
+                log.debug("[badgeuse %s] ignore commande pour %s", self.device_id, target)
+                return
         try:
             payload = json.loads(msg.payload.decode("utf-8"))
         except Exception:
@@ -138,15 +143,15 @@ class DoorWorker(DeviceWorker):
         if self.connected:
             client.subscribe(self.command_topic, qos=1)
             self.ready.set()
-            log.info("[porte %s] connect�e � %s:%s", self.device_id, MQTT_HOST, MQTT_PORT)
+            log.info("[porte %s] connectee a %s:%s (topic=%s)", self.device_id, MQTT_HOST, MQTT_PORT, self.command_topic)
             self._publish_state()
         else:
-            log.error("[porte %s] connexion refus�e (%s)", self.device_id, reason_code)
+            log.error("[porte %s] connexion refusee (%s)", self.device_id, reason_code)
 
     def _on_disconnect(self, client, userdata, reason_code, properties=None):
         self.connected = False
         self.ready.clear()
-        log.warning("[porte %s] d�connect�e (%s)", self.device_id, reason_code)
+        log.warning("[porte %s] deconnectee (%s)", self.device_id, reason_code)
 
     def _publish_state(self):
         payload = {
@@ -201,13 +206,17 @@ class DoorWorker(DeviceWorker):
         log.info("[porte %s] action=%s -> is_open=%s", self.device_id, action, self.state["is_open"])
 
     def _on_message(self, client, userdata, msg):
+        log.info("[porte %s] commande recue %s : %s", self.device_id, msg.topic, msg.payload.decode("utf-8", errors="ignore"))
         try:
             payload = json.loads(msg.payload.decode("utf-8"))
         except Exception:
             log.warning("[porte %s] payload non JSON", self.device_id)
             return
         door_target = str(payload.get("doorID") or payload.get("door_id") or "").strip()
-        if door_target and door_target not in {self.device_id}:
+        if not door_target:
+            log.debug("[porte %s] ignore commande sans doorID cible", self.device_id)
+            return
+        if door_target not in {self.device_id}:
             return
         action = str(payload.get("action") or "").lower()
         if action not in {"open", "close", "toggle"}:

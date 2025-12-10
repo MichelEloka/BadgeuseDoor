@@ -21,6 +21,9 @@ public class DeviceEntity {
     @Column
     private String location;
 
+    @Column
+    private String zone;
+
     @Column(nullable = false)
     private boolean builtin = true;
 
@@ -60,6 +63,14 @@ public class DeviceEntity {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public String getZone() {
+        return zone;
+    }
+
+    public void setZone(String zone) {
+        this.zone = zone;
     }
 
     public boolean isBuiltin() {

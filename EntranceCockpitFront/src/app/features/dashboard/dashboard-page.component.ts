@@ -84,6 +84,7 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
   readonly devicesLoading = signal(false);
   readonly devicesError = signal<string | null>(null);
   readonly deletingDeviceId = signal<string | null>(null);
+  readonly doorZones = signal<Record<string, string>>({});
   readonly logDetailsById = signal<Record<string, LogDetailsState>>({});
 
   private readonly notifiedLogIds = new Set<string>();
@@ -152,6 +153,7 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
     this.connect();
     void this.loadDoors();
     void this.loadUsers();
+    void this.loadDevices();
   }
 
   ngOnDestroy(): void {
@@ -214,6 +216,16 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
     try {
       const list = await firstValueFrom(this.mockDeviceService.fetchDevices());
       this.devices.set(list);
+      const zones: Record<string, string> = {};
+      for (const d of list) {
+        if (d.type === "porte" || d.type === "door") {
+          const z = (d.zone ?? d.location ?? "").toString().trim();
+          if (z) {
+            zones[d.id] = z;
+          }
+        }
+      }
+      this.doorZones.set(zones);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Impossible de récupérer les devices.";
       this.devicesError.set(message);
@@ -501,6 +513,8 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
     if (!logId || this.logDetailsRequests.has(logId)) {
       return;
     }
+    const entry = this.logs().find((log) => log.id === logId);
+    const badgeId = entry?.badgeID?.trim() ?? null;
     const snapshot = this.logDetailsById();
     if (snapshot[logId] && snapshot[logId].users.length && !snapshot[logId].error) {
       return;
@@ -508,10 +522,40 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
     this.logDetailsRequests.add(logId);
     this.updateLogDetailsState(logId, { loading: true, error: null });
     try {
+      // 1) si on a déjà les utilisateurs en mémoire, on tente un match direct sur le badgeID
+      if (badgeId) {
+        const normalized = badgeId.toUpperCase();
+        const matches = this.users().filter(
+          (u) => (u.badgeID ?? "").trim().toUpperCase() === normalized
+        );
+        if (matches.length) {
+          this.updateLogDetailsState(logId, { loading: false, users: matches, error: null });
+          return;
+        }
+      }
+
+      // 2) si l'API de détails n'est pas configurée, on s'arrête ici
+      if (!environment.logDetailsApiUrl) {
+        this.updateLogDetailsState(logId, {
+          loading: false,
+          users: [],
+          error: "Log details endpoint non configuré",
+        });
+        return;
+      }
+
+      // 3) sinon, on tente l'appel distant
       const result = await firstValueFrom(this.logDetailsService.fetchDetails(logId));
+      const users = Array.isArray(result.users) ? result.users : [];
+      // si on n'a rien du backend mais qu'on connaît le badge en local, on tente un fallback
+      const fallback =
+        !users.length && badgeId
+          ? this.users().filter((u) => (u.badgeID ?? "").trim().toUpperCase() === badgeId.toUpperCase())
+          : [];
+
       this.updateLogDetailsState(logId, {
         loading: false,
-        users: Array.isArray(result.users) ? result.users : [],
+        users: users.length ? users : fallback,
         error: null,
       });
     } catch (error) {

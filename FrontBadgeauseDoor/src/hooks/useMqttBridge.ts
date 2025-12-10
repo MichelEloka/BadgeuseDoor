@@ -133,29 +133,20 @@ export function useMqttBridge(initialUrl: string) {
     (deviceId: string, payload: BadgeCommandPayload) =>
       new Promise<void>((resolve, reject) => {
         const client = clientRef.current;
-        if (!client || !client.connected) {
-          return reject(new Error("MQTT non connecte"));
-        }
+        if (!client || !client.connected) return reject(new Error("MQTT non connecte"));
+
         const topicDeviceId = (deviceId || "").trim();
-        const targetDoor = payload.doorId?.trim();
-        if (!topicDeviceId && !targetDoor) {
-          return reject(new Error("deviceId ou doorId requis"));
-        }
-        const topic = targetDoor ? `iot/porte/${targetDoor}/events` : `iot/badgeuse/${topicDeviceId}/commands`;
+        if (!topicDeviceId) return reject(new Error("deviceId requis"));
+
+        // Flux par badgeuse : commande vers la badgeuse ciblée (seul badgeID est envoyé, la badgeuse connaît sa porte)
+        const topic = `iot/badgeuse/${topicDeviceId}/commands`;
         const message =
-          targetDoor && targetDoor.length > 0
-            ? {
-                action: "open",
-                timestamp: new Date().toISOString(),
-                badgeID: payload.badgeId,
-                doorID: targetDoor,
-              }
-            : {
-                action: "simulate_badge",
-                timestamp: new Date().toISOString(),
-                badgeID: payload.badgeId,
-                ...(payload.doorId ? { doorID: payload.doorId } : {}),
-              };
+          {
+            badgeID: payload.badgeId,
+            // on n'envoie pas doorID/deviceId, la badgeuse les connaît déjà côté simulateur
+            timestamp: new Date().toISOString(),
+            type: "badge_event",
+          };
         client.publish(topic, JSON.stringify(message), { qos: 1 }, (err) => {
           if (err) {
             reject(err);

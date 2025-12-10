@@ -10,6 +10,12 @@ services:
       MQTT_USER: "toto"
       MQTT_PASS: "toto"
       SIMULATOR_DATA_DIR: "/data"
+      AUTO_CLOSE_SECONDS: "3"
+      ORCH_URL: ${ORCH_URL:-http://entrance-cockpit-backend:9500/orchestrator}
+      ORCH_DEVICES_URL: ${ORCH_DEVICES_URL:-http://entrance-cockpit-backend:9500/api/devices}
+      ORCH_PLAN_IDS: ${ORCH_PLAN_IDS:-etage-1}
+      ORCH_PLAN_LIST_RETRIES: ${ORCH_PLAN_LIST_RETRIES:-3}
+      ORCH_BOOTSTRAP_TIMEOUT: ${ORCH_BOOTSTRAP_TIMEOUT:-120}
     ports:
       - "9002:9002"
     networks: [iot]
@@ -24,7 +30,7 @@ services:
       MQTT_PORT: "1883"
       MQTT_USER: "toto"
       MQTT_PASS: "toto"
-      BADGE_EVENTS_TOPIC: "iot/badgeuse/+/events"
+      BADGE_EVENTS_TOPIC: "iot/badgeuse/events"
       DOOR_CMDS_FMT: "iot/porte/{door_id}/events"
       OPEN_ACTION: "open"
       AUTO_CLOSE_SEC: "5"  

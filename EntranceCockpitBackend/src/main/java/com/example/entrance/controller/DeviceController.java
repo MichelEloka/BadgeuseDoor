@@ -60,9 +60,12 @@ public class DeviceController {
             return ResponseEntity.badRequest().body(Map.of("message", "Device ID is required"));
         }
         Object rawLocation = body.get("location");
+        Object rawZone = body.get("zone");
         String location = rawLocation == null ? null : rawLocation.toString();
+        String zone = rawZone == null ? null : rawZone.toString();
+        String target = StringUtils.hasText(zone) ? zone : location;
         try {
-            DeviceRecord updated = registryService.updateLocation(deviceId.trim(), location);
+            DeviceRecord updated = registryService.updateLocation(deviceId.trim(), target);
             if (updated == null) {
                 return ResponseEntity.status(404).body(Map.of("message", "Device not found"));
             }

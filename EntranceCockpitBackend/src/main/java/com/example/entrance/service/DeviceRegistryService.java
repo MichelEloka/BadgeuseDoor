@@ -38,12 +38,18 @@ public class DeviceRegistryService {
         }
 
         simulatorClient.createDevice(normalizedType, finalId, targetDoorId);
-
         DeviceEntity entity = new DeviceEntity();
         entity.setDeviceId(finalId);
         entity.setType(normalizedType);
         entity.setBuiltin(false);
-        entity.setLocation(null);
+        // Pour les badgeuses, on stocke l'ID de la porte cible dans "location"
+        if ("badgeuse".equalsIgnoreCase(normalizedType)) {
+            entity.setLocation(StringUtils.hasText(targetDoorId) ? targetDoorId : null);
+            entity.setZone(null);
+        } else {
+            entity.setLocation(null);
+            entity.setZone(null);
+        }
         entity.setCreatedAt(Instant.now());
         DeviceEntity saved = repository.save(entity);
         return toRecord(saved);
@@ -69,7 +75,16 @@ public class DeviceRegistryService {
         }
         return repository.findByDeviceIdIgnoreCase(deviceId.trim())
                 .map(entity -> {
-                    entity.setLocation(StringUtils.hasText(location) ? location.trim() : null);
+                    // Pour une badgeuse, "location" transporte l'ID de la porte cible.
+                    // Pour une porte, on persiste la zone dans le champ dédié ET on expose aussi via location pour compat.
+                    String cleaned = StringUtils.hasText(location) ? location.trim() : null;
+                    if ("badgeuse".equalsIgnoreCase(entity.getType())) {
+                        entity.setLocation(cleaned);
+                        entity.setZone(null);
+                    } else {
+                        entity.setZone(cleaned);
+                        entity.setLocation(cleaned);
+                    }
                     DeviceEntity updated = repository.save(entity);
                     return toRecord(updated);
                 })
@@ -92,7 +107,9 @@ public class DeviceRegistryService {
                 entity.getType(),
                 entity.getCreatedAt(),
                 entity.isBuiltin(),
-                entity.getLocation()
+                entity.getLocation(),
+                "badgeuse".equalsIgnoreCase(entity.getType()) ? entity.getLocation() : null,
+                entity.getZone()
         );
     }
 

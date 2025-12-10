@@ -50,7 +50,4 @@ services:
 volumes:
   kafka-data:
 
-networks:
-  iot:
-    external: true
-    name: badgeusedoor_iot
+

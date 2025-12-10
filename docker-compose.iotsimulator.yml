@@ -5,7 +5,7 @@ services:
     image: badgeusedoor/iotbadgedoorsimulator
     container_name: iotBadgeDoorSimulateor
     environment:
-      MQTT_HOST: 172.31.253.71
+      MQTT_HOST: mosquitto
       MQTT_PORT: 1883
       MQTT_USER: toto
       MQTT_PASS: toto

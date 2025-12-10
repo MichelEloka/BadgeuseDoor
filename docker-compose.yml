@@ -5,7 +5,7 @@ services:
     container_name: iotBadgeDoorSimulateor
     image: badgeusedoor/iotbadgedoorsimulator
     environment:
-      MQTT_HOST: "172.31.253.71"
+      MQTT_HOST: "mosquitto"
       MQTT_PORT: "1883"
       MQTT_USER: "toto"
       MQTT_PASS: "toto"
@@ -20,7 +20,7 @@ services:
     build: ./bridge
     container_name: bridge
     environment:
-      MQTT_HOST: "172.31.253.71"
+      MQTT_HOST: "mosquitto"
       MQTT_PORT: "1883"
       MQTT_USER: "toto"
       MQTT_PASS: "toto"
@@ -29,6 +29,8 @@ services:
       OPEN_ACTION: "open"
       AUTO_CLOSE_SEC: "5"  
       DEBOUNCE_SEC: "2"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      KAFKA_TOPIC_ATTEMPTS: "attempts"
     networks: [iot]
     restart: unless-stopped
     ports:
@@ -38,14 +40,15 @@ services:
     build: ./EntranceCockpitBackend
     container_name: entrance-cockpit-backend
     environment:
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://172.31.252.35:5432/coredb}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://postgres:5432/coredb}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-coreuser}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-episen_tp_paas}
       EVENTS_KAFKA_ENABLED: ${EVENTS_KAFKA_ENABLED:-true}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-172.31.252.16:9092}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
       KAFKA_TOPIC: ${KAFKA_TOPIC:-entrance}
       KAFKA_TOPIC_ATTEMPTS: ${KAFKA_TOPIC_ATTEMPTS:-attempts}
       EVENTS_KAFKA_EXTRA_TOPICS: ${EVENTS_KAFKA_EXTRA_TOPICS:-logs}
+      SIMULATOR_BASE_URL: ${SIMULATOR_BASE_URL:-http://host.docker.internal:9002}
     ports:
       - "9500:9500"
     depends_on:
@@ -53,6 +56,53 @@ services:
     networks: [iot]
     restart: unless-stopped
 
+  core-operational-backend:
+    build: ./core-operational-backend
+    container_name: core-operational-backend
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+      KAFKA_TOPIC_ATTEMPTS: ${KAFKA_TOPIC_ATTEMPTS:-attempts}
+      KAFKA_TOPIC_LOGS: ${KAFKA_TOPIC_LOGS:-logs}
+      ALLOW_PROBABILITY: ${ALLOW_PROBABILITY:-0.5}
+    networks:
+      - iot
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-coredb}
+      POSTGRES_USER: ${POSTGRES_USER:-coreuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-episen_tp_paas}
+      TZ: Europe/Paris
+      PGTZ: Europe/Paris
+    command: ["postgres","-c","listen_addresses=*","-c","port=5432"]
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    networks:
+      - iot
+    restart: unless-stopped
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: mosquitto
+    environment:
+      MQTT_USER: "toto"
+      MQTT_PASSWORD: "toto"
+    ports:
+      - "8885:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    networks:
+      - iot
+    restart: unless-stopped
+ 
   entrance-cockpit-front:
     build: ./EntranceCockpitFront
     container_name: entrance-cockpit-front
@@ -60,38 +110,38 @@ services:
       - "4201:80"
     networks: [iot]
     restart: unless-stopped
-  mosquitto:
-    image: eclipse-mosquitto:2
-    container_name: mosquitto
-    restart: unless-stopped
 
+  front-badgeause-door:
+    image: node:20
+    container_name: front-badgeause-door
+    working_dir: /app
+    volumes:
+      - ./FrontBadgeauseDoor:/app
     environment:
-      MQTT_USER: "toto"
-      MQTT_PASSWORD: "toto"
-
+      - VITE_ORCH_URL=${VITE_ORCH_URL:-http://entrance-cockpit-backend:9500/orchestrator}
+      - VITE_ENTRANCE_API_URL=${VITE_ENTRANCE_API_URL:-http://entrance-cockpit-backend:9500/api}
+      - VITE_MQTT_WS_URL=${VITE_MQTT_WS_URL:-ws://mosquitto:9001}
+      - VITE_MQTT_USERNAME=${VITE_MQTT_USERNAME:-toto}
+      - VITE_MQTT_PASSWORD=${VITE_MQTT_PASSWORD:-toto}
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 4173"
     ports:
-      - "1883:1883"
-      - "9001:9001"
-
-    volumes:
-      - ./mosquitto/config:/mosquitto/config
-      - ./mosquitto/data:/mosquitto/data
-      - ./mosquitto/log:/mosquitto/log
-    networks: [iot]
-  hivemq:
-    image: hivemq/hivemq-ce:latest
-    container_name: hivemq
+      - "4173:4173"
+    networks:
+      - iot
+    restart: unless-stopped
+  mqttx-web:
+    image: emqx/mqttx-web:latest
+    container_name: mqttx-web
     ports:
-      - "8080:8080"   # Web UI
-      - "1884:1883"   # MQTT port (alternative)
-    volumes:
-      - ./hivemq/data:/opt/hivemq/data
-      - ./hivemq/log:/opt/hivemq/log
+      - "8080:80"     # UI web pour observer/publier sur les topics MQTT
+    networks:
+      - iot
     restart: unless-stopped
 
  
  
 networks:
   iot: {}
-
-
+volumes:
+  kafka-data:
+  pg-data:

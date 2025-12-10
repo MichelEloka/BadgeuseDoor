@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/Spinner";
-import { cn } from "@/lib/utils";
 import type { DirectoryUser } from "@/api/directory";
 import type { DeviceNode, Floor } from "@/types/floor";
 import { DoorClosed, DoorOpen, KeyRound, Trash2 } from "lucide-react";
@@ -15,6 +14,7 @@ interface PropertiesPanelProps {
   onUpdateNode: (nodeId: string, patch: Partial<DeviceNode>) => void;
   onEnsureService: (node: DeviceNode) => void;
   onDeleteNode: (node: DeviceNode) => void;
+  onLinkDoor: (node: DeviceNode, doorId: string) => void;
   onBadge: (node: DeviceNode, badgeId: string) => void;
   onDoorAction: (node: DeviceNode, action: "open" | "close" | "toggle") => void;
   doorCatalog: string[];
@@ -26,22 +26,14 @@ export function PropertiesPanel({
   floor,
   loadingMap,
   onUpdateNode,
-  onEnsureService,
   onDeleteNode,
+  onLinkDoor,
   onBadge,
   onDoorAction,
   doorCatalog,
   badgeCatalog,
 }: PropertiesPanelProps) {
-  const doorOptionsFromFloor = floor.nodes.filter((n) => n.kind === "porte" && n.deviceId);
   const loadingKind = selNode?.deviceId ? loadingMap[selNode.deviceId] : undefined;
-  const doorCatalogOptions = useMemo(() => {
-    const base = doorCatalog.map((id) => ({ value: id, label: id }));
-    if (selNode?.kind === "porte" && selNode.deviceId && !base.some((item) => item.value === selNode.deviceId)) {
-      base.push({ value: selNode.deviceId, label: selNode.deviceId });
-    }
-    return base;
-  }, [doorCatalog, selNode?.deviceId, selNode?.kind]);
   const normalizedBadges = useMemo(
     () =>
       badgeCatalog.map((user) => ({
@@ -51,6 +43,7 @@ export function PropertiesPanel({
     [badgeCatalog]
   );
   const [selectedBadgeId, setSelectedBadgeId] = useState("");
+  const [selectedDoorId, setSelectedDoorId] = useState("");
 
   useEffect(() => {
     if (!badgeCatalog.length) {
@@ -62,6 +55,21 @@ export function PropertiesPanel({
       setSelectedBadgeId(fallback);
     }
   }, [badgeCatalog, selectedBadgeId, selNode?.id]);
+
+  useEffect(() => {
+    if (!doorCatalog.length) {
+      setSelectedDoorId("");
+      return;
+    }
+    const preferred = selNode?.targetDoorId;
+    if (preferred && doorCatalog.includes(preferred)) {
+      setSelectedDoorId(preferred);
+      return;
+    }
+    if (!selectedDoorId || !doorCatalog.includes(selectedDoorId)) {
+      setSelectedDoorId(doorCatalog[0]);
+    }
+  }, [doorCatalog, selNode?.targetDoorId, selectedDoorId, selNode?.id]);
 
   return (
     <Card className="rounded-xl border border-slate-200 bg-white/80 shadow-sm dark:border-slate-700 dark:bg-slate-900/70">
@@ -75,85 +83,53 @@ export function PropertiesPanel({
           <div className="space-y-2.5">
             <SummaryCard label="Type" value={selNode.kind === "porte" ? "PORTE" : "BADGEUSE"} />
             {selNode.kind === "porte" && <SummaryCard label="Localisation" value={selNode.location || "Aucune zone détectée"} />}
+            {selNode.kind === "badgeuse" && (
+              <SummaryCard
+                label="Porte liée"
+                value={selNode.targetDoorId ? selNode.targetDoorId : "Non liée (choisir une porte)"}
+              />
+            )}
 
             <Field label="deviceId">
-              {selNode.kind === "porte" ? (
-                <select
-                  value={selNode.deviceId || ""}
-                  onChange={(e) => onUpdateNode(selNode.id, { deviceId: e.target.value || undefined })}
-                  className="h-9 w-full rounded-2xl border border-slate-200 bg-white/85 px-3 text-[11px] focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900/70"
-                >
-                  <option value="">Choisir une porte</option>
-                  {doorCatalogOptions.map((door) => (
-                    <option key={door.value} value={door.value}>
-                      {door.label}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <Input
-                  value={selNode.deviceId || ""}
-                  readOnly
-                  placeholder={selNode.kind === "porte" ? "porte-XYZ" : "badgeuse-ABC"}
-                  className="h-8 rounded-2xl border-slate-200/70 bg-white/85 px-3 text-[11px] focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900/70"
-                />
-              )}
-              {selNode.kind === "porte" && !doorCatalogOptions.length && <p className="text-[10px] text-amber-500">Aucune porte disponible (backend).</p>}
+              <Input
+                value={selNode.deviceId || "Création..."}
+                readOnly
+                placeholder={selNode.kind === "porte" ? "porte-XYZ" : "badgeuse-ABC"}
+                className="h-8 rounded-2xl border-slate-200/70 bg-white/85 px-3 text-[11px] focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900/70"
+              />
             </Field>
 
             {selNode.kind === "badgeuse" && (
-              <div className="space-y-2 rounded-lg border border-slate-200 bg-white/70 p-2 dark:border-slate-700 dark:bg-slate-900/40">
-                <Field label="Porte liée (deviceId)">
-                  <select
-                    value={selNode.targetDoorId || ""}
-                    onChange={(e) => onUpdateNode(selNode.id, { targetDoorId: e.target.value || undefined })}
-                    className="h-8 w-full rounded-2xl border-cyan-200/60 bg-white/90 px-3 text-[11px] focus-visible:ring-cyan-500 dark:border-cyan-500/40 dark:bg-slate-900/50"
-                  >
-                    <option value="">Choisir une porte</option>
-                    {doorCatalogOptions.map((door) => (
-                      <option key={door.value} value={door.value}>
-                        {door.label}
-                      </option>
-                    ))}
-                  </select>
-                  {!doorCatalogOptions.length && <p className="text-[10px] text-cyan-600 dark:text-cyan-200">Liste des portes vide.</p>}
-                </Field>
-                <div className="flex flex-wrap gap-2">
-                  {doorOptionsFromFloor.map((door) => (
-                    <Button
-                      key={door.id}
-                      size="sm"
-                      variant="ghost"
-                      className={cn(
-                        "h-7 rounded-xl border px-2.5 text-[11px] font-medium transition",
-                        door.deviceId === selNode.targetDoorId ? "border-slate-900 bg-white text-slate-900 dark:text-slate-100" : "border-transparent text-slate-600 hover:border-slate-300 dark:text-slate-300"
-                      )}
-                      onClick={() => onUpdateNode(selNode.id, { targetDoorId: door.deviceId })}
+              <div className="space-y-1 rounded-lg border border-slate-200 bg-white/70 p-2 dark:border-slate-700 dark:bg-slate-900/40">
+                <Field label="Lier à une porte">
+                  <div className="flex gap-2">
+                    <select
+                      value={selectedDoorId}
+                      onChange={(e) => setSelectedDoorId(e.target.value)}
+                      className="h-8 flex-1 rounded-2xl border-slate-200 bg-white px-3 text-[11px] focus-visible:ring-indigo-500 dark:border-slate-600 dark:bg-slate-900/70"
+                      disabled={!doorCatalog.length}
                     >
-                      Lier {door.deviceId}
+                      {!doorCatalog.length && <option value="">Aucune porte disponible</option>}
+                      {doorCatalog.map((door) => (
+                        <option key={door} value={door}>
+                          {door}
+                        </option>
+                      ))}
+                    </select>
+                    <Button
+                      size="sm"
+                      className="h-8 rounded-2xl border border-slate-200 bg-white/90 px-3 text-[11px] text-slate-700 hover:bg-white dark:border-slate-600 dark:bg-slate-900/50 dark:text-slate-100"
+                      disabled={!selectedDoorId || !!loadingKind}
+                      onClick={() => selectedDoorId && onLinkDoor(selNode, selectedDoorId)}
+                    >
+                      Lier
                     </Button>
-                  ))}
-                  {!doorOptionsFromFloor.length && <div className="text-xs text-cyan-600/80 dark:text-cyan-200/80">Aucune porte placée sur le plan.</div>}
-                </div>
+                  </div>
+                </Field>
               </div>
             )}
 
             <div className="flex flex-wrap gap-1.5">
-              <Button
-                size="sm"
-                className="h-7 rounded-full bg-slate-900 px-3 text-[11px] text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900"
-                onClick={() => selNode.deviceId && onEnsureService(selNode)}
-                disabled={!selNode.deviceId || !!loadingKind || (selNode.kind === "badgeuse" && !selNode.targetDoorId)}
-                title={selNode.kind === "badgeuse" && !selNode.targetDoorId ? "Lie d'abord une porte (targetDoorId)" : undefined}
-              >
-                {selNode.deviceId && loadingKind === "creating" ? (
-                  <span className="inline-flex items-center gap-2">
-                    <Spinner size={16} /> Création…
-                  </span>
-                ) : (
-                  "Créer / Assurer"
-                )}
-              </Button>
               <Button
                 size="sm"
                 variant="ghost"
@@ -244,9 +220,8 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
-  const palette = "border-slate-200 bg-white/80 text-slate-700 dark:border-slate-600 dark:bg-slate-900/40 dark:text-slate-100";
   return (
-    <div className={cn("rounded-2xl border px-3 py-1", palette)}>
+    <div className="rounded-2xl border border-slate-200 bg-white/80 px-3 py-1 text-slate-700 dark:border-slate-600 dark:bg-slate-900/40 dark:text-slate-100">
       <p className="text-[9px] uppercase tracking-[0.3em] opacity-70">{label}</p>
       <p className="text-sm font-semibold">{value}</p>
     </div>

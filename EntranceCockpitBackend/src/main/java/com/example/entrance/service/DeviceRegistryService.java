@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @Transactional
@@ -87,15 +86,6 @@ public class DeviceRegistryService {
                 .orElse(false);
     }
 
-    private String generateId(String type) {
-        String candidate;
-        do {
-            long random = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
-            candidate = type + "-" + Long.toHexString(random);
-        } while (repository.existsByDeviceIdIgnoreCase(candidate));
-        return candidate;
-    }
-
     private DeviceRecord toRecord(DeviceEntity entity) {
         return new DeviceRecord(
                 entity.getDeviceId(),
@@ -104,5 +94,18 @@ public class DeviceRegistryService {
                 entity.isBuiltin(),
                 entity.getLocation()
         );
+    }
+
+    private String generateId(String type) {
+        long next = repository.findTopByOrderByIdDesc()
+                .map(DeviceEntity::getId)
+                .orElse(0L) + 1L;
+        String prefix;
+        if ("porte".equalsIgnoreCase(type) || "door".equalsIgnoreCase(type)) {
+            prefix = "porte-";
+        } else {
+            prefix = "badgeuse-";
+        }
+        return prefix + next;
     }
 }

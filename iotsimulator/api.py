@@ -1,3 +1,4 @@
+import logging
 from typing import Literal, Optional
 
 from fastapi import Body, FastAPI, HTTPException, Query
@@ -63,6 +64,7 @@ def save_plan_endpoint(floor_id: str, plan: dict = Body(...)):
 
 @app.post("/devices")
 def create_device(req: CreateDevice):
+    logging.info("[api] create_device kind=%s id=%s door=%s", req.kind, req.device_id, req.door_id)
     record = manager.ensure(req.kind, req.device_id, req.door_id)
     ready = record.worker.wait_ready(timeout=8.0)
     payload = {
@@ -86,6 +88,7 @@ def list_devices(kind: Optional[str] = Query(default=None)):
 
 @app.delete("/devices/{device_id}")
 def delete_device(device_id: str, remove_image: bool = Query(default=False)):
+    logging.info("[api] delete_device id=%s remove_image=%s", device_id, remove_image)
     if not manager.remove(device_id):
         raise HTTPException(status_code=404, detail="Device not found")
     return {"ok": True}

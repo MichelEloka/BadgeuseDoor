@@ -6,6 +6,7 @@ import paho.mqtt.client as mqtt
 from paho.mqtt.client import CallbackAPIVersion
 
 from config import MQTT_HOST, MQTT_PASS, MQTT_PORT, MQTT_USER, log, now_iso
+import os
 
 
 class DeviceWorker(threading.Thread):
@@ -129,6 +130,8 @@ class DoorWorker(DeviceWorker):
         self.state_topic = f"iot/porte/{device_id}/state"
         self.state = {"is_open": False, "last_change": None}
         self._state_lock = threading.Lock()
+        self._auto_close_timer: Optional[threading.Timer] = None
+        self._auto_close_seconds = int(os.getenv("AUTO_CLOSE_SECONDS", "3"))
 
     def _on_connect(self, client, userdata, flags, reason_code, properties=None):
         self.connected = reason_code == 0
@@ -154,6 +157,31 @@ class DoorWorker(DeviceWorker):
         }
         self.client.publish(self.state_topic, json.dumps(payload), qos=1, retain=True)
 
+    def _cancel_auto_close(self):
+        timer = self._auto_close_timer
+        if timer:
+            timer.cancel()
+        self._auto_close_timer = None
+
+    def _schedule_auto_close(self):
+        self._cancel_auto_close()
+        if self._auto_close_seconds <= 0:
+            return
+
+        def _auto_close():
+            with self._state_lock:
+                if not self.state["is_open"]:
+                    return
+                self.state["is_open"] = False
+                self.state["last_change"] = now_iso()
+            if self.connected:
+                self._publish_state()
+            log.info("[porte %s] auto-close after %ss", self.device_id, self._auto_close_seconds)
+
+        self._auto_close_timer = threading.Timer(self._auto_close_seconds, _auto_close)
+        self._auto_close_timer.daemon = True
+        self._auto_close_timer.start()
+
     def apply_action(self, action: str):
         action = action.lower()
         if action not in {"open", "close", "toggle"}:
@@ -164,6 +192,10 @@ class DoorWorker(DeviceWorker):
             else:
                 self.state["is_open"] = action == "open"
             self.state["last_change"] = now_iso()
+            if self.state["is_open"]:
+                self._schedule_auto_close()
+            else:
+                self._cancel_auto_close()
         if self.connected:
             self._publish_state()
         log.info("[porte %s] action=%s -> is_open=%s", self.device_id, action, self.state["is_open"])

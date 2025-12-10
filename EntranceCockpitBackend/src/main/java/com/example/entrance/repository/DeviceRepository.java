@@ -13,4 +13,6 @@ public interface DeviceRepository extends JpaRepository<DeviceEntity, Long> {
     boolean existsByDeviceIdIgnoreCase(String deviceId);
 
     List<DeviceEntity> findByTypeIgnoreCase(String type);
+
+    Optional<DeviceEntity> findTopByOrderByIdDesc();
 }

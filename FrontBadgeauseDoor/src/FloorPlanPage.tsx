@@ -4,18 +4,14 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import {
   DoorOpen,
-  DoorClosed,
   KeyRound,
   Ruler,
   Save,
   MapPinned,
-  Plus,
   Hand,
   PanelsTopLeft,
-  Move,
   FolderOpen,
 } from "lucide-react";
 
@@ -120,7 +116,7 @@ export default function FloorPlanPage() {
     return () => { try { c.end(true); } catch {} };
   }, [mqttUrl]);
 
-  // Orchestrateur (save/load plans) ------------------------------------
+// Orchestrateur (save/load plans) ------------------------------------
   async function savePlan() {
     const res = await fetch(`${ORCH_URL}/plans/${floor.id}`, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(floor) });
     if (!res.ok) alert(`Save KO: ${res.status}`);

@@ -2,6 +2,16 @@ import { ORCH_URL } from "@/config";
 import type { Floor } from "@/types/floor";
 import type { DirectoryDeviceRecord } from "@/api/directory";
 
+export async function listPlans(): Promise<Floor[]> {
+  const r = await fetch(`${ORCH_URL}/plans`);
+  if (!r.ok) {
+    if (r.status === 404) return [];
+    const txt = await r.text().catch(() => "");
+    throw new Error(`Orchestrator list failed (${r.status}) ${txt}`);
+  }
+  return (await r.json()) as Floor[];
+}
+
 export async function fetchPlan(floorId: string) {
   const r = await fetch(`${ORCH_URL}/plans/${floorId}`);
   if (!r.ok) throw new Error("plan not found");
@@ -66,9 +76,19 @@ export async function pollUntilReady(kind: "badgeuse" | "porte", deviceId: strin
   return false;
 }
 
+export async function badge(id: string, badgeId = "BADGE-TEST") {
+  if (!id) return;
+  const payload = { badge_id: badgeId, success: true };
+  const r = await fetch(`${ORCH_URL}/badge/${id}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!r.ok) alert(`Badge KO (${r.status})`);
+}
+
 export async function doorCmd(id: string, action: "open" | "close" | "toggle") {
   if (!id) return;
   const r = await fetch(`${ORCH_URL}/door/${id}/${action}`, { method: "POST" });
   if (!r.ok) alert(`Door ${action} KO (${r.status})`);
 }
-

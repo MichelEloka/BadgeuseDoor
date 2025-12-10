@@ -8,10 +8,12 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:password}
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update # crée/ajoute les tables manquantes au démarrage
     open-in-view: false
     properties:
       hibernate.jdbc.time_zone: UTC
+      hibernate.format_sql: false
+    show-sql: false
 
 events:
   interval: ${EVENTS_INTERVAL:PT4S}

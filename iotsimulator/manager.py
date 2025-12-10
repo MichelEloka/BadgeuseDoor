@@ -1,4 +1,5 @@
 import threading
+import logging
 from dataclasses import dataclass
 from typing import Dict, Literal, Optional
 
@@ -27,6 +28,7 @@ class DeviceManager:
         to_stop: Optional[DeviceWorker] = None
 
         with self._lock:
+            logging.info("[sim] ensure device kind=%s id=%s door=%s", kind, device_id, door_id)
             record = self._devices.get(device_id)
 
             if record is None:
@@ -70,6 +72,7 @@ class DeviceManager:
 
     def remove(self, device_id: str) -> bool:
         with self._lock:
+            logging.info("[sim] remove device id=%s", device_id)
             record = self._devices.pop(device_id, None)
         if not record:
             return False
@@ -83,6 +86,7 @@ class DeviceManager:
 
     def list(self, kind: Optional[str] = None):
         with self._lock:
+            logging.debug("[sim] list devices (kind=%s)", kind)
             items = []
             for device_id, record in self._devices.items():
                 if kind and record.kind != kind:

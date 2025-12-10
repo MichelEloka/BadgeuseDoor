@@ -6,9 +6,9 @@ services:
     volumes:
       - ./FrontBadgeauseDoor:/app
     environment:
-      - VITE_ORCH_URL=${VITE_ORCH_URL:-http://172.31.249.2:9500/orchestrator}
-      - VITE_ENTRANCE_API_URL=${VITE_ENTRANCE_API_URL:-http://172.31.249.2:9500/api}
-      - VITE_MQTT_WS_URL=${VITE_MQTT_WS_URL:-ws://172.31.253.71:9001}
+      - VITE_ORCH_URL=${VITE_ORCH_URL:-http://entrance-cockpit-backend:9500/orchestrator}
+      - VITE_ENTRANCE_API_URL=${VITE_ENTRANCE_API_URL:-http://entrance-cockpit-backend:9500/api}
+      - VITE_MQTT_WS_URL=${VITE_MQTT_WS_URL:-ws://mosquitto:9001}
       - VITE_MQTT_USERNAME=${VITE_MQTT_USERNAME:-toto}
       - VITE_MQTT_PASSWORD=${VITE_MQTT_PASSWORD:-toto}
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 4173"

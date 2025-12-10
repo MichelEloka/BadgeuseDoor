@@ -83,6 +83,19 @@ export function CanvasBoard({
     [isDarkMode]
   );
 
+  const closePolygon = (points: ZonePoint[]) => {
+    if (!points.length) return points;
+    const first = points[0];
+    const last = points[points.length - 1];
+    if (first.x === last.x && first.y === last.y) return points;
+    return [...points, first];
+  };
+
+  const finalizeZone = (points: ZonePoint[]) => {
+    if (points.length < 3) return;
+    onCreateZone(closePolygon(points));
+  };
+
   const findNearestDoorDeviceId = (x: number, y: number) => {
     let bestId: string | undefined;
     let bestD = Infinity;
@@ -249,24 +262,26 @@ export function CanvasBoard({
           onNodeUp();
         }}
         onClick={(e) => {
-            setSelectedWallId(null);
-            if (tool === "draw-zone") {
-              e.stopPropagation();
-              const w = clientToWorld(e);
-              setZoneDraft((draft) => [...draft, { x: snap(w.x, grid), y: snap(w.y, grid) }]);
-              return;
-            }
-            if (tool === "place-porte") placeNode("porte")(e);
-            if (tool === "place-badgeuse") placeNode("badgeuse")(e);
-          }}
-          onDoubleClick={(e) => {
-            if (tool === "draw-zone" && zoneDraft.length >= 3) {
-              e.preventDefault();
-              e.stopPropagation();
-              onCreateZone(zoneDraft);
-              setZoneDraft([]);
-            }
-          }}
+          setSelectedWallId(null);
+          if (tool === "draw-zone") {
+            e.stopPropagation();
+            if ((e as any).detail > 1) return;
+            const w = clientToWorld(e);
+            const pt = { x: snap(w.x, grid), y: snap(w.y, grid) };
+            setZoneDraft((draft) => [...draft, pt]);
+            return;
+          }
+          if (tool === "place-porte") placeNode("porte")(e);
+          if (tool === "place-badgeuse") placeNode("badgeuse")(e);
+        }}
+        onDoubleClick={(e) => {
+          if (tool === "draw-zone" && zoneDraft.length >= 3) {
+            e.preventDefault();
+            e.stopPropagation();
+            finalizeZone(zoneDraft);
+            setZoneDraft([]);
+          }
+        }}
         width="100%"
         height="720"
         viewBox={`0 0 ${floor.width} ${floor.height}`}
@@ -344,6 +359,17 @@ export function CanvasBoard({
               {zoneDraft.map((point, idx) => (
                 <circle key={`${point.x}-${point.y}-${idx}`} cx={point.x} cy={point.y} r={3} fill="#38bdf8" stroke="#0f172a" strokeWidth={1} />
               ))}
+              {zoneDraft.length > 0 && (
+                <circle
+                  cx={zoneDraft[0].x}
+                  cy={zoneDraft[0].y}
+                  r={5}
+                  fill="none"
+                  stroke="#38bdf8"
+                  strokeWidth={1.5}
+                  strokeDasharray="2 3"
+                />
+              )}
             </g>
           )}
 
@@ -372,8 +398,11 @@ export function CanvasBoard({
           )}
           {floor.nodes.map((n) => {
             const isLoading = !!(n.deviceId && loadingMap[n.deviceId]);
-            const dockerOk = n.deviceId ? dockerActive[n.deviceId]?.ready : false;
+            const status = n.deviceId ? dockerActive[n.deviceId] : undefined;
+            const ready = status?.ready;
             const loadingKind = n.deviceId ? loadingMap[n.deviceId] : undefined;
+            const showRing = !!n.deviceId && (ready !== undefined || isLoading);
+            const ringColor = ready ? "#10b981" : "#ef4444";
             return (
               <g
                 key={n.id}
@@ -387,28 +416,28 @@ export function CanvasBoard({
                 }}
               >
                 {n.kind === "porte" ? (
-                  <DoorGlyph
-                    angle={n.rot || 0}
-                    open={doorIsOpen(n.deviceId)}
-                    hinge={n.hinge || "left"}
-                    label={selNodeId === n.id ? n.deviceId || "porte" : "porte"}
-                    labelColor={colors.labelPrimary}
-                  />
-                ) : (
-                  <g>
-                    <circle r={10} fill="#0284c7" />
-                    <text x={0} y={-14} fontSize={10} textAnchor="middle" fill={colors.labelPrimary}>
-                      {selNodeId === n.id && n.deviceId ? n.deviceId : "badgeuse"}
-                    </text>
-                    {n.targetDoorId && (
-                      <text x={0} y={14} fontSize={9} textAnchor="middle" fill={colors.labelSecondary}>
-                        ↔ {n.targetDoorId}
+                    <DoorGlyph
+                      angle={n.rot || 0}
+                      open={doorIsOpen(n.deviceId)}
+                      hinge={n.hinge || "left"}
+                      label={n.deviceId || "porte"}
+                      labelColor={colors.labelPrimary}
+                    />
+                  ) : (
+                    <g>
+                      <circle r={10} fill="#0284c7" />
+                      <text x={0} y={-14} fontSize={10} textAnchor="middle" fill={colors.labelPrimary}>
+                        {n.deviceId || "badgeuse"}
                       </text>
+                      {n.targetDoorId && (
+                        <text x={0} y={14} fontSize={9} textAnchor="middle" fill={colors.labelSecondary}>
+                          ↔ {n.targetDoorId}
+                        </text>
                     )}
                   </g>
                 )}
 
-                {n.deviceId && <circle r={18} fill="none" stroke={dockerOk ? "#10b981" : "#ef4444"} strokeWidth={2} opacity={0.9} />}
+                {showRing && <circle r={18} fill="none" stroke={ringColor} strokeWidth={2} opacity={0.9} />}
 
                 {selNodeId === n.id && <circle r={16} fill="none" stroke={colors.selection} strokeDasharray="4 4" />}
 

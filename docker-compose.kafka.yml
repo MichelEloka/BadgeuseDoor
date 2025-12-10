@@ -20,8 +20,6 @@ services:
       - KAFKA_DELETE_TOPIC_ENABLE=true
     ports:
       - "9092:9092"
-    networks:
-      - iot
     volumes:
       - kafka-data:/var/lib/kafka/data 
   kafka-init:
@@ -30,8 +28,6 @@ services:
     depends_on:
       - kafka
     restart: "no"
-    networks:
-      - iot
     entrypoint: ["/bin/bash","-c"]
     command: >
       set -e;

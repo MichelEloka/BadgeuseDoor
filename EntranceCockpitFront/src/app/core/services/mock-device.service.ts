@@ -25,6 +25,14 @@ export class MockDeviceService {
     return this.http.get<MockDeviceRecord[]>(this.baseUrl);
   }
 
+  fetchDevice(deviceId: string): Observable<MockDeviceRecord> {
+    if (!this.baseUrl) {
+      throw new Error("mockDevicesApiUrl is not configured");
+    }
+    const target = `${this.baseUrl}/${encodeURIComponent(deviceId)}`;
+    return this.http.get<MockDeviceRecord>(target);
+  }
+
   deleteDevice(deviceId: string): Observable<void> {
     if (!this.baseUrl) {
       throw new Error("mockDevicesApiUrl is not configured");

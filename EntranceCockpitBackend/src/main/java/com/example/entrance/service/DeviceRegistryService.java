@@ -27,6 +27,16 @@ public class DeviceRegistryService {
         return repository.findAll().stream().map(this::toRecord).toList();
     }
 
+    @Transactional(readOnly = true)
+    public DeviceRecord findOne(String deviceId) {
+        if (!StringUtils.hasText(deviceId)) {
+            return null;
+        }
+        return repository.findByDeviceIdIgnoreCase(deviceId.trim())
+                .map(this::toRecord)
+                .orElse(null);
+    }
+
     public DeviceRecord register(String type, String preferredId, String targetDoorId) {
         if (!StringUtils.hasText(type)) {
             throw new IllegalArgumentException("Device type is required");

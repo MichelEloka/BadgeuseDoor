@@ -2192,3 +2192,161 @@ To fix this, use `chmod 0700 /mosquitto/config/passwordfile`.
 1765386092: Saving in-memory database to /mosquitto/data//mosquitto.db.
 1765386092: Client mqttjs_d0281cec closed its connection.
 1765386092: Client mqttx_e887e6e2 closed its connection.
+1765386293: mosquitto version 2.0.22 starting
+1765386293: Config loaded from /mosquitto/config/mosquitto.conf.
+1765386293: Warning: File /mosquitto/config/passwordfile has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwordfile`.
+1765386293: Opening ipv4 listen socket on port 1883.
+1765386293: Opening ipv6 listen socket on port 1883.
+1765386293: Opening websockets listen socket on port 9001.
+1765386293: mosquitto version 2.0.22 running
+1765386299: New connection from 172.21.0.9:54031 on port 1883.
+1765386299: New client connected from 172.21.0.9:54031 as bridge-doors (p2, c1, k60, u'toto').
+1765386366: New connection from 172.21.0.4:48989 on port 1883.
+1765386366: New connection from 172.21.0.4:53455 on port 1883.
+1765386366: New connection from 172.21.0.4:56495 on port 1883.
+1765386366: New connection from 172.21.0.4:34077 on port 1883.
+1765386366: New connection from 172.21.0.4:46141 on port 1883.
+1765386366: New connection from 172.21.0.4:45773 on port 1883.
+1765386366: New connection from 172.21.0.4:38251 on port 1883.
+1765386366: New connection from 172.21.0.4:56295 on port 1883.
+1765386366: New connection from 172.21.0.4:59601 on port 1883.
+1765386366: New connection from 172.21.0.4:34529 on port 1883.
+1765386366: New connection from 172.21.0.4:59829 on port 1883.
+1765386366: New connection from 172.21.0.4:55871 on port 1883.
+1765386366: New connection from 172.21.0.4:35571 on port 1883.
+1765386366: New connection from 172.21.0.4:49353 on port 1883.
+1765386366: New connection from 172.21.0.4:45961 on port 1883.
+1765386366: New connection from 172.21.0.4:54897 on port 1883.
+1765386366: New connection from 172.21.0.4:58765 on port 1883.
+1765386366: New connection from 172.21.0.4:45599 on port 1883.
+1765386366: New client connected from 172.21.0.4:48989 as sim-porte-porte-5 (p2, c1, k60, u'toto').
+1765386366: New client connected from 172.21.0.4:53455 as sim-porte-porte-6 (p2, c1, k60, u'toto').
+1765386366: New client connected from 172.21.0.4:56495 as sim-badgeuse-badgeuse-13 (p2, c1, k60, u'toto').
+1765386366: New client connected from 172.21.0.4:34077 as sim-badgeuse-badgeuse-12 (p2, c1, k60, u'toto').
+1765386366: New client connected from 172.21.0.4:46141 as sim-badgeuse-badgeuse-15 (p2, c1, k60, u'toto').
+1765386366: New client connected from 172.21.0.4:45773 as sim-porte-porte-14 (p2, c1, k60, u'toto').
+1765386366: New client connected from 172.21.0.4:38251 as sim-porte-porte-16 (p2, c1, k60, u'toto').
+1765386366: New client connected from 172.21.0.4:56295 as sim-porte-porte-18 (p2, c1, k60, u'toto').
+1765386366: New client connected from 172.21.0.4:59601 as sim-badgeuse-badgeuse-17 (p2, c1, k60, u'toto').
+1765386366: New client connected from 172.21.0.4:34529 as sim-badgeuse-badgeuse-26 (p2, c1, k60, u'toto').
+1765386366: New client connected from 172.21.0.4:59829 as sim-badgeuse-badgeuse-28 (p2, c1, k60, u'toto').
+1765386366: New client connected from 172.21.0.4:55871 as sim-porte-porte-27 (p2, c1, k60, u'toto').
+1765386366: New client connected from 172.21.0.4:35571 as sim-porte-porte-29 (p2, c1, k60, u'toto').
+1765386366: New client connected from 172.21.0.4:49353 as sim-badgeuse-badgeuse-33 (p2, c1, k60, u'toto').
+1765386366: New client connected from 172.21.0.4:45961 as sim-badgeuse-badgeuse-35 (p2, c1, k60, u'toto').
+1765386366: New client connected from 172.21.0.4:54897 as sim-porte-porte-34 (p2, c1, k60, u'toto').
+1765386366: New client connected from 172.21.0.4:58765 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765386366: New client connected from 172.21.0.4:45599 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765386458: Client <unknown> closed its connection.
+1765386458: New client connected from ::ffff:172.21.0.1:33304 as mqttjs_3252f407 (p2, c1, k60, u'toto').
+1765386690: Client mqttjs_3252f407 closed its connection.
+1765386691: Client <unknown> closed its connection.
+1765386691: New client connected from ::ffff:172.21.0.1:44906 as mqttjs_5a8c57c0 (p2, c1, k60, u'toto').
+1765386734: Client sim-porte-porte-5 disconnected.
+1765386735: Client sim-porte-porte-6 disconnected.
+1765386736: Client sim-porte-porte-14 disconnected.
+1765386737: Client sim-porte-porte-16 disconnected.
+1765386738: Client sim-porte-porte-18 disconnected.
+1765386739: Client sim-porte-porte-27 disconnected.
+1765386740: Client sim-porte-porte-29 disconnected.
+1765386741: Client sim-porte-porte-34 disconnected.
+1765386743: Client sim-badgeuse-badgeuse-12 disconnected.
+1765386744: Client sim-badgeuse-badgeuse-13 disconnected.
+1765386745: Client sim-badgeuse-badgeuse-15 disconnected.
+1765386747: Client sim-badgeuse-badgeuse-17 disconnected.
+1765386748: Client sim-badgeuse-badgeuse-26 disconnected.
+1765386752: Client sim-badgeuse-badgeuse-28 disconnected.
+1765386754: Client sim-badgeuse-badgeuse-33 disconnected.
+1765386756: Client sim-badgeuse-badgeuse-35 disconnected.
+1765387540: mosquitto version 2.0.22 terminating
+1765387540: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765387540: Client mqttjs_5a8c57c0 closed its connection.
+1765387789: mosquitto version 2.0.22 starting
+1765387789: Config loaded from /mosquitto/config/mosquitto.conf.
+1765387789: Warning: File /mosquitto/config/passwordfile has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwordfile`.
+1765387789: Opening ipv4 listen socket on port 1883.
+1765387789: Opening ipv6 listen socket on port 1883.
+1765387789: Opening websockets listen socket on port 9001.
+1765387789: mosquitto version 2.0.22 running
+1765387797: New connection from 172.21.0.9:47631 on port 1883.
+1765387797: New client connected from 172.21.0.9:47631 as bridge-doors (p2, c1, k60, u'toto').
+1765387863: New connection from 172.21.0.4:54251 on port 1883.
+1765387863: New connection from 172.21.0.4:44495 on port 1883.
+1765387863: New client connected from 172.21.0.4:44495 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765387863: New client connected from 172.21.0.4:54251 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765387930: Client <unknown> closed its connection.
+1765387931: New client connected from ::ffff:172.21.0.1:51180 as mqttjs_4e4c2bef (p2, c1, k60, u'toto').
+1765388013: Client mqttjs_4e4c2bef closed its connection.
+1765388013: Client <unknown> closed its connection.
+1765388013: New client connected from ::ffff:172.21.0.1:40874 as mqttjs_8808ebed (p2, c1, k60, u'toto').
+1765388140: New connection from 172.21.0.4:55183 on port 1883.
+1765388140: New client connected from 172.21.0.4:55183 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765388142: New connection from 172.21.0.4:40067 on port 1883.
+1765388142: New client connected from 172.21.0.4:40067 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765388422: mosquitto version 2.0.22 terminating
+1765388422: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765388422: Client mqttjs_8808ebed closed its connection.
+1765388673: mosquitto version 2.0.22 starting
+1765388673: Config loaded from /mosquitto/config/mosquitto.conf.
+1765388673: Warning: File /mosquitto/config/passwordfile has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwordfile`.
+1765388673: Opening ipv4 listen socket on port 1883.
+1765388673: Opening ipv6 listen socket on port 1883.
+1765388673: Opening websockets listen socket on port 9001.
+1765388673: mosquitto version 2.0.22 running
+1765388678: New client connected from ::ffff:172.21.0.1:47844 as mqttjs_8808ebed (p2, c1, k60, u'toto').
+1765388681: New connection from 172.21.0.7:44651 on port 1883.
+1765388681: New client connected from 172.21.0.7:44651 as bridge-doors (p2, c1, k60, u'toto').
+1765388734: New connection from 172.21.0.9:43167 on port 1883.
+1765388734: New connection from 172.21.0.9:38287 on port 1883.
+1765388734: New connection from 172.21.0.9:36311 on port 1883.
+1765388734: New connection from 172.21.0.9:34219 on port 1883.
+1765388734: New client connected from 172.21.0.9:43167 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765388734: New client connected from 172.21.0.9:38287 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765388734: New client connected from 172.21.0.9:36311 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765388734: New client connected from 172.21.0.9:34219 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765388764: Client mqttjs_8808ebed closed its connection.
+1765388810: Client <unknown> closed its connection.
+1765388810: New client connected from ::ffff:172.21.0.1:55344 as mqttjs_293a0e1d (p2, c1, k60, u'toto').
+1765388995: Client mqttjs_293a0e1d closed its connection.
+1765388996: Client <unknown> closed its connection.
+1765388996: New client connected from ::ffff:172.21.0.1:47518 as mqttjs_8db388e6 (p2, c1, k60, u'toto').
+1765389014: New connection from 172.21.0.9:47805 on port 1883.
+1765389014: New client connected from 172.21.0.9:47805 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765389019: New connection from 172.21.0.9:39027 on port 1883.
+1765389019: New client connected from 172.21.0.9:39027 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765389307: New client connected from ::ffff:172.21.0.1:45448 as mqttx_e887e6e2 (p5, c1, k60, u'toto').
+1765389397: Client mqttx_e887e6e2 closed its connection.
+1765389452: New client connected from ::ffff:172.21.0.1:38460 as mqttx_e887e6e2 (p5, c1, k60, u'toto').
+1765389665: Client mqttx_e887e6e2 closed its connection.
+1765389702: Client mqttjs_8db388e6 closed its connection.
+1765389891: mosquitto version 2.0.22 terminating
+1765389891: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765389970: mosquitto version 2.0.22 starting
+1765389970: Config loaded from /mosquitto/config/mosquitto.conf.
+1765389970: Warning: File /mosquitto/config/passwordfile has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwordfile`.
+1765389970: Opening ipv4 listen socket on port 1883.
+1765389970: Opening ipv6 listen socket on port 1883.
+1765389970: Opening websockets listen socket on port 9001.
+1765389970: mosquitto version 2.0.22 running
+1765389977: New connection from 172.21.0.9:46973 on port 1883.
+1765389977: New client connected from 172.21.0.9:46973 as bridge-doors (p2, c1, k60, u'toto').
+1765390039: New client connected from ::ffff:172.21.0.1:48746 as mqttjs_8db388e6 (p2, c1, k60, u'toto').
+1765390053: New connection from 172.21.0.7:44379 on port 1883.
+1765390053: New connection from 172.21.0.7:42427 on port 1883.
+1765390053: New connection from 172.21.0.7:48169 on port 1883.
+1765390053: New connection from 172.21.0.7:46729 on port 1883.
+1765390053: New connection from 172.21.0.7:42617 on port 1883.
+1765390053: New connection from 172.21.0.7:54933 on port 1883.
+1765390053: New client connected from 172.21.0.7:44379 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765390053: New client connected from 172.21.0.7:42427 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765390053: New client connected from 172.21.0.7:48169 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765390053: New client connected from 172.21.0.7:46729 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765390053: New client connected from 172.21.0.7:42617 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765390053: New client connected from 172.21.0.7:54933 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765390061: Client mqttjs_8db388e6 closed its connection.
+1765390074: Client <unknown> closed its connection.
+1765390074: New client connected from ::ffff:172.21.0.1:60854 as mqttjs_c2fa7609 (p2, c1, k60, u'toto').

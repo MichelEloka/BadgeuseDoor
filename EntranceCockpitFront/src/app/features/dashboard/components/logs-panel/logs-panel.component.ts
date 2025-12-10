@@ -41,13 +41,13 @@ export class LogsPanelComponent {
     const door = entry.doorID ?? this.pickString(data, "doorID", "door_id") ?? "Unknown door";
     const device = entry.deviceId ?? this.pickString(data, "deviceId", "device_id") ?? "Unknown device";
     const zone = this.doorZones[door] ?? null;
-    return zone ? `${badge} · ${door} (zone ${zone}) · ${device}` : `${badge} · ${door} · ${device}`;
+    return zone ? `${badge} · ${door} · zone ${zone} · ${device}` : `${badge} · ${door} · ${device}`;
   }
 
   formatStatus(entry: MonitoringEntry): string {
     if (entry.status === "success") return "Accès autorisé";
     if (entry.status === "failure") return "Accès refusé";
-    return "Événement";
+    return "Évènement";
   }
 
   isExpanded(entry: MonitoringEntry): boolean {

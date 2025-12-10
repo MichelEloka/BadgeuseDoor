@@ -24,6 +24,18 @@ public class DeviceController {
         return registryService.findAll();
     }
 
+    @GetMapping("/{deviceId}")
+    public ResponseEntity<?> getOne(@PathVariable("deviceId") String deviceId) {
+        if (!StringUtils.hasText(deviceId)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Device ID is required"));
+        }
+        DeviceRecord record = registryService.findOne(deviceId.trim());
+        if (record == null) {
+            return ResponseEntity.status(404).body(Map.of("message", "Device not found"));
+        }
+        return ResponseEntity.ok(record);
+    }
+
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Map<String, String> body) {
         String type = body.getOrDefault("type", "").trim();

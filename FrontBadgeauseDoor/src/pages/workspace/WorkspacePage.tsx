@@ -7,6 +7,7 @@ import {
   fetchDirectoryDevices,
   fetchDirectoryUsers,
   fetchDoorIds,
+  updateDirectoryDevice,
   type DirectoryUser,
 } from "@/api/directory";
 import { MQTT_WS_URL_DEFAULT } from "@/config";
@@ -197,6 +198,22 @@ export default function WorkspacePage() {
 
   const deleteZone = (zoneId: string) => {
     updateCurrentFloor((f) => ({ ...f, zones: (f.zones ?? []).filter((z) => z.id !== zoneId) }));
+  };
+
+  const persistZonesToBackend = async () => {
+    const doors = floor.nodes.filter((n) => n.kind === "porte");
+    if (!doors.length) return;
+    try {
+      await Promise.all(
+        doors.map((door) => {
+          const zoneLabel = door.location?.trim() || null;
+          const targetId = door.deviceId || door.id;
+          return updateDirectoryDevice(targetId, { zone: zoneLabel, location: zoneLabel }).catch(() => {});
+        })
+      );
+    } catch {
+      // erreurs silencieuses pour ne pas bloquer l'UI
+    }
   };
 
   // Simulation ------------------------------------------------------------------
@@ -506,6 +523,7 @@ export default function WorkspacePage() {
                   onCreateEmptyZone={(name) => setNextZoneName(name)}
                   onRename={renameZone}
                   onDelete={deleteZone}
+                  onPersistZones={persistZonesToBackend}
                 />
               )}
 

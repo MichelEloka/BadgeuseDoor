@@ -269,6 +269,9 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
     this.expandedLogId.set(next);
     if (next) {
       void this.ensureLogDetails(next);
+      if (entry.doorID) {
+        void this.ensureDoorZone(entry.doorID);
+      }
     }
   }
 
@@ -507,6 +510,21 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
         },
       };
     });
+  }
+
+  private async ensureDoorZone(doorId: string) {
+    const id = doorId.trim();
+    if (!id) return;
+    if (this.doorZones()[id]) return;
+    try {
+      const device = await firstValueFrom(this.mockDeviceService.fetchDevice(id));
+      const zone = (device.zone ?? device.location ?? "").toString().trim();
+      if (zone) {
+        this.doorZones.update((current) => ({ ...current, [id]: zone }));
+      }
+    } catch {
+      // silencieux
+    }
   }
 
   private async ensureLogDetails(logId: string) {

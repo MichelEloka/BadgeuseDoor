@@ -218,7 +218,13 @@ class DoorWorker(DeviceWorker):
             return
         if door_target not in {self.device_id}:
             return
-        action = str(payload.get("action") or "").lower()
+        status = str(payload.get("status") or "").strip().upper()
+        if status:
+            # Map access control statuses into door actions for the simulator
+            allowed = status in {"GRANTED", "ALLOWED", "ALLOW", "OK", "SUCCESS"}
+            action = "open" if allowed else "close"
+        else:
+            action = str(payload.get("action") or "").lower()
         if action not in {"open", "close", "toggle"}:
             return
         self.apply_action(action)

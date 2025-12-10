@@ -14,6 +14,7 @@ interface ZonesPanelProps {
   onRename: (zoneId: string, name: string) => void;
   onDelete: (zoneId: string) => void;
   onCreateEmptyZone: (name: string) => void;
+  onPersistZones?: () => void;
   autoFocusZoneId?: string | null;
   onAutoFocusConsumed?: () => void;
 }
@@ -27,6 +28,7 @@ export function ZonesPanel({
   onRename,
   onDelete,
   onCreateEmptyZone,
+  onPersistZones,
   autoFocusZoneId,
   onAutoFocusConsumed,
 }: ZonesPanelProps) {
@@ -120,6 +122,16 @@ export function ZonesPanel({
           >
             Nommer
           </Button>
+          {onPersistZones && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 rounded-xl border border-slate-300 px-3 text-[11px]"
+              onClick={onPersistZones}
+            >
+              Sauvegarder zones
+            </Button>
+          )}
         </div>
 
         {!zones.length && <div className="text-xs text-slate-500 dark:text-slate-400">Aucune zone définie.</div>}

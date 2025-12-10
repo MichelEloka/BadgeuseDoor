@@ -5,4 +5,8 @@ services:
     container_name: entrance-cockpit-front
     ports:
       - "4201:80"
+    networks: [iot]
     restart: unless-stopped
+
+networks:
+  iot: {}

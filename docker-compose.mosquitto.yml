@@ -3,13 +3,17 @@ services:
     image: eclipse-mosquitto:2
     container_name: mosquitto
     environment:
-      MQTT_USER: toto
-      MQTT_PASSWORD: toto
+      MQTT_USER: "toto"
+      MQTT_PASSWORD: "toto"
     ports:
-      - "1883:1883"
+      - "8885:1883"
       - "9001:9001"
     volumes:
       - ./mosquitto/config:/mosquitto/config
       - ./mosquitto/data:/mosquitto/data
       - ./mosquitto/log:/mosquitto/log
+    networks: [iot]
     restart: unless-stopped
+
+networks:
+  iot: {}

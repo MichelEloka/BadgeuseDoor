@@ -4,15 +4,21 @@ services:
       context: ./bridge
     container_name: bridge
     environment:
-      MQTT_HOST: 172.31.253.71
-      MQTT_PORT: 1883
-      MQTT_USER: toto
-      MQTT_PASS: toto
-      BADGE_EVENTS_TOPIC: iot/badgeuse/+/events
-      DOOR_CMDS_FMT: iot/porte/{door_id}/events
-      OPEN_ACTION: open
-      AUTO_CLOSE_SEC: 5
-      DEBOUNCE_SEC: 2
+      MQTT_HOST: "mosquitto"
+      MQTT_PORT: "1883"
+      MQTT_USER: "toto"
+      MQTT_PASS: "toto"
+      BADGE_EVENTS_TOPIC: "iot/badgeuse/events"
+      DOOR_CMDS_FMT: "iot/porte/{door_id}/events"
+      OPEN_ACTION: "open"
+      AUTO_CLOSE_SEC: "5"
+      DEBOUNCE_SEC: "2"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      KAFKA_TOPIC_ATTEMPTS: "attempts"
     ports:
       - "9010:9010"
+    networks: [iot]
     restart: unless-stopped
+
+networks:
+  iot: {}

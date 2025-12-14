@@ -39,3 +39,7 @@ logging:
   level:
     root: info
     com.example.entrance: debug
+
+app:
+  sample-data:
+    enabled: ${APP_SAMPLE_DATA_ENABLED:true}

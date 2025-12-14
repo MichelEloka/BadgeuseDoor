@@ -1,0 +1,16 @@
+services:
+  media-handler:
+    build: ./media-handler
+    container_name: media-handler
+    env_file:
+      - .env.prod
+    environment:
+      MEDIA_ALLOWED_ORIGINS: ${MEDIA_ALLOWED_ORIGINS:-http://	172.31.252.228:4201,http://172.31.249.170:4173,http://172.31.249.170:4173,http://172.31.249.170:4201}
+    ports:
+      - "9080:8080"
+    networks:
+      - iot
+    restart: unless-stopped
+
+networks:
+  iot:

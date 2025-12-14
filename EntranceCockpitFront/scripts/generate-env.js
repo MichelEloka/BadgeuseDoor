@@ -3,16 +3,16 @@ const fs = require("fs");
 const path = require("path");
 
 const config = {
-  wsUrl: process.env.ENTRANCE_FRONT_WS_URL || "ws://localhost:9500/events",
-  usersApiUrl: process.env.ENTRANCE_FRONT_USERS_API_URL || "http://localhost:9500/api/users",
+  wsUrl: process.env.ENTRANCE_FRONT_WS_URL || "ws://172.31.249.170:9500/events",
+  usersApiUrl: process.env.ENTRANCE_FRONT_USERS_API_URL || "http://172.31.249.170:9500/api/users",
   usersDeleteApiUrl:
-    process.env.ENTRANCE_FRONT_USERS_DELETE_API_URL || "http://localhost:9500/api/users/delete",
+    process.env.ENTRANCE_FRONT_USERS_DELETE_API_URL || "http://172.31.249.170:9500/api/users/delete",
   manualOverrideUrl:
-    process.env.ENTRANCE_FRONT_MANUAL_OVERRIDE_URL || "http://localhost:9500/api/manual-access",
-  doorsApiUrl: process.env.ENTRANCE_FRONT_DOORS_API_URL || "http://localhost:9500/api/doors",
-  logDetailsApiUrl: process.env.ENTRANCE_FRONT_LOG_DETAILS_API_URL || "http://localhost:9500/api/logs",
-  mockDevicesApiUrl: process.env.ENTRANCE_FRONT_MOCK_DEVICES_API_URL || "http://localhost:9500/api/devices",
-  mediaApiUrl: process.env.ENTRANCE_FRONT_MEDIA_API_URL || "http://localhost:9080/media",
+    process.env.ENTRANCE_FRONT_MANUAL_OVERRIDE_URL || "http://172.31.249.170:9500/api/manual-access",
+  doorsApiUrl: process.env.ENTRANCE_FRONT_DOORS_API_URL || "http://172.31.249.170:9500/api/doors",
+  logDetailsApiUrl: process.env.ENTRANCE_FRONT_LOG_DETAILS_API_URL || "http://172.31.249.170:9500/api/logs",
+  mockDevicesApiUrl: process.env.ENTRANCE_FRONT_MOCK_DEVICES_API_URL || "http://172.31.249.170:9500/api/devices",
+  mediaApiUrl: process.env.ENTRANCE_FRONT_MEDIA_API_URL || "http://172.31.249.170:9080/media",
   maxEntries: Number(process.env.ENTRANCE_FRONT_MAX_ENTRIES || "200"),
 };
 

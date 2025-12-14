@@ -49,8 +49,19 @@ public class DeviceRegistryService {
         }
         String normalizedType = type.trim().toLowerCase();
         String finalId = StringUtils.hasText(preferredId) ? preferredId.trim() : generateId(normalizedType);
-        if (repository.existsByDeviceIdIgnoreCase(finalId)) {
-            throw new IllegalStateException("Device ID already exists");
+        Optional<DeviceEntity> existingOpt = repository.findByDeviceIdIgnoreCase(finalId);
+        if (existingOpt.isPresent()) {
+            DeviceEntity existing = existingOpt.get();
+            if (!normalizedType.equalsIgnoreCase(existing.getType())) {
+                throw new IllegalStateException("Device ID already exists");
+            }
+            // If a badge reader already exists and we request creation again with a new door,
+            // refresh the target so the operation stays idempotent.
+            if ("badgeuse".equalsIgnoreCase(normalizedType) && StringUtils.hasText(targetDoorId)) {
+                existing.setLocation(targetDoorId.trim());
+                repository.save(existing);
+            }
+            return toRecord(existing);
         }
 
         simulatorClient.createDevice(normalizedType, finalId, targetDoorId);

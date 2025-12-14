@@ -4,14 +4,14 @@ services:
     container_name: iotBadgeDoorSimulateor
     image: badgeusedoor/iotbadgedoorsimulator
     environment:
-      MQTT_HOST: ${MQTT_HOST:-mosquitto}
+      MQTT_HOST: ${MQTT_HOST:-172.31.253.71}
       MQTT_PORT: ${MQTT_PORT:-1883}
       MQTT_USER: ${MQTT_USER:-toto}
       MQTT_PASS: ${MQTT_PASS:-toto}
       SIMULATOR_DATA_DIR: ${SIMULATOR_DATA_DIR:-/data}
       AUTO_CLOSE_SECONDS: ${AUTO_CLOSE_SECONDS:-3}
-      ORCH_URL: ${ORCH_URL:-http://entrance-cockpit-backend:9500/orchestrator}
-      ORCH_DEVICES_URL: ${ORCH_DEVICES_URL:-http://entrance-cockpit-backend:9500/api/devices}
+      ORCH_URL: ${ORCH_URL:-http://172.31.249.170:9500/orchestrator}
+      ORCH_DEVICES_URL: ${ORCH_DEVICES_URL:-http://172.31.249.170:9500/api/devices}
       ORCH_PLAN_IDS: ${ORCH_PLAN_IDS:-etage-1}
       ORCH_PLAN_LIST_RETRIES: ${ORCH_PLAN_LIST_RETRIES:-3}
       ORCH_BOOTSTRAP_TIMEOUT: ${ORCH_BOOTSTRAP_TIMEOUT:-120}

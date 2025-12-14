@@ -48,6 +48,18 @@ def bootstrap_workers_from_plans():
     plan_ids = [pid.strip() for pid in plan_ids_env.split(",") if pid.strip()]
     list_retries = int(os.getenv("ORCH_PLAN_LIST_RETRIES", "3"))
 
+    logging.info(
+        "[startup] ORCH_URL=%s ORCH_DEVICES_URL=%s ORCH_BOOTSTRAP_DELAY=%s ORCH_BOOTSTRAP_TIMEOUT=%s ORCH_PLAN_IDS=%s ORCH_PLAN_LIST_RETRIES=%s MQTT_HOST=%s MQTT_PORT=%s",
+        orch_url,
+        devices_url,
+        retry_delay,
+        total_timeout,
+        plan_ids,
+        list_retries,
+        MQTT_HOST,
+        MQTT_PORT,
+    )
+
     # 1) Tentative principale : /orchestrator/devices (avec door_id pour badgeuse)
     devices_bootstrapped = False
     deadline = time.time() + total_timeout

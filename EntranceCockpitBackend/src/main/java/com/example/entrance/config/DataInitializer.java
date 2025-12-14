@@ -122,7 +122,6 @@ public class DataInitializer implements CommandLineRunner {
         FloorPlanEntity fp = new FloorPlanEntity();
         fp.setId(floorId);
         fp.setContent(buildSamplePlanJson(floorId, doorDeviceId, badgeDeviceId));
-        fp.setUpdatedAt(Instant.now());
         floorPlanRepository.save(fp);
     }
 

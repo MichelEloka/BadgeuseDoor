@@ -29,8 +29,11 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 List<String> origins = parsedOrigins();
+                String[] originArray = origins.isEmpty()
+                        ? new String[]{"*"}
+                        : origins.toArray(new String[0]);
                 registry.addMapping("/**")
-                        .allowedOriginPatterns(origins.isEmpty() ? List.of("*") : origins)
+                        .allowedOriginPatterns(originArray)
                         .allowedMethods("*")
                         .allowedHeaders("*")
                         .allowCredentials(false);

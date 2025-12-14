@@ -63,6 +63,21 @@ export class LogsPanelComponent {
     return this.logDetails[entry.id] ?? null;
   }
 
+  profileImageUrl(entry: MonitoringEntry): string | null {
+    const details = this.detailsFor(entry);
+    if (!details || !details.users || !details.users.length) {
+      return null;
+    }
+    const normalized = (entry.badgeID ?? "").trim().toUpperCase();
+    const match =
+      normalized.length > 0
+        ? details.users.find((user) => (user.badgeID ?? "").trim().toUpperCase() === normalized)
+        : undefined;
+    const candidate = match ?? details.users[0];
+    const url = (candidate as any).imageUrl ?? (candidate as any).image_url ?? null;
+    return typeof url === "string" && url.trim().length > 0 ? url.trim() : null;
+  }
+
   badgeOwnerLabel(entry: MonitoringEntry): string | null {
     const details = this.detailsFor(entry);
     if (!details || !details.users || !details.users.length) {

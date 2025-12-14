@@ -1,0 +1,25 @@
+server:
+  port: 8080
+
+spring:
+  web:
+    cors:
+      allowed-origin-patterns: "*"
+      allowed-methods: "*"
+      allowed-headers: "*"
+      exposed-headers: "*"
+
+media:
+  s3:
+    endpoint: ${S3_ENDPOINT:https://s3.amazonaws.com}
+    access-key: ${S3_ACCESS_KEY_ID:changeme}
+    secret-key: ${S3_SECRET_ACCESS_KEY:changeme}
+    bucket: ${S3_BUCKET:media}
+    region: ${S3_REGION:us-east-1}
+    session-token: ${S3_SESSION_TOKEN:}
+  public-base-url: ${MEDIA_PUBLIC_BASE_URL:https://s3.amazonaws.com/${S3_BUCKET:media}}
+  presign:
+    expiry-seconds: ${MEDIA_PRESIGN_EXPIRY_SECONDS:300}
+  cors:
+    # Comma-separated list of allowed origins for CORS (use "*" to allow all).
+    allowed-origins: ${MEDIA_ALLOWED_ORIGINS:*}

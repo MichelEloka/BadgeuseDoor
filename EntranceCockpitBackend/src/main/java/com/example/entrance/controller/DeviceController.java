@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -71,13 +73,15 @@ public class DeviceController {
         if (!StringUtils.hasText(deviceId)) {
             return ResponseEntity.badRequest().body(Map.of("message", "Device ID is required"));
         }
+        List<String> zones = extractZones(body.get("zones"));
         Object rawLocation = body.get("location");
         Object rawZone = body.get("zone");
         String location = rawLocation == null ? null : rawLocation.toString();
-        String zone = rawZone == null ? null : rawZone.toString();
-        String target = StringUtils.hasText(zone) ? zone : location;
+        if (zones.isEmpty() && rawZone != null) {
+            zones = List.of(rawZone.toString());
+        }
         try {
-            DeviceRecord updated = registryService.updateLocation(deviceId.trim(), target);
+            DeviceRecord updated = registryService.updateLocation(deviceId.trim(), location, zones);
             if (updated == null) {
                 return ResponseEntity.status(404).body(Map.of("message", "Device not found"));
             }
@@ -85,5 +89,28 @@ public class DeviceController {
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
         }
+    }
+
+    private List<String> extractZones(Object rawZones) {
+        if (rawZones == null) {
+            return List.of();
+        }
+        List<String> zones = new ArrayList<>();
+        if (rawZones instanceof Collection<?> collection) {
+            for (Object item : collection) {
+                if (item != null) {
+                    String text = item.toString().trim();
+                    if (!text.isEmpty()) {
+                        zones.add(text);
+                    }
+                }
+            }
+        } else {
+            String text = rawZones.toString().trim();
+            if (!text.isEmpty()) {
+                zones.add(text);
+            }
+        }
+        return zones;
     }
 }

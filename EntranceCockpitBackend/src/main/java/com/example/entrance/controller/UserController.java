@@ -26,16 +26,17 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody Map<String, String> body) {
-        String badgeId = body.getOrDefault("badgeId", body.getOrDefault("badgeID", "")).trim();
-        String firstName = body.getOrDefault("firstName", "").trim();
-        String lastName = body.getOrDefault("lastName", "").trim();
+        String badgeId = safe(body.get("badgeId"), body.get("badgeID"));
+        String firstName = safe(body.get("firstName"));
+        String lastName = safe(body.get("lastName"));
+        String imageUrl = safe(body.get("imageUrl"), body.get("image_url"));
         if (!StringUtils.hasText(badgeId) || !StringUtils.hasText(firstName) || !StringUtils.hasText(lastName)) {
             return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "badgeId, firstName and lastName are required"));
         }
         if (directoryService.badgeExists(badgeId)) {
             return ResponseEntity.status(409).body(Map.of("status", "error", "message", "badge already registered"));
         }
-        UserProfile profile = directoryService.register(firstName, lastName, badgeId);
+        UserProfile profile = directoryService.register(firstName, lastName, badgeId, StringUtils.hasText(imageUrl) ? imageUrl : null);
         return ResponseEntity.ok(profile);
     }
 
@@ -50,5 +51,43 @@ public class UserController {
             return ResponseEntity.status(404).body(Map.of("status", "error", "message", "User not found"));
         }
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{userId}/image")
+    public ResponseEntity<?> updateImage(@PathVariable("userId") String userId, @RequestBody Map<String, String> body) {
+        String target = userId == null ? "" : userId.trim();
+        if (!StringUtils.hasText(target)) {
+            return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "User identifier is required"));
+        }
+        String imageUrl = body.getOrDefault("imageUrl", body.getOrDefault("image_url", "")).trim();
+        if (!StringUtils.hasText(imageUrl)) {
+            return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "imageUrl is required"));
+        }
+        return directoryService.updateImage(target, imageUrl)
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(404).body(Map.of("status", "error", "message", "User not found")));
+    }
+
+    @DeleteMapping("/{userId}/image")
+    public ResponseEntity<?> deleteImage(@PathVariable("userId") String userId) {
+        String target = userId == null ? "" : userId.trim();
+        if (!StringUtils.hasText(target)) {
+            return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "User identifier is required"));
+        }
+        boolean cleared = directoryService.clearImage(target);
+        if (!cleared) {
+            return ResponseEntity.status(404).body(Map.of("status", "error", "message", "User not found"));
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    private String safe(String... values) {
+        if (values == null) return "";
+        for (String v : values) {
+            if (v != null) {
+                return v.trim();
+            }
+        }
+        return "";
     }
 }

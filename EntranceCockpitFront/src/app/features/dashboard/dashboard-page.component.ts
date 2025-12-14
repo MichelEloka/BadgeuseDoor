@@ -12,6 +12,7 @@ import { LogDetailsService } from "../../core/services/log-details.service";
 import { ManualOverrideService, type ManualOverridePayload } from "../../core/services/manual-override.service";
 import { DoorDirectoryService } from "../../core/services/door-directory.service";
 import { UserDirectoryService } from "../../core/services/user-directory.service";
+import { MediaService } from "../../core/services/media.service";
 import { MockDeviceService, type MockDeviceRecord } from "../../core/services/mock-device.service";
 import { TopBarComponent } from "../../shared/ui/top-bar/top-bar.component";
 import { LogsPanelComponent } from "./components/logs-panel/logs-panel.component";
@@ -49,6 +50,7 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
   private readonly manualOverride = inject(ManualOverrideService);
   private readonly doorDirectory = inject(DoorDirectoryService);
   private readonly userDirectory = inject(UserDirectoryService);
+  private readonly mediaService = inject(MediaService);
   private readonly mockDeviceService = inject(MockDeviceService);
   private readonly document = inject(DOCUMENT);
   private readonly hasWindow = typeof window !== "undefined";
@@ -92,6 +94,7 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
   private readonly toastTimers = new Map<string, number>();
   private readonly logDetailsRequests = new Set<string>();
   newUserForm = { badgeID: "", firstName: "", lastName: "" };
+  newUserImageFile: File | null = null;
 
   readonly knownBadges = computed(() => {
     const set = new Set<string>();
@@ -219,9 +222,11 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
       const zones: Record<string, string> = {};
       for (const d of list) {
         if (d.type === "porte" || d.type === "door") {
-          const z = (d.zone ?? d.location ?? "").toString().trim();
-          if (z) {
-            zones[d.id] = z;
+          const names = Array.isArray(d.zones) ? d.zones.filter(Boolean).map((z) => z.toString().trim()).filter(Boolean) : [];
+          const fallback = (d.zone ?? d.location ?? "").toString().trim();
+          const label = names.length ? names.join(", ") : fallback;
+          if (label) {
+            zones[d.id] = label;
           }
         }
       }
@@ -351,8 +356,19 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
     }
     this.unknownLoading.set(true);
     this.unknownError.set(null);
+    let imageUrl: string | null = null;
+    if (form.imageFile) {
+      try {
+        imageUrl = await firstValueFrom(this.mediaService.uploadImage(form.imageFile));
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Upload de photo impossible";
+        this.unknownError.set(message);
+        this.unknownLoading.set(false);
+        return;
+      }
+    }
     try {
-      await firstValueFrom(this.userDirectory.registerUser({ badgeID, firstName, lastName }));
+      await firstValueFrom(this.userDirectory.registerUser({ badgeID, firstName, lastName, imageUrl }));
       await this.loadUsers();
       this.showUnknownModal.set(false);
       this.pendingBadgeId.set(null);
@@ -371,7 +387,7 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
   }
 
   async handleCreateUser(
-    payload: { firstName: string; lastName: string; badgeID: string },
+    payload: { firstName: string; lastName: string; badgeID: string; imageUrl?: string | null },
     options: { closeModal?: boolean } = {}
   ) {
     const badgeID = payload.badgeID.trim();
@@ -384,7 +400,7 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
     this.addUserLoading.set(true);
     this.usersError.set(null);
     try {
-      await firstValueFrom(this.userDirectory.registerUser({ badgeID, firstName, lastName }));
+      await firstValueFrom(this.userDirectory.registerUser({ badgeID, firstName, lastName, imageUrl: payload.imageUrl }));
       await this.loadUsers();
       if (options.closeModal) {
         this.showAddUserModal.set(false);
@@ -435,11 +451,28 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
       this.usersError.set("Tous les champs sont requis.");
       return;
     }
-    await this.handleCreateUser(payload, { closeModal: true });
+    let imageUrl: string | null = null;
+    if (this.newUserImageFile) {
+      try {
+        imageUrl = await firstValueFrom(this.mediaService.uploadImage(this.newUserImageFile));
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Upload de photo impossible";
+        this.usersError.set(message);
+        return;
+      }
+    }
+    await this.handleCreateUser({ ...payload, imageUrl }, { closeModal: true });
     if (!this.addUserLoading()) {
       form.resetForm();
       this.newUserForm = { badgeID: "", firstName: "", lastName: "" };
+      this.newUserImageFile = null;
     }
+  }
+
+  handleNewUserFile(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files && input.files.length ? input.files[0] : null;
+    this.newUserImageFile = file;
   }
 
   dismissToast(toastId: string) {
@@ -584,3 +617,4 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
     }
   }
 }
+

@@ -1,6 +1,7 @@
 package com.example.entrance.model;
 
 import java.time.Instant;
+import java.util.List;
 
 public record DeviceRecord(String id,
                            String type,
@@ -8,5 +9,5 @@ public record DeviceRecord(String id,
                            boolean builtin,
                            String location,
                            String doorId,
-                           String zone) {
+                           List<String> zones) {
 }

@@ -24,6 +24,9 @@ public class PersonEntity {
     @Column
     private String role;
 
+    @Column(name = "image_url", length = 2048)
+    private String imageUrl;
+
     @Column(name = "badge_id", nullable = false, unique = true)
     private String badgeId;
 
@@ -64,6 +67,14 @@ public class PersonEntity {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public String getBadgeId() {

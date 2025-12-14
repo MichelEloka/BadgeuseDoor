@@ -33,6 +33,8 @@ export type DeviceNode = {
   targetDoorId?: string;
   /** Nom(s) des zones touchant la porte, concaténées avec \"et\" */
   location?: string;
+  /** Liste des zones touchant la porte */
+  zoneNames?: string[];
 };
 
 export type SimPerson = {

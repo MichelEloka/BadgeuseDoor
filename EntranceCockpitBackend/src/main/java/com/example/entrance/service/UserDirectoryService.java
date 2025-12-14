@@ -17,9 +17,11 @@ import java.util.Optional;
 public class UserDirectoryService {
 
     private final PersonRepository repository;
+    private final MediaClient mediaClient;
 
-    public UserDirectoryService(PersonRepository repository) {
+    public UserDirectoryService(PersonRepository repository, MediaClient mediaClient) {
         this.repository = repository;
+        this.mediaClient = mediaClient;
     }
 
     @Transactional(readOnly = true)
@@ -45,7 +47,7 @@ public class UserDirectoryService {
         return StringUtils.hasText(badgeId) && repository.existsByBadgeIdIgnoreCase(badgeId.trim());
     }
 
-    public UserProfile register(String firstName, String lastName, String badgeId) {
+    public UserProfile register(String firstName, String lastName, String badgeId, String imageUrl) {
         String normalizedBadge = badgeId == null ? "" : badgeId.trim();
         PersonEntity entity = new PersonEntity();
         entity.setFirstName(firstName);
@@ -53,26 +55,39 @@ public class UserDirectoryService {
         entity.setEmail(buildEmail(firstName, lastName, normalizedBadge));
         entity.setRole("User");
         entity.setBadgeId(normalizedBadge);
+        entity.setImageUrl(imageUrl == null ? null : imageUrl.trim());
         PersonEntity saved = repository.save(entity);
         return toProfile(saved);
     }
 
     public boolean deleteById(String userId) {
-        if (!StringUtils.hasText(userId)) {
+        Optional<PersonEntity> entityOpt = findEntity(userId);
+        if (entityOpt.isEmpty()) {
             return false;
         }
-        String trimmed = userId.trim();
-        try {
-            long identifier = Long.parseLong(trimmed);
-            if (repository.existsById(identifier)) {
-                repository.deleteById(identifier);
-                return true;
-            }
-        } catch (NumberFormatException ignored) {
-            long deleted = repository.deleteByBadgeIdIgnoreCase(trimmed);
-            return deleted > 0;
-        }
-        return false;
+        PersonEntity entity = entityOpt.get();
+        deleteMediaIfAny(entity);
+        repository.delete(entity);
+        return true;
+    }
+
+    public Optional<UserProfile> updateImage(String userId, String imageUrl) {
+        Optional<PersonEntity> found = findEntity(userId);
+        if (found.isEmpty()) return Optional.empty();
+        PersonEntity entity = found.get();
+        entity.setImageUrl(StringUtils.hasText(imageUrl) ? imageUrl.trim() : null);
+        PersonEntity saved = repository.save(entity);
+        return Optional.of(toProfile(saved));
+    }
+
+    public boolean clearImage(String userId) {
+        Optional<PersonEntity> found = findEntity(userId);
+        if (found.isEmpty()) return false;
+        PersonEntity entity = found.get();
+        deleteMediaIfAny(entity);
+        entity.setImageUrl(null);
+        repository.save(entity);
+        return true;
     }
 
     @Transactional(readOnly = true)
@@ -93,8 +108,30 @@ public class UserDirectoryService {
                 entity.getId() == null ? null : entity.getId().toString(),
                 entity.getFirstName(),
                 entity.getLastName(),
-                entity.getBadgeId()
+                entity.getBadgeId(),
+                entity.getImageUrl()
         );
+    }
+
+    private Optional<PersonEntity> findEntity(String identifier) {
+        if (!StringUtils.hasText(identifier)) {
+            return Optional.empty();
+        }
+        String trimmed = identifier.trim();
+        try {
+            long id = Long.parseLong(trimmed);
+            return repository.findById(id);
+        } catch (NumberFormatException ignored) {
+            return repository.findByBadgeIdIgnoreCase(trimmed);
+        }
+    }
+
+    private void deleteMediaIfAny(PersonEntity entity) {
+        try {
+            mediaClient.deleteImageByUrl(entity.getImageUrl());
+        } catch (Exception ignored) {
+            // on ignore les erreurs de suppression des assets media
+        }
     }
 
     private String buildEmail(String firstName, String lastName, String badgeId) {

@@ -3,6 +3,7 @@ export interface LogDetailsUser {
   firstName: string;
   lastName: string;
   badgeID?: string;
+  imageUrl?: string | null;
 }
 
 export interface LogDetailsResponse {

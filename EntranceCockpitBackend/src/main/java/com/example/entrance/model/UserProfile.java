@@ -6,6 +6,7 @@ public record UserProfile(
         String id,
         String firstName,
         String lastName,
-        @JsonProperty("badgeID") String badgeId
+        @JsonProperty("badgeID") String badgeId,
+        String imageUrl
 ) {
 }

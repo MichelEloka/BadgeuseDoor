@@ -1,24 +1,30 @@
 package com.example.entrance.service;
 
 import com.example.entrance.entity.DeviceEntity;
+import com.example.entrance.entity.ZoneEntity;
 import com.example.entrance.model.DeviceRecord;
 import com.example.entrance.repository.DeviceRepository;
+import com.example.entrance.repository.ZoneRepository;
 import com.example.entrance.service.simulator.SimulatorClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
 import java.time.Instant;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class DeviceRegistryService {
 
     private final DeviceRepository repository;
+    private final ZoneRepository zoneRepository;
     private final SimulatorClient simulatorClient;
 
-    public DeviceRegistryService(DeviceRepository repository, SimulatorClient simulatorClient) {
+    public DeviceRegistryService(DeviceRepository repository, ZoneRepository zoneRepository, SimulatorClient simulatorClient) {
         this.repository = repository;
+        this.zoneRepository = zoneRepository;
         this.simulatorClient = simulatorClient;
     }
 
@@ -55,11 +61,10 @@ public class DeviceRegistryService {
         // Pour les badgeuses, on stocke l'ID de la porte cible dans "location"
         if ("badgeuse".equalsIgnoreCase(normalizedType)) {
             entity.setLocation(StringUtils.hasText(targetDoorId) ? targetDoorId : null);
-            entity.setZone(null);
         } else {
             entity.setLocation(null);
-            entity.setZone(null);
         }
+        entity.setZones(new HashSet<>());
         entity.setCreatedAt(Instant.now());
         DeviceEntity saved = repository.save(entity);
         return toRecord(saved);
@@ -79,7 +84,7 @@ public class DeviceRegistryService {
                 .orElse(false);
     }
 
-    public DeviceRecord updateLocation(String deviceId, String location) {
+    public DeviceRecord updateLocation(String deviceId, String location, List<String> zoneNames) {
         if (!StringUtils.hasText(deviceId)) {
             throw new IllegalArgumentException("Device ID is required");
         }
@@ -87,15 +92,19 @@ public class DeviceRegistryService {
                 .map(entity -> {
                     // Pour une badgeuse, "location" transporte l'ID de la porte cible.
                     // Pour une porte, on persiste la zone dans le champ dédié ET on expose aussi via location pour compat.
-                    String cleaned = StringUtils.hasText(location) ? location.trim() : null;
+                    String cleanedLocation = StringUtils.hasText(location) ? location.trim() : null;
+
+                    Set<ZoneEntity> resolved = resolveZones(zoneNames);
+                    String firstZone = resolved.stream().findFirst().map(ZoneEntity::getName).orElse(null);
+
                     if ("badgeuse".equalsIgnoreCase(entity.getType())) {
-                        entity.setLocation(cleaned);
-                        entity.setZone(null);
+                        entity.setLocation(cleanedLocation);
                     } else {
-                        entity.setZone(cleaned);
-                        entity.setLocation(cleaned);
+                        entity.setLocation(firstZone);
                     }
+                    entity.setZones(resolved);
                     DeviceEntity updated = repository.save(entity);
+                    refreshZoneDeviceIds(resolved, entity.getDeviceId());
                     return toRecord(updated);
                 })
                 .orElse(null);
@@ -112,6 +121,13 @@ public class DeviceRegistryService {
     }
 
     private DeviceRecord toRecord(DeviceEntity entity) {
+        List<String> zoneNames = entity.getZones() == null
+                ? Collections.emptyList()
+                : entity.getZones().stream()
+                .map(ZoneEntity::getName)
+                .filter(Objects::nonNull)
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
         return new DeviceRecord(
                 entity.getDeviceId(),
                 entity.getType(),
@@ -119,7 +135,7 @@ public class DeviceRegistryService {
                 entity.isBuiltin(),
                 entity.getLocation(),
                 "badgeuse".equalsIgnoreCase(entity.getType()) ? entity.getLocation() : null,
-                entity.getZone()
+                zoneNames
         );
     }
 
@@ -134,5 +150,49 @@ public class DeviceRegistryService {
             prefix = "badgeuse-";
         }
         return prefix + next;
+    }
+
+    private Set<ZoneEntity> resolveZones(List<String> zoneNames) {
+        if (zoneNames == null || zoneNames.isEmpty()) {
+            return new HashSet<>();
+        }
+        Set<String> normalized = zoneNames.stream()
+                .filter(StringUtils::hasText)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
+
+        Set<ZoneEntity> zones = new HashSet<>();
+        for (String name : normalized) {
+            ZoneEntity zone = zoneRepository.findByNameIgnoreCase(name)
+                    .orElseGet(() -> {
+                        ZoneEntity created = new ZoneEntity();
+                        created.setName(name);
+                        return zoneRepository.save(created);
+                    });
+            zones.add(zone);
+        }
+        return zones;
+    }
+
+    private void refreshZoneDeviceIds(Set<ZoneEntity> zones, String currentDeviceId) {
+        if (zones == null || zones.isEmpty()) {
+            return;
+        }
+        for (ZoneEntity zone : zones) {
+            Set<String> ids = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+            if (zone.getDevices() != null) {
+                for (DeviceEntity device : zone.getDevices()) {
+                    if (StringUtils.hasText(device.getDeviceId())) {
+                        ids.add(device.getDeviceId());
+                    }
+                }
+            }
+            if (StringUtils.hasText(currentDeviceId)) {
+                ids.add(currentDeviceId);
+            }
+            zone.setDeviceIds(String.join(",", ids));
+        }
+        zoneRepository.saveAll(zones);
     }
 }

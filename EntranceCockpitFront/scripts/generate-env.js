@@ -12,6 +12,7 @@ const config = {
   doorsApiUrl: process.env.ENTRANCE_FRONT_DOORS_API_URL || "http://localhost:9500/api/doors",
   logDetailsApiUrl: process.env.ENTRANCE_FRONT_LOG_DETAILS_API_URL || "http://localhost:9500/api/logs",
   mockDevicesApiUrl: process.env.ENTRANCE_FRONT_MOCK_DEVICES_API_URL || "http://localhost:9500/api/devices",
+  mediaApiUrl: process.env.ENTRANCE_FRONT_MEDIA_API_URL || "http://localhost:9080/media",
   maxEntries: Number(process.env.ENTRANCE_FRONT_MAX_ENTRIES || "200"),
 };
 
@@ -25,6 +26,7 @@ const genEnvFile = (isProd) => `export const environment = {
   doorsApiUrl: "${config.doorsApiUrl}",
   logDetailsApiUrl: "${config.logDetailsApiUrl}",
   mockDevicesApiUrl: "${config.mockDevicesApiUrl}",
+  mediaApiUrl: "${config.mediaApiUrl}",
 };
 `;
 

@@ -24,6 +24,11 @@
         <input [(ngModel)]="form.lastName" name="unknownLastName" required placeholder="Last name" />
       </label>
 
+      <label class="field">
+        <span>Photo (optionnel)</span>
+        <input type="file" accept="image/*" (change)="handleFileChange($event)" />
+      </label>
+
       <div class="panel-actions">
         <button type="submit" class="btn solid" [disabled]="loading">Register badge</button>
       </div>

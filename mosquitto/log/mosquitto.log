@@ -2350,3 +2350,1044 @@ To fix this, use `chmod 0700 /mosquitto/config/passwordfile`.
 1765390061: Client mqttjs_8db388e6 closed its connection.
 1765390074: Client <unknown> closed its connection.
 1765390074: New client connected from ::ffff:172.21.0.1:60854 as mqttjs_c2fa7609 (p2, c1, k60, u'toto').
+1765407181: mosquitto version 2.0.22 starting
+1765407181: Config loaded from /mosquitto/config/mosquitto.conf.
+1765407181: Warning: File /mosquitto/config/passwordfile has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwordfile`.
+1765407181: Opening ipv4 listen socket on port 1883.
+1765407181: Opening ipv6 listen socket on port 1883.
+1765407181: Opening websockets listen socket on port 9001.
+1765407181: mosquitto version 2.0.22 running
+1765407190: New connection from 172.21.0.6:54997 on port 1883.
+1765407190: New client connected from 172.21.0.6:54997 as bridge-doors (p2, c1, k60, u'toto').
+1765407262: New connection from 172.21.0.9:52359 on port 1883.
+1765407262: New client connected from 172.21.0.9:52359 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765407262: New connection from 172.21.0.9:46463 on port 1883.
+1765407262: New client connected from 172.21.0.9:46463 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765407262: New connection from 172.21.0.9:44311 on port 1883.
+1765407262: New client connected from 172.21.0.9:44311 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765407262: New connection from 172.21.0.9:56253 on port 1883.
+1765407262: New client connected from 172.21.0.9:56253 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765407262: New connection from 172.21.0.9:53271 on port 1883.
+1765407262: New client connected from 172.21.0.9:53271 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765407262: New connection from 172.21.0.9:38041 on port 1883.
+1765407262: New client connected from 172.21.0.9:38041 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765407290: mosquitto version 2.0.22 terminating
+1765407290: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765407391: mosquitto version 2.0.22 starting
+1765407391: Config loaded from /mosquitto/config/mosquitto.conf.
+1765407391: Warning: File /mosquitto/config/passwordfile has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwordfile`.
+1765407391: Opening ipv4 listen socket on port 1883.
+1765407391: Opening ipv6 listen socket on port 1883.
+1765407391: Opening websockets listen socket on port 9001.
+1765407391: mosquitto version 2.0.22 running
+1765407395: New connection from 172.21.0.6:37613 on port 1883.
+1765407395: New client connected from 172.21.0.6:37613 as bridge-doors (p2, c1, k60, u'toto').
+1765407527: New connection from 172.21.0.8:43805 on port 1883.
+1765407527: New client connected from 172.21.0.8:43805 as sim-porte-porte-118 (p2, c1, k60, u'toto').
+1765409192: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765538408: mosquitto version 2.0.22 starting
+1765538408: Config loaded from /mosquitto/config/mosquitto.conf.
+1765538408: Warning: File /mosquitto/config/passwordfile has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwordfile`.
+1765538408: Opening ipv4 listen socket on port 1883.
+1765538408: Opening ipv6 listen socket on port 1883.
+1765538408: Opening websockets listen socket on port 9001.
+1765538408: mosquitto version 2.0.22 running
+1765538425: New connection from 172.21.0.9:42331 on port 1883.
+1765538425: New client connected from 172.21.0.9:42331 as bridge-doors (p2, c1, k60, u'toto').
+1765538557: New connection from 172.21.0.4:38485 on port 1883.
+1765538557: New client connected from 172.21.0.4:38485 as sim-porte-porte-118 (p2, c1, k60, u'toto').
+1765541339: mosquitto version 2.0.22 starting
+1765541339: Config loaded from /mosquitto/config/mosquitto.conf.
+1765541339: Warning: File /mosquitto/config/passwordfile has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwordfile`.
+1765541339: Opening ipv4 listen socket on port 1883.
+1765541339: Opening ipv6 listen socket on port 1883.
+1765541339: Opening websockets listen socket on port 9001.
+1765541339: mosquitto version 2.0.22 running
+1765541353: New connection from 172.21.0.10:40237 on port 1883.
+1765541353: New client connected from 172.21.0.10:40237 as bridge-doors (p2, c1, k60, u'toto').
+1765541486: New connection from 172.21.0.2:36611 on port 1883.
+1765541486: New client connected from 172.21.0.2:36611 as sim-porte-porte-118 (p2, c1, k60, u'toto').
+1765541516: mosquitto version 2.0.22 terminating
+1765541516: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765611950: mosquitto version 2.0.22 starting
+1765611950: Config loaded from /mosquitto/config/mosquitto.conf.
+1765611950: Warning: File /mosquitto/config/passwordfile has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwordfile`.
+1765611950: Opening ipv4 listen socket on port 1883.
+1765611950: Opening ipv6 listen socket on port 1883.
+1765611950: Opening websockets listen socket on port 9001.
+1765611950: mosquitto version 2.0.22 running
+1765611958: New connection from 172.21.0.6:39127 on port 1883.
+1765611958: New client connected from 172.21.0.6:39127 as bridge-doors (p2, c1, k60, u'toto').
+1765612024: New connection from 172.21.0.3:48641 on port 1883.
+1765612024: New connection from 172.21.0.3:52429 on port 1883.
+1765612024: New connection from 172.21.0.3:33249 on port 1883.
+1765612024: New connection from 172.21.0.3:39025 on port 1883.
+1765612024: New client connected from 172.21.0.3:48641 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765612024: New client connected from 172.21.0.3:52429 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765612024: New client connected from 172.21.0.3:33249 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765612024: New client connected from 172.21.0.3:39025 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765612025: New connection from 172.21.0.3:52501 on port 1883.
+1765612025: New connection from 172.21.0.3:33743 on port 1883.
+1765612025: New client connected from 172.21.0.3:52501 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765612025: New client connected from 172.21.0.3:33743 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765612161: mosquitto version 2.0.22 terminating
+1765612161: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765612329: mosquitto version 2.0.22 starting
+1765612329: Config loaded from /mosquitto/config/mosquitto.conf.
+1765612329: Warning: File /mosquitto/config/passwordfile has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwordfile`.
+1765612329: Opening ipv4 listen socket on port 1883.
+1765612329: Opening ipv6 listen socket on port 1883.
+1765612329: Opening websockets listen socket on port 9001.
+1765612329: mosquitto version 2.0.22 running
+1765612334: New connection from 172.21.0.4:42259 on port 1883.
+1765612334: New client connected from 172.21.0.4:42259 as bridge-doors (p2, c1, k60, u'toto').
+1765612468: New connection from 172.21.0.8:46225 on port 1883.
+1765612468: New client connected from 172.21.0.8:46225 as sim-porte-porte-118 (p2, c1, k60, u'toto').
+1765613322: Client sim-porte-porte-118 closed its connection.
+1765613322: Client bridge-doors closed its connection.
+1765613337: New connection from 172.21.0.8:56597 on port 1883.
+1765613337: New client connected from 172.21.0.8:56597 as bridge-doors (p2, c1, k60, u'toto').
+1765613410: New connection from 172.21.0.4:53571 on port 1883.
+1765613410: New connection from 172.21.0.4:50083 on port 1883.
+1765613410: New client connected from 172.21.0.4:53571 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765613410: New client connected from 172.21.0.4:50083 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765613410: New connection from 172.21.0.4:49911 on port 1883.
+1765613410: New connection from 172.21.0.4:34667 on port 1883.
+1765613410: New connection from 172.21.0.4:33537 on port 1883.
+1765613410: New client connected from 172.21.0.4:49911 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765613410: New client connected from 172.21.0.4:34667 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765613410: New client connected from 172.21.0.4:33537 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765613410: New connection from 172.21.0.4:48873 on port 1883.
+1765613410: New client connected from 172.21.0.4:48873 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765613783: Client bridge-doors closed its connection.
+1765613784: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765613784: Client sim-porte-porte-36 closed its connection.
+1765613784: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765613784: Client sim-porte-porte-66 closed its connection.
+1765613784: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765613784: Client sim-porte-porte-64 closed its connection.
+1765613800: New connection from 172.21.0.10:52619 on port 1883.
+1765613800: New client connected from 172.21.0.10:52619 as bridge-doors (p2, c1, k60, u'toto').
+1765613844: New connection from 172.21.0.6:58019 on port 1883.
+1765613844: New client connected from 172.21.0.6:58019 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765613844: New connection from 172.21.0.6:57947 on port 1883.
+1765613844: New client connected from 172.21.0.6:57947 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765613844: New connection from 172.21.0.6:35707 on port 1883.
+1765613844: New client connected from 172.21.0.6:35707 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765613844: New connection from 172.21.0.6:51729 on port 1883.
+1765613844: New connection from 172.21.0.6:34171 on port 1883.
+1765613844: New connection from 172.21.0.6:53057 on port 1883.
+1765613844: New client connected from 172.21.0.6:51729 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765613844: New client connected from 172.21.0.6:34171 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765613844: New client connected from 172.21.0.6:53057 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765614061: Client <unknown> closed its connection.
+1765614061: New client connected from ::ffff:172.21.0.1:35958 as mqttjs_1582d13d (p2, c1, k60, u'toto').
+1765614131: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765615932: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765616606: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765616606: Client sim-porte-porte-36 closed its connection.
+1765616606: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765616606: Client sim-porte-porte-66 closed its connection.
+1765616606: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765616606: Client sim-porte-porte-64 closed its connection.
+1765616606: Client bridge-doors closed its connection.
+1765616624: New connection from 172.21.0.6:35871 on port 1883.
+1765616624: New client connected from 172.21.0.6:35871 as bridge-doors (p2, c1, k60, u'toto').
+1765616656: New connection from 172.21.0.10:47915 on port 1883.
+1765616656: New connection from 172.21.0.10:52507 on port 1883.
+1765616656: New client connected from 172.21.0.10:47915 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765616656: New client connected from 172.21.0.10:52507 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765616656: New connection from 172.21.0.10:38233 on port 1883.
+1765616656: New connection from 172.21.0.10:39165 on port 1883.
+1765616656: New client connected from 172.21.0.10:38233 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765616656: New client connected from 172.21.0.10:39165 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765616656: New connection from 172.21.0.10:52915 on port 1883.
+1765616656: New client connected from 172.21.0.10:52915 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765616656: New connection from 172.21.0.10:36467 on port 1883.
+1765616656: New client connected from 172.21.0.10:36467 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765616720: Client mqttjs_1582d13d closed its connection.
+1765616721: Client <unknown> closed its connection.
+1765616721: New client connected from ::ffff:172.21.0.1:43628 as mqttjs_c8111601 (p2, c1, k60, u'toto').
+1765616726: Client mqttjs_c8111601 closed its connection.
+1765616727: Client <unknown> closed its connection.
+1765616727: New client connected from ::ffff:172.21.0.1:34918 as mqttjs_3e5b8edd (p2, c1, k60, u'toto').
+1765616747: Client mqttjs_3e5b8edd closed its connection.
+1765616748: Client <unknown> closed its connection.
+1765616748: New client connected from ::ffff:172.21.0.1:36872 as mqttjs_6198c896 (p2, c1, k60, u'toto').
+1765616750: Client mqttjs_6198c896 closed its connection.
+1765616751: Client <unknown> closed its connection.
+1765616751: New client connected from ::ffff:172.21.0.1:36890 as mqttjs_8bdb2837 (p2, c1, k60, u'toto').
+1765616875: Client mqttjs_8bdb2837 closed its connection.
+1765616876: Client <unknown> closed its connection.
+1765616876: New client connected from ::ffff:172.21.0.1:48572 as mqttjs_8bb9296e (p2, c1, k60, u'toto').
+1765616890: New connection from 172.21.0.10:35257 on port 1883.
+1765616890: New client connected from 172.21.0.10:35257 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765616899: New connection from 172.21.0.10:44401 on port 1883.
+1765616899: New client connected from 172.21.0.10:44401 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765617092: Client mqttjs_8bb9296e closed its connection.
+1765617445: Client <unknown> closed its connection.
+1765617582: New connection from 172.21.0.9:37928 on port 1883.
+1765617582: New client connected from 172.21.0.9:37928 as auto-AF121D0E-641F-DA40-956E-9AA668119239 (p2, c1, k60, u'toto').
+1765617642: New client connected from ::ffff:172.21.0.1:56880 as mqttx_a194f008 (p5, c1, k60, u'toto').
+1765617644: Client mqttx_a194f008 closed its connection.
+1765617654: New client connected from ::ffff:172.21.0.1:50422 as mqttx_a194f008 (p5, c1, k60, u'toto').
+1765617661: Client auto-AF121D0E-641F-DA40-956E-9AA668119239 disconnected.
+1765617679: Client mqttx_a194f008 closed its connection.
+1765617724: New client connected from ::ffff:172.21.0.1:53800 as mqttx_a194f008 (p5, c1, k60, u'toto').
+1765617733: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765617746: Client mqttx_a194f008 closed its connection.
+1765617828: New client connected from ::ffff:172.21.0.1:47698 as mqttx_a194f008 (p5, c1, k60, u'toto').
+1765617870: Client mqttx_a194f008 closed its connection.
+1765618187: Client <unknown> closed its connection.
+1765618188: New client connected from ::ffff:172.21.0.1:59826 as mqttjs_087392e8 (p2, c1, k60, u'toto').
+1765618268: New connection from 172.21.0.10:44643 on port 1883.
+1765618268: New client connected from 172.21.0.10:44643 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765618272: New connection from 172.21.0.10:47883 on port 1883.
+1765618272: New client connected from 172.21.0.10:47883 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765618490: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765618490: Client sim-porte-porte-70 closed its connection.
+1765618490: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765618490: Client sim-porte-porte-68 closed its connection.
+1765618490: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765618490: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765618490: Client sim-porte-porte-66 closed its connection.
+1765618490: Client sim-porte-porte-36 closed its connection.
+1765618490: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765618490: Client sim-porte-porte-64 closed its connection.
+1765618537: New connection from 172.21.0.10:56925 on port 1883.
+1765618537: New connection from 172.21.0.10:56555 on port 1883.
+1765618537: New connection from 172.21.0.10:37283 on port 1883.
+1765618537: New connection from 172.21.0.10:53253 on port 1883.
+1765618537: New connection from 172.21.0.10:44993 on port 1883.
+1765618537: New connection from 172.21.0.10:53685 on port 1883.
+1765618537: New connection from 172.21.0.10:52521 on port 1883.
+1765618538: New client connected from 172.21.0.10:56925 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765618538: New client connected from 172.21.0.10:56555 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765618538: New client connected from 172.21.0.10:37283 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765618538: New client connected from 172.21.0.10:53253 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765618538: New client connected from 172.21.0.10:44993 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765618538: New client connected from 172.21.0.10:53685 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765618538: New client connected from 172.21.0.10:52521 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765618538: New connection from 172.21.0.10:55755 on port 1883.
+1765618538: New connection from 172.21.0.10:56109 on port 1883.
+1765618538: New connection from 172.21.0.10:50613 on port 1883.
+1765618538: New client connected from 172.21.0.10:55755 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765618538: New client connected from 172.21.0.10:56109 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765618538: New client connected from 172.21.0.10:50613 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765618666: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765618666: Client sim-porte-porte-36 closed its connection.
+1765618666: Client sim-porte-porte-70 closed its connection.
+1765618666: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765618666: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765618666: Client sim-porte-porte-64 closed its connection.
+1765618666: Client sim-porte-porte-68 closed its connection.
+1765618666: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765618666: Client sim-porte-porte-66 closed its connection.
+1765618666: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765618710: New connection from 172.21.0.10:34279 on port 1883.
+1765618710: New connection from 172.21.0.10:48193 on port 1883.
+1765618710: New client connected from 172.21.0.10:34279 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765618710: New client connected from 172.21.0.10:48193 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765618710: New connection from 172.21.0.10:47011 on port 1883.
+1765618710: New client connected from 172.21.0.10:47011 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765618710: New connection from 172.21.0.10:37127 on port 1883.
+1765618710: New connection from 172.21.0.10:54325 on port 1883.
+1765618710: New client connected from 172.21.0.10:37127 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765618710: New client connected from 172.21.0.10:54325 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765618710: New connection from 172.21.0.10:41271 on port 1883.
+1765618710: New connection from 172.21.0.10:34097 on port 1883.
+1765618710: New connection from 172.21.0.10:36419 on port 1883.
+1765618710: New client connected from 172.21.0.10:41271 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765618710: New client connected from 172.21.0.10:34097 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765618710: New client connected from 172.21.0.10:36419 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765618710: New connection from 172.21.0.10:40427 on port 1883.
+1765618710: New client connected from 172.21.0.10:40427 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765618710: New connection from 172.21.0.10:43905 on port 1883.
+1765618710: New client connected from 172.21.0.10:43905 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765619443: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765619443: Client sim-porte-porte-36 closed its connection.
+1765619443: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765619443: Client sim-porte-porte-70 closed its connection.
+1765619443: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765619443: Client sim-porte-porte-68 closed its connection.
+1765619443: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765619443: Client sim-porte-porte-66 closed its connection.
+1765619443: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765619443: Client sim-porte-porte-64 closed its connection.
+1765619445: Client bridge-doors closed its connection.
+1765619464: New connection from 172.21.0.4:41461 on port 1883.
+1765619464: New client connected from 172.21.0.4:41461 as bridge-doors (p2, c1, k60, u'toto').
+1765619517: New connection from 172.21.0.6:57255 on port 1883.
+1765619517: New client connected from 172.21.0.6:57255 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765619517: New connection from 172.21.0.6:52391 on port 1883.
+1765619517: New client connected from 172.21.0.6:52391 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765619517: New connection from 172.21.0.6:48829 on port 1883.
+1765619517: New connection from 172.21.0.6:39803 on port 1883.
+1765619517: New connection from 172.21.0.6:39011 on port 1883.
+1765619517: New connection from 172.21.0.6:46511 on port 1883.
+1765619517: New connection from 172.21.0.6:41149 on port 1883.
+1765619517: New connection from 172.21.0.6:39491 on port 1883.
+1765619517: New connection from 172.21.0.6:37597 on port 1883.
+1765619517: New connection from 172.21.0.6:35087 on port 1883.
+1765619517: New client connected from 172.21.0.6:48829 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765619517: New client connected from 172.21.0.6:39803 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765619517: New client connected from 172.21.0.6:39011 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765619517: New client connected from 172.21.0.6:46511 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765619517: New client connected from 172.21.0.6:41149 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765619517: New client connected from 172.21.0.6:39491 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765619517: New client connected from 172.21.0.6:37597 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765619517: New client connected from 172.21.0.6:35087 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765619533: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765619595: Client mqttjs_087392e8 closed its connection.
+1765619708: mosquitto version 2.0.22 terminating
+1765619708: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765619764: mosquitto version 2.0.22 starting
+1765619764: Config loaded from /mosquitto/config/mosquitto.conf.
+1765619764: Warning: File /mosquitto/config/passwordfile has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwordfile`.
+1765619764: Opening ipv4 listen socket on port 1883.
+1765619764: Opening ipv6 listen socket on port 1883.
+1765619764: Opening websockets listen socket on port 9001.
+1765619764: mosquitto version 2.0.22 running
+1765619769: New connection from 172.21.0.6:55865 on port 1883.
+1765619769: New client connected from 172.21.0.6:55865 as bridge-doors (p2, c1, k60, u'toto').
+1765619816: New connection from 172.21.0.9:34727 on port 1883.
+1765619816: New client connected from 172.21.0.9:34727 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765619816: New connection from 172.21.0.9:49725 on port 1883.
+1765619816: New client connected from 172.21.0.9:49725 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765619816: New connection from 172.21.0.9:58693 on port 1883.
+1765619816: New client connected from 172.21.0.9:58693 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765619816: New connection from 172.21.0.9:33095 on port 1883.
+1765619816: New connection from 172.21.0.9:44721 on port 1883.
+1765619816: New connection from 172.21.0.9:43229 on port 1883.
+1765619816: New connection from 172.21.0.9:45439 on port 1883.
+1765619816: New connection from 172.21.0.9:58847 on port 1883.
+1765619816: New connection from 172.21.0.9:35923 on port 1883.
+1765619816: New client connected from 172.21.0.9:33095 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765619816: New client connected from 172.21.0.9:44721 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765619816: New client connected from 172.21.0.9:43229 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765619816: New client connected from 172.21.0.9:45439 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765619816: New client connected from 172.21.0.9:58847 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765619816: New client connected from 172.21.0.9:35923 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765619816: New connection from 172.21.0.9:54721 on port 1883.
+1765619816: New client connected from 172.21.0.9:54721 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765619829: Client <unknown> closed its connection.
+1765619829: New client connected from ::ffff:172.21.0.1:49004 as mqttjs_23e0f390 (p2, c1, k60, u'toto').
+1765620541: Client mqttjs_23e0f390 closed its connection.
+1765620647: Client bridge-doors closed its connection.
+1765620647: Client sim-porte-porte-66 closed its connection.
+1765620647: Client sim-porte-porte-70 closed its connection.
+1765620647: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765620647: Client sim-porte-porte-64 closed its connection.
+1765620647: Client sim-porte-porte-68 closed its connection.
+1765620647: Client sim-porte-porte-36 closed its connection.
+1765620647: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765620647: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765620647: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765620647: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765620661: New connection from 172.21.0.6:39239 on port 1883.
+1765620661: New client connected from 172.21.0.6:39239 as bridge-doors (p2, c1, k60, u'toto').
+1765620700: New connection from 172.21.0.8:59203 on port 1883.
+1765620700: New connection from 172.21.0.8:45441 on port 1883.
+1765620700: New connection from 172.21.0.8:51775 on port 1883.
+1765620700: New connection from 172.21.0.8:42147 on port 1883.
+1765620700: New connection from 172.21.0.8:49529 on port 1883.
+1765620700: New connection from 172.21.0.8:49671 on port 1883.
+1765620700: New connection from 172.21.0.8:40355 on port 1883.
+1765620700: New connection from 172.21.0.8:38007 on port 1883.
+1765620700: New connection from 172.21.0.8:52047 on port 1883.
+1765620700: New connection from 172.21.0.8:36725 on port 1883.
+1765620701: New client connected from 172.21.0.8:59203 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765620701: New client connected from 172.21.0.8:45441 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765620701: New client connected from 172.21.0.8:51775 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765620701: New client connected from 172.21.0.8:42147 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765620701: New client connected from 172.21.0.8:49529 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765620701: New client connected from 172.21.0.8:49671 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765620701: New client connected from 172.21.0.8:40355 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765620701: New client connected from 172.21.0.8:38007 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765620701: New client connected from 172.21.0.8:52047 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765620701: New client connected from 172.21.0.8:36725 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765620864: New client connected from ::ffff:172.21.0.1:34814 as mqttjs_23e0f390 (p2, c1, k60, u'toto').
+1765621221: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765621221: Client sim-porte-porte-70 closed its connection.
+1765621221: Client sim-porte-porte-66 closed its connection.
+1765621221: Client sim-porte-porte-36 closed its connection.
+1765621221: Client sim-porte-porte-64 closed its connection.
+1765621221: Client sim-porte-porte-68 closed its connection.
+1765621221: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765621221: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765621221: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765621221: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765621259: New connection from 172.21.0.8:36205 on port 1883.
+1765621259: New connection from 172.21.0.8:59105 on port 1883.
+1765621259: New client connected from 172.21.0.8:36205 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765621259: New client connected from 172.21.0.8:59105 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765621259: New connection from 172.21.0.8:47667 on port 1883.
+1765621259: New client connected from 172.21.0.8:47667 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765621259: New connection from 172.21.0.8:32873 on port 1883.
+1765621259: New connection from 172.21.0.8:42961 on port 1883.
+1765621259: New connection from 172.21.0.8:44949 on port 1883.
+1765621259: New client connected from 172.21.0.8:32873 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765621259: New client connected from 172.21.0.8:44949 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765621259: New client connected from 172.21.0.8:42961 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765621259: New connection from 172.21.0.8:40077 on port 1883.
+1765621259: New connection from 172.21.0.8:56051 on port 1883.
+1765621259: New connection from 172.21.0.8:38627 on port 1883.
+1765621259: New connection from 172.21.0.8:50379 on port 1883.
+1765621259: New client connected from 172.21.0.8:40077 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765621259: New client connected from 172.21.0.8:56051 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765621259: New client connected from 172.21.0.8:38627 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765621259: New client connected from 172.21.0.8:50379 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765621264: Client mqttjs_23e0f390 closed its connection.
+1765621358: New client connected from ::ffff:172.21.0.1:55354 as mqttjs_23e0f390 (p2, c1, k60, u'toto').
+1765621565: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765621767: Client mqttjs_23e0f390 closed its connection.
+1765623366: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765625167: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765626968: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765628769: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765630570: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765632370: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765634171: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765635972: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765637773: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765639105: Client bridge-doors closed its connection.
+1765639105: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765639105: Client sim-porte-porte-70 closed its connection.
+1765639105: Client sim-porte-porte-66 closed its connection.
+1765639105: Client sim-porte-porte-36 closed its connection.
+1765639105: Client sim-porte-porte-64 closed its connection.
+1765639105: Client sim-porte-porte-68 closed its connection.
+1765639105: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765639105: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765639105: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765639105: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765639127: New connection from 172.21.0.11:49539 on port 1883.
+1765639127: New client connected from 172.21.0.11:49539 as bridge-doors (p2, c1, k60, u'toto').
+1765639184: New connection from 172.21.0.8:44531 on port 1883.
+1765639184: New connection from 172.21.0.8:49595 on port 1883.
+1765639184: New connection from 172.21.0.8:44427 on port 1883.
+1765639184: New client connected from 172.21.0.8:44531 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765639184: New client connected from 172.21.0.8:49595 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765639184: New client connected from 172.21.0.8:44427 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765639184: New connection from 172.21.0.8:44315 on port 1883.
+1765639184: New client connected from 172.21.0.8:44315 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765639184: New connection from 172.21.0.8:49699 on port 1883.
+1765639184: New client connected from 172.21.0.8:49699 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765639184: New connection from 172.21.0.8:60117 on port 1883.
+1765639184: New connection from 172.21.0.8:60889 on port 1883.
+1765639184: New connection from 172.21.0.8:56067 on port 1883.
+1765639184: New client connected from 172.21.0.8:60117 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765639184: New client connected from 172.21.0.8:60889 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765639184: New client connected from 172.21.0.8:56067 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765639184: New connection from 172.21.0.8:53969 on port 1883.
+1765639184: New client connected from 172.21.0.8:53969 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765639184: New connection from 172.21.0.8:46987 on port 1883.
+1765639184: New client connected from 172.21.0.8:46987 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765639574: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765640002: Client bridge-doors closed its connection.
+1765640002: Client sim-porte-porte-70 closed its connection.
+1765640002: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765640002: Client sim-porte-porte-64 closed its connection.
+1765640002: Client sim-porte-porte-36 closed its connection.
+1765640002: Client sim-porte-porte-66 closed its connection.
+1765640002: Client sim-porte-porte-68 closed its connection.
+1765640002: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765640002: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765640002: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765640002: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765640021: New connection from 172.21.0.11:39139 on port 1883.
+1765640021: New client connected from 172.21.0.11:39139 as bridge-doors (p2, c1, k60, u'toto').
+1765640079: New connection from 172.21.0.6:42175 on port 1883.
+1765640079: New connection from 172.21.0.6:39745 on port 1883.
+1765640079: New connection from 172.21.0.6:58927 on port 1883.
+1765640079: New connection from 172.21.0.6:44389 on port 1883.
+1765640079: New client connected from 172.21.0.6:42175 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765640079: New client connected from 172.21.0.6:39745 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765640079: New client connected from 172.21.0.6:58927 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765640079: New client connected from 172.21.0.6:44389 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765640079: New connection from 172.21.0.6:56743 on port 1883.
+1765640079: New connection from 172.21.0.6:53631 on port 1883.
+1765640079: New connection from 172.21.0.6:43393 on port 1883.
+1765640079: New connection from 172.21.0.6:46189 on port 1883.
+1765640079: New connection from 172.21.0.6:34157 on port 1883.
+1765640079: New client connected from 172.21.0.6:56743 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765640079: New client connected from 172.21.0.6:53631 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765640079: New client connected from 172.21.0.6:43393 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765640079: New client connected from 172.21.0.6:46189 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765640079: New client connected from 172.21.0.6:34157 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765640079: New connection from 172.21.0.6:44077 on port 1883.
+1765640079: New client connected from 172.21.0.6:44077 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765641092: Client sim-porte-porte-70 closed its connection.
+1765641092: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765641092: Client sim-porte-porte-66 closed its connection.
+1765641092: Client sim-porte-porte-36 closed its connection.
+1765641092: Client sim-porte-porte-64 closed its connection.
+1765641092: Client sim-porte-porte-68 closed its connection.
+1765641092: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765641092: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765641092: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765641092: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765641092: Client bridge-doors closed its connection.
+1765641111: New connection from 172.21.0.8:42147 on port 1883.
+1765641111: New client connected from 172.21.0.8:42147 as bridge-doors (p2, c1, k60, u'toto').
+1765641205: New connection from 172.21.0.6:39959 on port 1883.
+1765641205: New client connected from 172.21.0.6:39959 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765641205: New connection from 172.21.0.6:38381 on port 1883.
+1765641205: New client connected from 172.21.0.6:38381 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765641205: New connection from 172.21.0.6:37485 on port 1883.
+1765641205: New connection from 172.21.0.6:39677 on port 1883.
+1765641205: New client connected from 172.21.0.6:39677 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765641205: New client connected from 172.21.0.6:37485 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765641205: New connection from 172.21.0.6:45411 on port 1883.
+1765641205: New connection from 172.21.0.6:42843 on port 1883.
+1765641205: New connection from 172.21.0.6:33275 on port 1883.
+1765641205: New connection from 172.21.0.6:37943 on port 1883.
+1765641205: New connection from 172.21.0.6:56763 on port 1883.
+1765641205: New connection from 172.21.0.6:43309 on port 1883.
+1765641205: New client connected from 172.21.0.6:45411 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765641205: New client connected from 172.21.0.6:42843 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765641205: New client connected from 172.21.0.6:33275 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765641205: New client connected from 172.21.0.6:37943 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765641205: New client connected from 172.21.0.6:56763 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765641205: New client connected from 172.21.0.6:43309 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765641375: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765642153: mosquitto version 2.0.22 terminating
+1765642153: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765642358: mosquitto version 2.0.22 starting
+1765642358: Config loaded from /mosquitto/config/mosquitto.conf.
+1765642358: Warning: File /mosquitto/config/passwordfile has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwordfile`.
+1765642358: Opening ipv4 listen socket on port 1883.
+1765642358: Opening ipv6 listen socket on port 1883.
+1765642358: Opening websockets listen socket on port 9001.
+1765642358: mosquitto version 2.0.22 running
+1765642365: New connection from 172.21.0.8:59017 on port 1883.
+1765642365: New client connected from 172.21.0.8:59017 as bridge-doors (p2, c1, k60, u'toto').
+1765642450: New connection from 172.21.0.3:56953 on port 1883.
+1765642450: New client connected from 172.21.0.3:56953 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765642450: New connection from 172.21.0.3:54735 on port 1883.
+1765642450: New client connected from 172.21.0.3:54735 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765642450: New connection from 172.21.0.3:42909 on port 1883.
+1765642450: New connection from 172.21.0.3:44021 on port 1883.
+1765642450: New client connected from 172.21.0.3:42909 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765642450: New client connected from 172.21.0.3:44021 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765642450: New connection from 172.21.0.3:54125 on port 1883.
+1765642450: New connection from 172.21.0.3:33907 on port 1883.
+1765642450: New connection from 172.21.0.3:39453 on port 1883.
+1765642450: New connection from 172.21.0.3:39539 on port 1883.
+1765642450: New client connected from 172.21.0.3:54125 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765642450: New client connected from 172.21.0.3:33907 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765642450: New client connected from 172.21.0.3:39453 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765642450: New client connected from 172.21.0.3:39539 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765642450: New connection from 172.21.0.3:56971 on port 1883.
+1765642450: New connection from 172.21.0.3:48857 on port 1883.
+1765642450: New client connected from 172.21.0.3:56971 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765642450: New client connected from 172.21.0.3:48857 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765642782: Client bridge-doors closed its connection.
+1765642782: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765642782: Client sim-porte-porte-64 closed its connection.
+1765642782: Client sim-porte-porte-66 closed its connection.
+1765642782: Client sim-porte-porte-70 closed its connection.
+1765642782: Client sim-porte-porte-36 closed its connection.
+1765642782: Client sim-porte-porte-68 closed its connection.
+1765642782: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765642782: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765642782: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765642782: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765642798: New connection from 172.21.0.4:38683 on port 1883.
+1765642798: New client connected from 172.21.0.4:38683 as bridge-doors (p2, c1, k60, u'toto').
+1765642851: New connection from 172.21.0.6:46011 on port 1883.
+1765642851: New connection from 172.21.0.6:52369 on port 1883.
+1765642851: New client connected from 172.21.0.6:46011 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765642851: New client connected from 172.21.0.6:52369 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765642851: New connection from 172.21.0.6:57717 on port 1883.
+1765642851: New connection from 172.21.0.6:60435 on port 1883.
+1765642851: New client connected from 172.21.0.6:57717 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765642851: New client connected from 172.21.0.6:60435 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765642851: New connection from 172.21.0.6:50277 on port 1883.
+1765642851: New client connected from 172.21.0.6:50277 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765642851: New connection from 172.21.0.6:38345 on port 1883.
+1765642851: New client connected from 172.21.0.6:38345 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765642851: New connection from 172.21.0.6:47365 on port 1883.
+1765642851: New client connected from 172.21.0.6:47365 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765642851: New connection from 172.21.0.6:58251 on port 1883.
+1765642851: New client connected from 172.21.0.6:58251 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765642851: New connection from 172.21.0.6:38287 on port 1883.
+1765642851: New client connected from 172.21.0.6:38287 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765642851: New connection from 172.21.0.6:43301 on port 1883.
+1765642851: New client connected from 172.21.0.6:43301 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765643501: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765643501: Client sim-porte-porte-66 closed its connection.
+1765643501: Client sim-porte-porte-70 closed its connection.
+1765643501: Client sim-porte-porte-64 closed its connection.
+1765643501: Client sim-porte-porte-36 closed its connection.
+1765643501: Client sim-porte-porte-68 closed its connection.
+1765643501: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765643501: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765643501: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765643501: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765643576: New connection from 172.21.0.6:38773 on port 1883.
+1765643576: New connection from 172.21.0.6:40343 on port 1883.
+1765643576: New connection from 172.21.0.6:38311 on port 1883.
+1765643576: New connection from 172.21.0.6:46451 on port 1883.
+1765643576: New connection from 172.21.0.6:34675 on port 1883.
+1765643576: New connection from 172.21.0.6:48049 on port 1883.
+1765643576: New connection from 172.21.0.6:48837 on port 1883.
+1765643576: New connection from 172.21.0.6:39075 on port 1883.
+1765643576: New connection from 172.21.0.6:49927 on port 1883.
+1765643576: New connection from 172.21.0.6:58923 on port 1883.
+1765643576: New client connected from 172.21.0.6:38773 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765643576: New client connected from 172.21.0.6:40343 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765643576: New client connected from 172.21.0.6:38311 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765643576: New client connected from 172.21.0.6:46451 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765643576: New client connected from 172.21.0.6:34675 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765643576: New client connected from 172.21.0.6:48049 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765643576: New client connected from 172.21.0.6:48837 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765643576: New client connected from 172.21.0.6:39075 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765643576: New client connected from 172.21.0.6:49927 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765643576: New client connected from 172.21.0.6:58923 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765643631: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765643631: Client sim-porte-porte-70 closed its connection.
+1765643631: Client sim-porte-porte-64 closed its connection.
+1765643631: Client sim-porte-porte-36 closed its connection.
+1765643631: Client sim-porte-porte-68 closed its connection.
+1765643631: Client sim-porte-porte-66 closed its connection.
+1765643631: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765643631: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765643631: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765643631: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765643673: New connection from 172.21.0.6:39247 on port 1883.
+1765643673: New client connected from 172.21.0.6:39247 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765643673: New connection from 172.21.0.6:59433 on port 1883.
+1765643673: New connection from 172.21.0.6:36391 on port 1883.
+1765643673: New connection from 172.21.0.6:44985 on port 1883.
+1765643673: New connection from 172.21.0.6:46513 on port 1883.
+1765643673: New connection from 172.21.0.6:36325 on port 1883.
+1765643673: New connection from 172.21.0.6:44021 on port 1883.
+1765643673: New connection from 172.21.0.6:57705 on port 1883.
+1765643673: New connection from 172.21.0.6:42061 on port 1883.
+1765643673: New connection from 172.21.0.6:60045 on port 1883.
+1765643673: New client connected from 172.21.0.6:59433 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765643673: New client connected from 172.21.0.6:36391 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765643673: New client connected from 172.21.0.6:44985 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765643673: New client connected from 172.21.0.6:46513 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765643673: New client connected from 172.21.0.6:36325 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765643673: New client connected from 172.21.0.6:44021 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765643673: New client connected from 172.21.0.6:57705 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765643673: New client connected from 172.21.0.6:42061 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765643673: New client connected from 172.21.0.6:60045 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765644159: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765645960: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765646652: Client bridge-doors closed its connection.
+1765646652: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765646652: Client sim-porte-porte-70 closed its connection.
+1765646652: Client sim-porte-porte-66 closed its connection.
+1765646652: Client sim-porte-porte-64 closed its connection.
+1765646652: Client sim-porte-porte-36 closed its connection.
+1765646652: Client sim-porte-porte-68 closed its connection.
+1765646652: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765646652: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765646652: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765646652: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765646678: New connection from 172.21.0.7:59839 on port 1883.
+1765646678: New client connected from 172.21.0.7:59839 as bridge-doors (p2, c1, k60, u'toto').
+1765646726: New connection from 172.21.0.3:45799 on port 1883.
+1765646726: New connection from 172.21.0.3:35833 on port 1883.
+1765646726: New client connected from 172.21.0.3:35833 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765646726: New connection from 172.21.0.3:41553 on port 1883.
+1765646726: New client connected from 172.21.0.3:41553 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765646726: New client connected from 172.21.0.3:45799 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765646726: New connection from 172.21.0.3:36461 on port 1883.
+1765646726: New connection from 172.21.0.3:60929 on port 1883.
+1765646726: New client connected from 172.21.0.3:36461 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765646726: New client connected from 172.21.0.3:60929 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765646726: New connection from 172.21.0.3:43665 on port 1883.
+1765646726: New connection from 172.21.0.3:34079 on port 1883.
+1765646726: New client connected from 172.21.0.3:43665 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765646726: New client connected from 172.21.0.3:34079 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765646726: New connection from 172.21.0.3:45857 on port 1883.
+1765646726: New connection from 172.21.0.3:42397 on port 1883.
+1765646727: New client connected from 172.21.0.3:42397 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765646727: New connection from 172.21.0.3:50509 on port 1883.
+1765646727: New client connected from 172.21.0.3:45857 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765646727: New client connected from 172.21.0.3:50509 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765647761: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765649561: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765651362: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765652726: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765652726: Client sim-porte-porte-70 closed its connection.
+1765652726: Client sim-porte-porte-66 closed its connection.
+1765652726: Client sim-porte-porte-64 closed its connection.
+1765652726: Client sim-porte-porte-36 closed its connection.
+1765652726: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765652726: Client sim-porte-porte-68 closed its connection.
+1765652726: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765652726: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765652726: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765652726: Client bridge-doors closed its connection.
+1765652753: New connection from 172.21.0.8:50673 on port 1883.
+1765652753: New client connected from 172.21.0.8:50673 as bridge-doors (p2, c1, k60, u'toto').
+1765652835: New connection from 172.21.0.7:53367 on port 1883.
+1765652835: New connection from 172.21.0.7:40831 on port 1883.
+1765652835: New connection from 172.21.0.7:45509 on port 1883.
+1765652835: New connection from 172.21.0.7:39825 on port 1883.
+1765652835: New client connected from 172.21.0.7:53367 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765652835: New client connected from 172.21.0.7:40831 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765652835: New client connected from 172.21.0.7:45509 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765652835: New client connected from 172.21.0.7:39825 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765652835: New connection from 172.21.0.7:37169 on port 1883.
+1765652835: New client connected from 172.21.0.7:37169 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765652835: New connection from 172.21.0.7:49789 on port 1883.
+1765652835: New connection from 172.21.0.7:53709 on port 1883.
+1765652835: New client connected from 172.21.0.7:49789 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765652835: New client connected from 172.21.0.7:53709 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765652835: New connection from 172.21.0.7:53947 on port 1883.
+1765652835: New connection from 172.21.0.7:50499 on port 1883.
+1765652835: New connection from 172.21.0.7:54257 on port 1883.
+1765652835: New client connected from 172.21.0.7:53947 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765652835: New client connected from 172.21.0.7:50499 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765652835: New client connected from 172.21.0.7:54257 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765653115: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765653115: Client sim-porte-porte-70 closed its connection.
+1765653115: Client sim-porte-porte-64 closed its connection.
+1765653115: Client sim-porte-porte-66 closed its connection.
+1765653115: Client sim-porte-porte-36 closed its connection.
+1765653115: Client sim-porte-porte-68 closed its connection.
+1765653115: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765653115: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765653115: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765653115: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765653115: Client bridge-doors closed its connection.
+1765653144: New connection from 172.21.0.8:38087 on port 1883.
+1765653144: New client connected from 172.21.0.8:38087 as bridge-doors (p2, c1, k60, u'toto').
+1765653163: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765653218: New connection from 172.21.0.6:44665 on port 1883.
+1765653218: New connection from 172.21.0.6:46539 on port 1883.
+1765653218: New connection from 172.21.0.6:59185 on port 1883.
+1765653218: New client connected from 172.21.0.6:44665 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765653218: New client connected from 172.21.0.6:46539 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765653218: New client connected from 172.21.0.6:59185 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765653218: New connection from 172.21.0.6:47929 on port 1883.
+1765653218: New client connected from 172.21.0.6:47929 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765653218: New connection from 172.21.0.6:59201 on port 1883.
+1765653218: New client connected from 172.21.0.6:59201 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765653218: New connection from 172.21.0.6:51679 on port 1883.
+1765653218: New connection from 172.21.0.6:40107 on port 1883.
+1765653218: New client connected from 172.21.0.6:51679 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765653218: New client connected from 172.21.0.6:40107 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765653218: New connection from 172.21.0.6:42297 on port 1883.
+1765653218: New client connected from 172.21.0.6:42297 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765653218: New connection from 172.21.0.6:33147 on port 1883.
+1765653218: New client connected from 172.21.0.6:33147 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765653218: New connection from 172.21.0.6:49445 on port 1883.
+1765653218: New client connected from 172.21.0.6:49445 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765653274: Client <unknown> closed its connection.
+1765653274: New client connected from ::ffff:172.21.0.1:33264 as mqttjs_99f934b0 (p2, c1, k60, u'toto').
+1765653473: New connection from 172.21.0.6:53643 on port 1883.
+1765653473: New client connected from 172.21.0.6:53643 as sim-porte-porte-72 (p2, c1, k60, u'toto').
+1765653476: New connection from 172.21.0.6:60857 on port 1883.
+1765653476: New client connected from 172.21.0.6:60857 as sim-badgeuse-badgeuse-73 (p2, c1, k60, u'toto').
+1765654400: Client sim-badgeuse-badgeuse-73 closed its connection.
+1765654400: Client sim-porte-porte-72 closed its connection.
+1765654400: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765654400: Client sim-porte-porte-70 closed its connection.
+1765654400: Client sim-porte-porte-66 closed its connection.
+1765654400: Client sim-porte-porte-64 closed its connection.
+1765654400: Client sim-porte-porte-36 closed its connection.
+1765654400: Client sim-porte-porte-68 closed its connection.
+1765654400: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765654400: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765654400: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765654400: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765654400: Client bridge-doors closed its connection.
+1765654419: Client mqttjs_99f934b0 closed its connection.
+1765654427: New connection from 172.21.0.6:56023 on port 1883.
+1765654427: New client connected from 172.21.0.6:56023 as bridge-doors (p2, c1, k60, u'toto').
+1765654478: New connection from 172.21.0.8:41671 on port 1883.
+1765654478: New client connected from 172.21.0.8:41671 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765654478: New connection from 172.21.0.8:48551 on port 1883.
+1765654478: New connection from 172.21.0.8:34675 on port 1883.
+1765654478: New client connected from 172.21.0.8:48551 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765654478: New client connected from 172.21.0.8:34675 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765654478: New connection from 172.21.0.8:42981 on port 1883.
+1765654478: New client connected from 172.21.0.8:42981 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765654478: New connection from 172.21.0.8:39323 on port 1883.
+1765654478: New client connected from 172.21.0.8:39323 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765654478: New connection from 172.21.0.8:56731 on port 1883.
+1765654478: New connection from 172.21.0.8:37239 on port 1883.
+1765654478: New connection from 172.21.0.8:49121 on port 1883.
+1765654478: New client connected from 172.21.0.8:56731 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765654478: New client connected from 172.21.0.8:37239 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765654478: New client connected from 172.21.0.8:49121 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765654478: New connection from 172.21.0.8:37443 on port 1883.
+1765654478: New client connected from 172.21.0.8:37443 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765654478: New connection from 172.21.0.8:34789 on port 1883.
+1765654478: New connection from 172.21.0.8:44251 on port 1883.
+1765654478: New client connected from 172.21.0.8:34789 as sim-porte-porte-72 (p2, c1, k60, u'toto').
+1765654478: New client connected from 172.21.0.8:44251 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765654478: New connection from 172.21.0.8:48649 on port 1883.
+1765654478: New client connected from 172.21.0.8:48649 as sim-badgeuse-badgeuse-73 (p2, c1, k60, u'toto').
+1765654526: New client connected from ::ffff:172.21.0.1:51038 as mqttjs_99f934b0 (p2, c1, k60, u'toto').
+1765654964: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765655012: Client mqttjs_99f934b0 closed its connection.
+1765655066: Client sim-badgeuse-badgeuse-73 closed its connection.
+1765655066: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765655066: Client sim-porte-porte-72 closed its connection.
+1765655066: Client sim-porte-porte-70 closed its connection.
+1765655066: Client sim-porte-porte-66 closed its connection.
+1765655066: Client sim-porte-porte-64 closed its connection.
+1765655066: Client sim-porte-porte-68 closed its connection.
+1765655066: Client sim-porte-porte-36 closed its connection.
+1765655066: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765655066: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765655066: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765655066: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765655067: Client bridge-doors closed its connection.
+1765655084: New connection from 172.21.0.3:52869 on port 1883.
+1765655084: New client connected from 172.21.0.3:52869 as bridge-doors (p2, c1, k60, u'toto').
+1765655174: New connection from 172.21.0.8:50859 on port 1883.
+1765655174: New connection from 172.21.0.8:54363 on port 1883.
+1765655174: New connection from 172.21.0.8:38641 on port 1883.
+1765655174: New connection from 172.21.0.8:55063 on port 1883.
+1765655174: New connection from 172.21.0.8:39141 on port 1883.
+1765655174: New connection from 172.21.0.8:42951 on port 1883.
+1765655174: New client connected from 172.21.0.8:50859 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765655174: New client connected from 172.21.0.8:54363 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765655174: New client connected from 172.21.0.8:38641 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765655174: New client connected from 172.21.0.8:55063 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765655174: New client connected from 172.21.0.8:39141 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765655174: New client connected from 172.21.0.8:42951 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765655175: New connection from 172.21.0.8:41927 on port 1883.
+1765655175: New client connected from 172.21.0.8:41927 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765655175: New connection from 172.21.0.8:58537 on port 1883.
+1765655175: New client connected from 172.21.0.8:58537 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765655175: New connection from 172.21.0.8:44349 on port 1883.
+1765655175: New connection from 172.21.0.8:45305 on port 1883.
+1765655175: New client connected from 172.21.0.8:44349 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765655175: New client connected from 172.21.0.8:45305 as sim-porte-porte-72 (p2, c1, k60, u'toto').
+1765655175: New connection from 172.21.0.8:50561 on port 1883.
+1765655175: New connection from 172.21.0.8:41821 on port 1883.
+1765655175: New client connected from 172.21.0.8:50561 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765655175: New client connected from 172.21.0.8:41821 as sim-badgeuse-badgeuse-73 (p2, c1, k60, u'toto').
+1765655757: Client sim-badgeuse-badgeuse-73 closed its connection.
+1765655757: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765655757: Client sim-porte-porte-72 closed its connection.
+1765655757: Client sim-porte-porte-70 closed its connection.
+1765655757: Client sim-porte-porte-36 closed its connection.
+1765655757: Client sim-porte-porte-68 closed its connection.
+1765655757: Client sim-porte-porte-66 closed its connection.
+1765655757: Client sim-porte-porte-64 closed its connection.
+1765655757: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765655757: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765655757: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765655757: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765655853: New connection from 172.21.0.8:45759 on port 1883.
+1765655853: New client connected from 172.21.0.8:45759 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765655853: New connection from 172.21.0.8:45127 on port 1883.
+1765655853: New connection from 172.21.0.8:33081 on port 1883.
+1765655853: New client connected from 172.21.0.8:45127 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765655853: New client connected from 172.21.0.8:33081 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765655853: New connection from 172.21.0.8:53335 on port 1883.
+1765655853: New connection from 172.21.0.8:58683 on port 1883.
+1765655853: New connection from 172.21.0.8:39765 on port 1883.
+1765655853: New connection from 172.21.0.8:54801 on port 1883.
+1765655853: New connection from 172.21.0.8:40383 on port 1883.
+1765655853: New connection from 172.21.0.8:55215 on port 1883.
+1765655853: New connection from 172.21.0.8:55097 on port 1883.
+1765655853: New connection from 172.21.0.8:35991 on port 1883.
+1765655853: New connection from 172.21.0.8:40239 on port 1883.
+1765655853: New client connected from 172.21.0.8:53335 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765655853: New client connected from 172.21.0.8:58683 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765655853: New client connected from 172.21.0.8:39765 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765655853: New client connected from 172.21.0.8:54801 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765655853: New client connected from 172.21.0.8:40383 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765655853: New client connected from 172.21.0.8:55215 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765655853: New client connected from 172.21.0.8:55097 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765655853: New client connected from 172.21.0.8:35991 as sim-porte-porte-72 (p2, c1, k60, u'toto').
+1765655853: New client connected from 172.21.0.8:40239 as sim-badgeuse-badgeuse-73 (p2, c1, k60, u'toto').
+1765655864: Client sim-badgeuse-badgeuse-73 closed its connection.
+1765655865: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765655865: Client sim-porte-porte-72 closed its connection.
+1765655865: Client sim-porte-porte-70 closed its connection.
+1765655865: Client sim-porte-porte-66 closed its connection.
+1765655865: Client sim-porte-porte-64 closed its connection.
+1765655865: Client sim-porte-porte-36 closed its connection.
+1765655865: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765655865: Client sim-porte-porte-68 closed its connection.
+1765655865: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765655865: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765655865: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765655946: New connection from 172.21.0.8:43843 on port 1883.
+1765655946: New connection from 172.21.0.8:57649 on port 1883.
+1765655946: New connection from 172.21.0.8:38875 on port 1883.
+1765655946: New connection from 172.21.0.8:33793 on port 1883.
+1765655946: New connection from 172.21.0.8:50511 on port 1883.
+1765655946: New connection from 172.21.0.8:57753 on port 1883.
+1765655946: New connection from 172.21.0.8:51923 on port 1883.
+1765655946: New connection from 172.21.0.8:57335 on port 1883.
+1765655946: New connection from 172.21.0.8:52707 on port 1883.
+1765655946: New connection from 172.21.0.8:45063 on port 1883.
+1765655946: New connection from 172.21.0.8:32789 on port 1883.
+1765655946: New connection from 172.21.0.8:36731 on port 1883.
+1765655946: New client connected from 172.21.0.8:43843 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765655946: New client connected from 172.21.0.8:57649 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765655946: New client connected from 172.21.0.8:38875 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765655946: New client connected from 172.21.0.8:33793 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765655946: New client connected from 172.21.0.8:50511 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765655946: New client connected from 172.21.0.8:57753 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765655946: New client connected from 172.21.0.8:51923 as sim-badgeuse-badgeuse-73 (p2, c1, k60, u'toto').
+1765655946: New client connected from 172.21.0.8:57335 as sim-porte-porte-72 (p2, c1, k60, u'toto').
+1765655946: New client connected from 172.21.0.8:52707 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765655946: New client connected from 172.21.0.8:45063 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765655946: New client connected from 172.21.0.8:32789 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765655946: New client connected from 172.21.0.8:36731 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765655989: New client connected from ::ffff:172.21.0.1:46064 as mqttjs_99f934b0 (p2, c1, k60, u'toto').
+1765655991: Client mqttjs_99f934b0 closed its connection.
+1765655993: Client <unknown> closed its connection.
+1765655993: New client connected from ::ffff:172.21.0.1:43726 as mqttjs_07647cd2 (p2, c1, k60, u'toto').
+1765656408: Client mqttjs_07647cd2 closed its connection.
+1765656765: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765657237: Client sim-porte-porte-64 closed its connection.
+1765657237: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765657237: Client sim-porte-porte-36 closed its connection.
+1765657237: Client sim-porte-porte-70 closed its connection.
+1765657237: Client sim-porte-porte-66 closed its connection.
+1765657237: Client sim-badgeuse-badgeuse-73 closed its connection.
+1765657237: Client sim-porte-porte-72 closed its connection.
+1765657237: Client sim-porte-porte-68 closed its connection.
+1765657237: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765657237: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765657237: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765657237: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765657242: Client bridge-doors closed its connection.
+1765657281: New connection from 172.21.0.11:51767 on port 1883.
+1765657281: New client connected from 172.21.0.11:51767 as bridge-doors (p2, c1, k60, u'toto').
+1765657407: New connection from 172.21.0.8:34299 on port 1883.
+1765657407: New client connected from 172.21.0.8:34299 as sim-porte-porte-118 (p2, c1, k60, u'toto').
+1765657847: Client sim-porte-porte-118 closed its connection.
+1765657847: Client bridge-doors closed its connection.
+1765657884: New connection from 172.21.0.4:47999 on port 1883.
+1765657884: New client connected from 172.21.0.4:47999 as bridge-doors (p2, c1, k60, u'toto').
+1765658019: New connection from 172.21.0.8:56515 on port 1883.
+1765658019: New client connected from 172.21.0.8:56515 as sim-porte-porte-118 (p2, c1, k60, u'toto').
+1765658565: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765658598: Client sim-porte-porte-118 closed its connection.
+1765658599: Client bridge-doors closed its connection.
+1765658631: New connection from 172.21.0.4:39443 on port 1883.
+1765658631: New client connected from 172.21.0.4:39443 as bridge-doors (p2, c1, k60, u'toto').
+1765658765: mosquitto version 2.0.22 terminating
+1765658765: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765658877: mosquitto version 2.0.22 starting
+1765658877: Config loaded from /mosquitto/config/mosquitto.conf.
+1765658877: Warning: File /mosquitto/config/passwordfile has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/passwordfile`.
+1765658877: Opening ipv4 listen socket on port 1883.
+1765658877: Opening ipv6 listen socket on port 1883.
+1765658877: Opening websockets listen socket on port 9001.
+1765658877: mosquitto version 2.0.22 running
+1765658889: New connection from 172.21.0.5:36077 on port 1883.
+1765658889: New client connected from 172.21.0.5:36077 as bridge-doors (p2, c1, k60, u'toto').
+1765659005: New connection from 172.21.0.9:54663 on port 1883.
+1765659005: New client connected from 172.21.0.9:54663 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765659005: New connection from 172.21.0.9:56761 on port 1883.
+1765659005: New connection from 172.21.0.9:52799 on port 1883.
+1765659005: New connection from 172.21.0.9:48711 on port 1883.
+1765659005: New client connected from 172.21.0.9:56761 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765659005: New client connected from 172.21.0.9:52799 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765659005: New client connected from 172.21.0.9:48711 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765659005: New connection from 172.21.0.9:47489 on port 1883.
+1765659005: New connection from 172.21.0.9:53359 on port 1883.
+1765659005: New connection from 172.21.0.9:37965 on port 1883.
+1765659005: New connection from 172.21.0.9:42977 on port 1883.
+1765659005: New connection from 172.21.0.9:53029 on port 1883.
+1765659005: New connection from 172.21.0.9:49265 on port 1883.
+1765659005: New connection from 172.21.0.9:60875 on port 1883.
+1765659005: New connection from 172.21.0.9:37723 on port 1883.
+1765659005: New client connected from 172.21.0.9:47489 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765659005: New client connected from 172.21.0.9:53359 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765659005: New client connected from 172.21.0.9:37965 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765659005: New client connected from 172.21.0.9:42977 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765659005: New client connected from 172.21.0.9:53029 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765659005: New client connected from 172.21.0.9:49265 as sim-porte-porte-72 (p2, c1, k60, u'toto').
+1765659005: New client connected from 172.21.0.9:60875 as sim-badgeuse-badgeuse-73 (p2, c1, k60, u'toto').
+1765659005: New client connected from 172.21.0.9:37723 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765660091: New connection from 172.21.0.9:47915 on port 1883.
+1765660091: New client connected from 172.21.0.9:47915 as sim-porte-porte-74 (p2, c1, k60, u'toto').
+1765660093: New connection from 172.21.0.9:48557 on port 1883.
+1765660093: New client connected from 172.21.0.9:48557 as sim-badgeuse-badgeuse-75 (p2, c1, k60, u'toto').
+1765660678: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765662354: New client connected from ::ffff:172.21.0.1:38534 as mqttx_ebd57c4c (p5, c1, k60, u'toto').
+1765662479: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765662572: Client mqttx_ebd57c4c closed its connection.
+1765663082: Client sim-badgeuse-badgeuse-75 closed its connection.
+1765663082: Client sim-porte-porte-74 closed its connection.
+1765663082: Client sim-badgeuse-badgeuse-73 closed its connection.
+1765663082: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765663082: Client sim-porte-porte-72 closed its connection.
+1765663082: Client sim-porte-porte-70 closed its connection.
+1765663082: Client sim-porte-porte-64 closed its connection.
+1765663082: Client sim-porte-porte-66 closed its connection.
+1765663082: Client sim-porte-porte-36 closed its connection.
+1765663082: Client sim-porte-porte-68 closed its connection.
+1765663082: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765663082: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765663082: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765663082: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765663093: New connection from 172.21.0.9:58477 on port 1883.
+1765663093: New connection from 172.21.0.9:35419 on port 1883.
+1765663093: New client connected from 172.21.0.9:35419 as sim-badgeuse-badgeuse-67 (p2, c1, k60, u'toto').
+1765663093: New connection from 172.21.0.9:50983 on port 1883.
+1765663093: New connection from 172.21.0.9:37381 on port 1883.
+1765663093: New client connected from 172.21.0.9:58477 as sim-badgeuse-badgeuse-65 (p2, c1, k60, u'toto').
+1765663093: New client connected from 172.21.0.9:50983 as sim-badgeuse-badgeuse-71 (p2, c1, k60, u'toto').
+1765663093: New client connected from 172.21.0.9:37381 as sim-badgeuse-badgeuse-69 (p2, c1, k60, u'toto').
+1765663093: New connection from 172.21.0.9:54739 on port 1883.
+1765663093: New connection from 172.21.0.9:58373 on port 1883.
+1765663093: New client connected from 172.21.0.9:54739 as sim-porte-porte-68 (p2, c1, k60, u'toto').
+1765663093: New client connected from 172.21.0.9:58373 as sim-porte-porte-36 (p2, c1, k60, u'toto').
+1765663093: New connection from 172.21.0.9:33211 on port 1883.
+1765663093: New client connected from 172.21.0.9:33211 as sim-porte-porte-64 (p2, c1, k60, u'toto').
+1765663093: New connection from 172.21.0.9:33235 on port 1883.
+1765663093: New client connected from 172.21.0.9:33235 as sim-porte-porte-66 (p2, c1, k60, u'toto').
+1765663093: New connection from 172.21.0.9:40567 on port 1883.
+1765663093: New connection from 172.21.0.9:34501 on port 1883.
+1765663093: New client connected from 172.21.0.9:40567 as sim-porte-porte-72 (p2, c1, k60, u'toto').
+1765663093: New client connected from 172.21.0.9:34501 as sim-porte-porte-70 (p2, c1, k60, u'toto').
+1765663093: New connection from 172.21.0.9:44301 on port 1883.
+1765663093: New client connected from 172.21.0.9:44301 as sim-badgeuse-badgeuse-73 (p2, c1, k60, u'toto').
+1765663093: New connection from 172.21.0.9:53539 on port 1883.
+1765663093: New client connected from 172.21.0.9:53539 as sim-porte-porte-74 (p2, c1, k60, u'toto').
+1765663093: New connection from 172.21.0.9:53535 on port 1883.
+1765663093: New client connected from 172.21.0.9:53535 as sim-badgeuse-badgeuse-75 (p2, c1, k60, u'toto').
+1765663093: New connection from 172.21.0.9:56995 on port 1883.
+1765663093: New client connected from 172.21.0.9:56995 as sim-badgeuse-badgeuse-63 (p2, c1, k60, u'toto').
+1765663126: New client connected from ::ffff:172.21.0.1:39416 as mqttx_ebd57c4c (p5, c1, k60, u'toto').
+1765663198: Client sim-badgeuse-badgeuse-63 closed its connection.
+1765663198: Client sim-badgeuse-badgeuse-75 closed its connection.
+1765663198: Client sim-porte-porte-74 closed its connection.
+1765663198: Client sim-badgeuse-badgeuse-73 closed its connection.
+1765663198: Client sim-porte-porte-72 closed its connection.
+1765663198: Client sim-porte-porte-64 closed its connection.
+1765663198: Client sim-porte-porte-70 closed its connection.
+1765663198: Client sim-porte-porte-66 closed its connection.
+1765663198: Client sim-porte-porte-36 closed its connection.
+1765663198: Client sim-porte-porte-68 closed its connection.
+1765663198: Client sim-badgeuse-badgeuse-69 closed its connection.
+1765663198: Client sim-badgeuse-badgeuse-71 closed its connection.
+1765663198: Client sim-badgeuse-badgeuse-65 closed its connection.
+1765663198: Client sim-badgeuse-badgeuse-67 closed its connection.
+1765663619: Client mqttx_ebd57c4c closed its connection.
+1765663771: New client connected from ::ffff:172.21.0.1:48530 as mqttx_ebd57c4c (p5, c1, k60, u'toto').
+1765663862: Client mqttx_ebd57c4c closed its connection.
+1765664280: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765665510: New client connected from ::ffff:172.21.0.1:45146 as mqttx_ebd57c4c (p5, c1, k60, u'toto').
+1765665783: Client mqttx_ebd57c4c closed its connection.
+1765666081: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1765667882: Saving in-memory database to /mosquitto/data//mosquitto.db.

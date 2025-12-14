@@ -83,10 +83,14 @@
                 <dd>
                   <ng-container *ngIf="log.doorID as door">
                     {{ door }}
-                    <span class="zone-chip" *ngIf="doorZones[door]">· Zone {{ doorZones[door] }}</span>
+                    <span class="zone-chip" *ngIf="doorZones[door]">· Zone(s) {{ doorZones[door] }}</span>
                   </ng-container>
                   <ng-container *ngIf="!log.doorID">Inconnue</ng-container>
                 </dd>
+              </div>
+              <div *ngIf="log.doorID && doorZones[log.doorID]">
+                <dt>Zones</dt>
+                <dd>{{ doorZones[log.doorID] }}</dd>
               </div>
               <div>
                 <dt>Device</dt>
@@ -105,6 +109,13 @@
                   <span class="status-tag" *ngIf="details.loading">Chargement...</span>
                 </div>
                 <p class="text-error" *ngIf="!details.loading && details.error">{{ details.error }}</p>
+                <img
+                  *ngIf="!details.loading && !details.error && profileImageUrl(log) as img"
+                  [src]="img"
+                  alt="Photo du porteur"
+                  style="display:block;width:320px;max-width:100%;height:480px;border-radius:12px;object-fit:cover;margin:10px 0;box-shadow:0 10px 20px rgba(0,0,0,0.2);"
+                  loading="lazy"
+                />
                 <p
                   class="row-badge-owner"
                   *ngIf="!details.loading && !details.error && badgeOwnerLabel(log) as owner; else ownerUnknown"

@@ -3,4 +3,5 @@ export interface UserProfile {
   firstName: string;
   lastName: string;
   badgeID: string;
+  imageUrl?: string | null;
 }

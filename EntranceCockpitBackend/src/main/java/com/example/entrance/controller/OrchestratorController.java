@@ -46,8 +46,8 @@ public class OrchestratorController {
                     if ("badgeuse".equalsIgnoreCase(record.type()) && record.doorId() != null) {
                         map.put("door_id", record.doorId());
                     }
-                    if (record.zone() != null) {
-                        map.put("zone", record.zone());
+                    if (record.zones() != null && !record.zones().isEmpty()) {
+                        map.put("zones", record.zones());
                     }
                     return map;
                 })

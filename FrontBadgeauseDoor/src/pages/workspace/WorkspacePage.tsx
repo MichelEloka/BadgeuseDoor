@@ -53,7 +53,7 @@ const annotateFloorWithZones = (floor: Floor): Floor => {
   const nodesWithLocation = floor.nodes.map((n) => {
     if (n.kind !== "porte") return n;
     const labels = doorLocations[n.id] ?? [];
-    return { ...n, location: labels.length ? labels.join(" et ") : undefined };
+    return { ...n, location: labels.length ? labels.join(" et ") : undefined, zoneNames: labels };
   });
 
   return { ...floor, zones: zonesWithDoors, nodes: nodesWithLocation };
@@ -206,9 +206,9 @@ export default function WorkspacePage() {
     try {
       await Promise.all(
         doors.map((door) => {
-          const zoneLabel = door.location?.trim() || null;
           const targetId = door.deviceId || door.id;
-          return updateDirectoryDevice(targetId, { zone: zoneLabel, location: zoneLabel }).catch(() => {});
+          const zones = (door.zoneNames ?? []).map((z) => z.trim()).filter(Boolean);
+          return updateDirectoryDevice(targetId, { zones }).catch(() => {});
         })
       );
     } catch {
@@ -514,13 +514,12 @@ export default function WorkspacePage() {
               )}
 
               {showZonesPanel && (
-                <ZonesPanel
+              <ZonesPanel
                   zones={floor.zones ?? []}
                   showBorders={showZoneWalls}
                   showFill={showZoneFill}
                   onToggleBorders={() => setShowZoneWalls((v) => !v)}
                   onToggleFill={() => setShowZoneFill((v) => !v)}
-                  onCreateEmptyZone={(name) => setNextZoneName(name)}
                   onRename={renameZone}
                   onDelete={deleteZone}
                   onPersistZones={persistZonesToBackend}

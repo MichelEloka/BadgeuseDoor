@@ -10,6 +10,7 @@ export interface MockDeviceRecord {
   builtin: boolean;
   location?: string | null;
   zone?: string | null;
+   zones?: string[] | null;
 }
 
 @Injectable({ providedIn: "root" })

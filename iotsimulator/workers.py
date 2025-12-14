@@ -212,15 +212,13 @@ class DoorWorker(DeviceWorker):
         except Exception:
             log.warning("[porte %s] payload non JSON", self.device_id)
             return
-        door_target = str(payload.get("doorID") or payload.get("door_id") or "").strip()
-        if not door_target:
-            log.debug("[porte %s] ignore commande sans doorID cible", self.device_id)
-            return
+        parts = msg.topic.split("/")
+        # fall back to topic target when payload does not carry the doorID
+        door_target = str(payload.get("doorID") or payload.get("door_id") or (parts[2] if len(parts) >= 3 else "") or "").strip()
         if door_target not in {self.device_id}:
             return
-        status = str(payload.get("status") or "").strip().upper()
+        status = str(payload.get("status") or payload.get("action") or "").strip().upper()
         if status:
-            # Map access control statuses into door actions for the simulator
             allowed = status in {"GRANTED", "ALLOWED", "ALLOW", "OK", "SUCCESS"}
             action = "open" if allowed else "close"
         else:
@@ -258,5 +256,4 @@ class DoorWorker(DeviceWorker):
             }
         )
         return base
-
 

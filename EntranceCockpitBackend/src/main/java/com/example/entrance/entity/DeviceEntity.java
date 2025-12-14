@@ -1,8 +1,11 @@
 package com.example.entrance.entity;
 
+import com.example.entrance.entity.ZoneEntity;
 import jakarta.persistence.*;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "devices")
@@ -21,8 +24,13 @@ public class DeviceEntity {
     @Column
     private String location;
 
-    @Column
-    private String zone;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "device_zones",
+            joinColumns = @JoinColumn(name = "device_pk"),
+            inverseJoinColumns = @JoinColumn(name = "zone_pk")
+    )
+    private Set<ZoneEntity> zones = new HashSet<>();
 
     @Column(nullable = false)
     private boolean builtin = true;
@@ -65,12 +73,12 @@ public class DeviceEntity {
         this.location = location;
     }
 
-    public String getZone() {
-        return zone;
+    public Set<ZoneEntity> getZones() {
+        return zones;
     }
 
-    public void setZone(String zone) {
-        this.zone = zone;
+    public void setZones(Set<ZoneEntity> zones) {
+        this.zones = zones;
     }
 
     public boolean isBuiltin() {

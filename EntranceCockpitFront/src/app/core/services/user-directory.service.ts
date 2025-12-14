@@ -22,7 +22,7 @@ export class UserDirectoryService {
     );
   }
 
-  registerUser(payload: { firstName: string; lastName: string; badgeID: string }): Observable<UserProfile> {
+  registerUser(payload: { firstName: string; lastName: string; badgeID: string; imageUrl?: string | null }): Observable<UserProfile> {
     if (!environment.usersApiUrl) {
       return throwError(() => new Error("User endpoint not configured"));
     }

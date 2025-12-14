@@ -14,6 +14,7 @@ export interface DirectoryDeviceRecord {
   builtin: boolean;
   location?: string | null;
   zone?: string | null;
+  zones?: string[] | null;
 }
 
 function buildUrl(path: string) {
@@ -77,7 +78,7 @@ export async function deleteDirectoryDevice(deviceId: string) {
   }
 }
 
-export function updateDirectoryDevice(deviceId: string, patch: { location?: string | null; zone?: string | null }) {
+export function updateDirectoryDevice(deviceId: string, patch: { location?: string | null; zone?: string | null; zones?: string[] }) {
   return fetchJson<DirectoryDeviceRecord>(`/devices/${encodeURIComponent(deviceId)}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },

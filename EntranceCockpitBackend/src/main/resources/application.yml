@@ -28,6 +28,10 @@ events:
 simulator:
   base-url: ${SIMULATOR_BASE_URL:http://172.31.252.161:9002}
 
+media:
+  handler:
+    base-url: ${MEDIA_HANDLER_BASE_URL:http://media-handler:8080}
+
 logging:
   level:
     root: info

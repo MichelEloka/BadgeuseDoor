@@ -6,6 +6,7 @@ export interface UnknownBadgeForm {
   badgeID: string;
   firstName: string;
   lastName: string;
+  imageFile?: File | null;
 }
 
 @Component({
@@ -27,6 +28,7 @@ export class UnknownBadgeModalComponent implements OnChanges {
     badgeID: "",
     firstName: "",
     lastName: "",
+    imageFile: null,
   };
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -34,7 +36,7 @@ export class UnknownBadgeModalComponent implements OnChanges {
       this.form = { ...this.form, badgeID: this.badgeID };
     }
     if (changes["visible"] && !this.visible) {
-      this.form = { badgeID: this.badgeID, firstName: "", lastName: "" };
+      this.form = { badgeID: this.badgeID, firstName: "", lastName: "", imageFile: null };
     }
   }
 
@@ -42,6 +44,12 @@ export class UnknownBadgeModalComponent implements OnChanges {
     const badgeID = this.form.badgeID.trim();
     const firstName = this.form.firstName.trim();
     const lastName = this.form.lastName.trim();
-    this.submitBadge.emit({ badgeID, firstName, lastName });
+    this.submitBadge.emit({ badgeID, firstName, lastName, imageFile: this.form.imageFile ?? null });
+  }
+
+  handleFileChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files && input.files.length ? input.files[0] : null;
+    this.form = { ...this.form, imageFile: file };
   }
 }

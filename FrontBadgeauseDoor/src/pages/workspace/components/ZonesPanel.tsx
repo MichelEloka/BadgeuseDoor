@@ -13,7 +13,6 @@ interface ZonesPanelProps {
   onToggleFill: () => void;
   onRename: (zoneId: string, name: string) => void;
   onDelete: (zoneId: string) => void;
-  onCreateEmptyZone: (name: string) => void;
   onPersistZones?: () => void;
   autoFocusZoneId?: string | null;
   onAutoFocusConsumed?: () => void;
@@ -27,14 +26,12 @@ export function ZonesPanel({
   onToggleFill,
   onRename,
   onDelete,
-  onCreateEmptyZone,
   onPersistZones,
   autoFocusZoneId,
   onAutoFocusConsumed,
 }: ZonesPanelProps) {
   const [editing, setEditing] = useState<Record<string, string>>({});
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
-  const [newZoneName, setNewZoneName] = useState("");
 
   const getValue = (zone: ZoneShape) => editing[zone.id] ?? zone.name ?? "";
 
@@ -82,8 +79,6 @@ export function ZonesPanel({
     }
   }, [autoFocusZoneId, onAutoFocusConsumed, zones.length]);
 
-  const canCreate = newZoneName.trim().length > 0;
-
   return (
     <Card className="rounded-xl border border-slate-200 bg-white/80 shadow-sm dark:border-slate-700 dark:bg-slate-900/70">
       <CardContent className="space-y-2.5 p-3">
@@ -103,26 +98,8 @@ export function ZonesPanel({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Input
-            value={newZoneName}
-            onChange={(e) => setNewZoneName(e.target.value)}
-            placeholder="Nommer la prochaine zone"
-            className="h-8 flex-1 rounded-xl border-slate-200 text-xs dark:border-slate-600"
-          />
-          <Button
-            size="sm"
-            className="h-8 rounded-xl border border-slate-200 bg-white/80 px-3 text-[11px] font-medium text-slate-700 hover:bg-white dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-            disabled={!canCreate}
-            onClick={() => {
-              if (!canCreate) return;
-              onCreateEmptyZone(newZoneName.trim());
-              setNewZoneName("");
-            }}
-          >
-            Nommer
-          </Button>
-          {onPersistZones && (
+        {onPersistZones && (
+          <div className="flex justify-end">
             <Button
               size="sm"
               variant="ghost"
@@ -131,8 +108,8 @@ export function ZonesPanel({
             >
               Sauvegarder zones
             </Button>
-          )}
-        </div>
+          </div>
+        )}
 
         {!zones.length && <div className="text-xs text-slate-500 dark:text-slate-400">Aucune zone définie.</div>}
         {zones.map((zone, index) => {

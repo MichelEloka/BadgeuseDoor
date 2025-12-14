@@ -237,6 +237,10 @@
         <span>Nom</span>
         <input name="lastName" required [(ngModel)]="newUserForm.lastName" placeholder="Turner" />
       </label>
+      <label class="field">
+        <span>Photo (optionnel)</span>
+        <input type="file" accept="image/*" (change)="handleNewUserFile($event)" />
+      </label>
 
       <div class="panel-actions">
         <button type="button" class="btn ghost" (click)="addUserForm.resetForm()" [disabled]="addUserLoading()">Reinitialiser</button>

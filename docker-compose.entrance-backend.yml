@@ -12,7 +12,7 @@ services:
       KAFKA_TOPIC: ${KAFKA_TOPIC:-entrance}
       KAFKA_TOPIC_ATTEMPTS: ${KAFKA_TOPIC_ATTEMPTS:-attempts}
       EVENTS_KAFKA_EXTRA_TOPICS: ${EVENTS_KAFKA_EXTRA_TOPICS:-logs}
-      SIMULATOR_BASE_URL: ${SIMULATOR_BASE_URL:-http://host.docker.internal:9002}
+      SIMULATOR_BASE_URL: ${SIMULATOR_BASE_URL:-http://iotsimulator:9002}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://172.31.252.228:4201,http://172.31.252.228:4173,http://172.31.249.170:4201,http://172.31.249.170:4173,http://localhost:4201,http://localhost:4173}
     ports:
       - "9500:9500"

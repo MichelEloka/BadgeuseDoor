@@ -170,8 +170,13 @@ public class EventStreamService {
         if (!StringUtils.hasText(payload)) {
             return null;
         }
+        String candidate = payload.trim();
         try {
-            Map<String, Object> data = objectMapper.readValue(payload, new TypeReference<>() {});
+            if (candidate.startsWith("\"") && candidate.endsWith("\"")) {
+                // Payload double-encodé : on enlève la couche de guillemets.
+                candidate = objectMapper.readValue(candidate, String.class);
+            }
+            Map<String, Object> data = objectMapper.readValue(candidate, new TypeReference<>() {});
             String badgeId = firstNonEmpty(data, "badgeID", "badgeId", "badge_id", "badge");
             String doorId = firstNonEmpty(data, "doorID", "doorId", "door_id", "door");
             String deviceId = firstNonEmpty(data, "deviceId", "device_id", "device");

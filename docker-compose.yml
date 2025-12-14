@@ -54,7 +54,7 @@ services:
       KAFKA_TOPIC: ${KAFKA_TOPIC:-entrance}
       KAFKA_TOPIC_ATTEMPTS: ${KAFKA_TOPIC_ATTEMPTS:-attempts}
       EVENTS_KAFKA_EXTRA_TOPICS: ${EVENTS_KAFKA_EXTRA_TOPICS:-logs}
-      SIMULATOR_BASE_URL: ${SIMULATOR_BASE_URL:-http://host.docker.internal:9002}
+      SIMULATOR_BASE_URL: ${SIMULATOR_BASE_URL:-http://172.31.252.161:9002}
     ports:
       - "9500:9500"
     depends_on:

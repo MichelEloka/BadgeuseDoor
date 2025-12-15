@@ -130,8 +130,10 @@ public class EventStreamService {
             while (!Thread.currentThread().isInterrupted()) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(1));
                 for (ConsumerRecord<String, String> record : records) {
+                    logKafkaRecord(record);
                     Map<String, String> event = mapKafkaPayload(record.value());
                     if (event != null) {
+                        log.info("Kafka payload normalized for broadcast: {}", event);
                         hub.broadcastPayload(event);
                     }
                 }
@@ -223,6 +225,18 @@ public class EventStreamService {
 
     private String asText(Object value) {
         return value == null ? null : value.toString();
+    }
+
+    private void logKafkaRecord(ConsumerRecord<String, String> record) {
+        log.info(
+                "Kafka message received topic={} partition={} offset={} key={} timestamp={} value={}",
+                record.topic(),
+                record.partition(),
+                record.offset(),
+                record.key(),
+                record.timestamp(),
+                record.value()
+        );
     }
 
     private void startFallbackGenerator() {

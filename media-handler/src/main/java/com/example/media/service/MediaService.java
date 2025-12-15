@@ -69,7 +69,9 @@ public class MediaService {
                 .signatureDuration(Duration.ofSeconds(presignExpirySeconds))
                 .getObjectRequest(getRequest)
                 .build();
-        return presigner.presignGetObject(presignRequest).url().toString();
+        String presignedUrl = presigner.presignGetObject(presignRequest).url().toString();
+        log.info("Presigned media URL generated for {}: {}", objectName, presignedUrl);
+        return presignedUrl;
     }
 
     public boolean deleteByUrl(String url) throws Exception {

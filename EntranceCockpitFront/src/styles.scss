@@ -1072,11 +1072,15 @@ input {
   max-height: 85vh;
   padding: 1.75rem;
   gap: 1.25rem;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .users-modal .table-wrapper {
   flex: 1;
+  min-height: 0;
   overflow: auto;
+  margin-top: 0.5rem;
 }
 
 .devices-modal {

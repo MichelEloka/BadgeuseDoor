@@ -83,33 +83,35 @@
     <div class="logs-empty" *ngIf="usersLoading()">Chargement des utilisateurs...</div>
     <div class="text-error" *ngIf="usersError()">{{ usersError() }}</div>
 
-    <table *ngIf="users().length" class="users-table">
-      <thead>
-        <tr>
-          <th>Badge</th>
-          <th>Prenom</th>
-          <th>Nom</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let user of users()">
-          <td>{{ user.badgeID }}</td>
-          <td>{{ user.firstName }}</td>
-          <td>{{ user.lastName }}</td>
-          <td>
-            <button
-              type="button"
-              class="chip danger"
-              (click)="handleDeleteUser(user)"
-              [disabled]="deleteUserId() === (user.id || user.badgeID)"
-            >
-              Supprimer
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div *ngIf="users().length" class="table-wrapper">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Badge</th>
+            <th>Prenom</th>
+            <th>Nom</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users()">
+            <td>{{ user.badgeID }}</td>
+            <td>{{ user.firstName }}</td>
+            <td>{{ user.lastName }}</td>
+            <td>
+              <button
+                type="button"
+                class="chip danger"
+                (click)="handleDeleteUser(user)"
+                [disabled]="deleteUserId() === (user.id || user.badgeID)"
+              >
+                Supprimer
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     <p *ngIf="!users().length && !usersLoading()">Aucun utilisateur enregistre.</p>
   </section>
 </div>

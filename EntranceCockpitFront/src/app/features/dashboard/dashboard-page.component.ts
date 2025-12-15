@@ -90,6 +90,7 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
   readonly logDetailsById = signal<Record<string, LogDetailsState>>({});
 
   private readonly notifiedLogIds = new Set<string>();
+  private latestAutoExpandedId: string | null = null;
   private toastHydrated = false;
   private readonly toastTimers = new Map<string, number>();
   private readonly logDetailsRequests = new Set<string>();
@@ -145,6 +146,30 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
           if (!this.notifiedLogIds.has(entry.id)) {
             this.notifiedLogIds.add(entry.id);
             this.enqueueToast(entry);
+          }
+        }
+      },
+      { allowSignalWrites: true }
+    );
+
+    effect(
+      () => {
+        const entries = this.logs();
+        const latest = entries.length ? entries[0] : null;
+        const latestId = latest?.id ?? null;
+
+        if (!latestId) {
+          this.latestAutoExpandedId = null;
+          this.expandedLogId.set(null);
+          return;
+        }
+
+        if (latestId !== this.latestAutoExpandedId) {
+          this.latestAutoExpandedId = latestId;
+          this.expandedLogId.set(latestId);
+          void this.ensureLogDetails(latestId);
+          if (latest?.doorID) {
+            void this.ensureDoorZone(latest.doorID);
           }
         }
       },

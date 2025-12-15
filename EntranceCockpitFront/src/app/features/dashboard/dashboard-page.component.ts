@@ -551,9 +551,12 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
     if (this.doorZones()[id]) return;
     try {
       const device = await firstValueFrom(this.mockDeviceService.fetchDevice(id));
-      const zone = (device.zone ?? device.location ?? "").toString().trim();
-      if (zone) {
-        this.doorZones.update((current) => ({ ...current, [id]: zone }));
+      const zonesArr = Array.isArray(device.zones) ? device.zones.filter((z) => !!z).map((z) => z.toString().trim()) : [];
+      const zoneLabelFromArray = zonesArr.length ? zonesArr.join(", ") : "";
+      const zoneFallback = (device.zone ?? device.location ?? "").toString().trim();
+      const zoneLabel = zoneLabelFromArray || zoneFallback;
+      if (zoneLabel) {
+        this.doorZones.update((current) => ({ ...current, [id]: zoneLabel }));
       }
     } catch {
       // silencieux
@@ -617,4 +620,3 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
     }
   }
 }
-

@@ -192,7 +192,7 @@ public class EventStreamService {
             if (StringUtils.hasText(deviceId)) {
                 payloadMap.put("deviceId", deviceId);
             }
-            payloadMap.put("status", status != null ? status : "UNKNOWN");
+            payloadMap.put("status", status != null ? status : "REJECTED");
             payloadMap.put("timestamp", (timestamp != null ? timestamp : Instant.now()).toString());
             return payloadMap;
         } catch (Exception ex) {
